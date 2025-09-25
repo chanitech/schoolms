@@ -7,8 +7,18 @@ use App\Models\Student;
 
 class StudentSeeder extends Seeder
 {
+   
+
     public function run(): void
-    {
-        Student::factory()->count(20)->create();
-    }
+{
+    // Seed students
+    \App\Models\Student::factory(20)->create();
+
+    // Assign students to dormitories
+    \App\Models\Student::all()->each(function($student){
+        $student->dormitory_id = \App\Models\Dormitory::inRandomOrder()->first()->id;
+        $student->save();
+    });
+}
+
 }

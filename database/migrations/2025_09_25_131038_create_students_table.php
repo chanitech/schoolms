@@ -35,6 +35,8 @@ return new class extends Migration
           
             $table->foreign('guardian_id')->references('id')->on('guardians')->onDelete('set null');
             $table->foreign('class_id')->references('id')->on('school_classes')->onDelete('set null');
+            $table->foreign('dormitory_id')->references('id')->on('dormitories')->onDelete('set null');
+
 
             //$table->foreign('class_id')->references('id')->on('classes');
             // $table->foreign('dormitory_id')->references('id')->on('dormitories');
