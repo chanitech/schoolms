@@ -23,7 +23,7 @@ class StudentFactory extends Factory
                 : null,
             'photo' => null,
             'guardian_id' => null,
-            'class_id' => null,
+            'class_id' => \App\Models\SchoolClass::inRandomOrder()->first()->id ?? null,
             'dormitory_id' => null,
             'academic_session_id' => null,
             'admission_date' => $this->faker->date(),

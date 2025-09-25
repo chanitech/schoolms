@@ -33,7 +33,7 @@ return new class extends Migration
 
             // Foreign keys (to be created later once those tables exist)
             $table->foreign('guardian_id')->references('id')->on('guardians');
-            // $table->foreign('class_id')->references('id')->on('classes');
+            //$table->foreign('class_id')->references('id')->on('classes');
             // $table->foreign('dormitory_id')->references('id')->on('dormitories');
             // $table->foreign('academic_session_id')->references('id')->on('academic_sessions');
         });
