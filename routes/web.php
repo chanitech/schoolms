@@ -6,9 +6,13 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\GuardianController;
 use App\Http\Controllers\SchoolClassController;
-use App\Http\Controllers\DormitoryController;
 use App\Http\Controllers\AcademicSessionController;
 use App\Http\Controllers\EnrollmentController;
+use App\Http\Controllers\StaffController;   
+use App\Http\Controllers\SubjectController;
+use App\Http\Controllers\DormitoryController;
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -35,19 +39,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Students CRUD
     Route::resource('students', StudentController::class);
-
     // Guardians CRUD
     Route::resource('guardians', GuardianController::class);
-
+    // Enrollments CRUD
     Route::resource('enrollments', EnrollmentController::class);
 
 
     // Classes CRUD
-   // Route::resource('classes', SchoolClassController::class);
+    Route::resource('classes', SchoolClassController::class);
 
     // Dormitories CRUD
-  //  Route::resource('dormitories', DormitoryController::class);
+    Route::resource('dormitories', DormitoryController::class);
+   
 
     // Academic Sessions CRUD
-  //  Route::resource('sessions', AcademicSessionController::class);
+    Route::resource('sessions', AcademicSessionController::class);
 });
