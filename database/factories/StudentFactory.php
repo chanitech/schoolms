@@ -25,7 +25,7 @@ class StudentFactory extends Factory
             'guardian_id' => null,
             'class_id' => \App\Models\SchoolClass::inRandomOrder()->first()->id ?? null,
             'dormitory_id' => null,
-            'academic_session_id' => null,
+            'academic_session_id' => \App\Models\AcademicSession::inRandomOrder()->first()->id ?? null,
             'admission_date' => $this->faker->date(),
             'status' => 'active',
             'address' => $this->faker->address(),
