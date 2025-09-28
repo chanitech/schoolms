@@ -328,7 +328,9 @@ return [
             ['text' => 'Subjects', 'url' => 'subjects', 'icon' => 'fas fa-book-open'],
             ['text' => 'Exams', 'url' => 'exams', 'icon' => 'fas fa-file-alt'],
             ['text' => 'Marks', 'url' => 'marks', 'icon' => 'fas fa-pen'],
+            ['text' => 'Divisions', 'url' => 'divisions', 'icon' => 'fas fa-object-group'],
             ['text' => 'Grading & GPA', 'url' => 'grades', 'icon' => 'fas fa-star'],
+            ['text' => 'Student Results', 'url' => 'results', 'icon' => 'fas fa-chart-bar'],
         ],
     ],
 

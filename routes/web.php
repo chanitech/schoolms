@@ -11,6 +11,12 @@ use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\StaffController;   
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\DormitoryController;
+use App\Http\Controllers\ExamController;
+use App\Http\Controllers\GradeController;     
+use App\Http\Controllers\DivisionController;  
+use App\Http\Controllers\StudentResultController;
+use App\Http\Controllers\MarkController;
+
 
 
 
@@ -59,4 +65,28 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('staff', StaffController::class);
     // Subjects CRUD
     Route::resource('subjects', SubjectController::class);
+    // Exams CRUD
+    Route::resource('exams', ExamController::class);
+    // Grades CRUD
+    Route::resource('grades', GradeController::class);
+    // Divisions CRUD
+    Route::resource('divisions', DivisionController::class);
+        // Marks CRUD      
+    Route::resource('marks', MarkController::class);     
+
+
+    // Student Results with GPA & Division  
+
+    Route::get('/students/{student}/results', [StudentResultController::class, 'show'])
+     ->name('students.results');
+
+
+     
+
+Route::prefix('results')->group(function () {
+    Route::get('/', [StudentResultController::class, 'index'])->name('results.index');
+    Route::get('/{student}', [StudentResultController::class, 'show'])->name('results.show');
+});
+
+
 });

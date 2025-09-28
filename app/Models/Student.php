@@ -10,6 +10,7 @@ use App\Models\SchoolClass;
 use App\Models\Dormitory;
 use App\Models\AcademicSession;
 use App\Models\Enrollment;
+use App\Models\Mark;
 
 class Student extends Model
 {
@@ -35,10 +36,10 @@ class Student extends Model
         'email',
     ];
 
-    // Relationships (to be completed when other models exist)
+    // Relationships
     public function guardian()
     {
-    return $this->belongsTo(Guardian::class);
+        return $this->belongsTo(Guardian::class);
     }
 
     public function class()
@@ -59,5 +60,20 @@ class Student extends Model
     public function enrollments()
     {
         return $this->hasMany(Enrollment::class);
+    }
+
+    public function marks()
+    {
+        return $this->hasMany(Mark::class);
+    }
+
+    public function marksForExam($examId)
+    {
+        return $this->marks()->where('exam_id', $examId);
+    }
+
+    public function marksForSession($sessionId)
+    {
+        return $this->marks()->where('academic_session_id', $sessionId);
     }
 }
