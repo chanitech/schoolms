@@ -54,4 +54,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Academic Sessions CRUD
     Route::resource('sessions', AcademicSessionController::class);
+
+    // Staff CRUD
+    Route::resource('staff', StaffController::class);
+    // Subjects CRUD
+    Route::resource('subjects', SubjectController::class);
 });

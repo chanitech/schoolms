@@ -29,4 +29,15 @@ class SchoolClass extends Model
     {
         return $this->belongsTo(Staff::class, 'class_teacher_id');
     }
+
+    public function subjects()
+{
+    return $this->belongsToMany(
+        Subject::class,
+        'subject_class',
+        'class_id',
+        'subject_id'
+    )->withTimestamps();
+}
+
 }
