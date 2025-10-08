@@ -14,24 +14,27 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // User::factory(10)->create();
-        $this->call(AdminUserSeeder::class);
-        $this->call(DormitorySeeder::class);
-        $this->call(SchoolClassSeeder::class);
-        $this->call(GuardianSeeder::class);
-        $this->call(AcademicSessionSeeder::class);
-        $this->call(StudentSeeder::class);
-        $this->call(EnrollmentSeeder::class);
+        //$this->call(AdminUserSeeder::class);
+       //$this->call(DormitorySeeder::class);
+        //$this->call(SchoolClassSeeder::class);
+        //$this->call(GuardianSeeder::class);
+        //$this->call(AcademicSessionSeeder::class);
+        //$this->call(StudentSeeder::class);
+        //$this->call(EnrollmentSeeder::class);
 
 
-        $this->call([DepartmentSeeder::class,]);
+       // $this->call([DepartmentSeeder::class,]);
 
+        $this->call([
+        StaffSeeder::class,
+    ]);
 
        
 
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+       // User::factory()->create([
+       //     'name' => 'Test User',
+       //     'email' => 'test@example.com',
+        //]);
     }
 }

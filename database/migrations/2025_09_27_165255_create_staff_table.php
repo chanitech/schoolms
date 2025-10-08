@@ -12,8 +12,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('staff', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+        $table->id();
+        $table->string('first_name');
+        $table->string('last_name');
+        $table->string('email')->unique();
+        $table->string('phone')->nullable();
+        $table->foreignId('department_id')->constrained()->cascadeOnDelete();
+        $table->string('position')->nullable();
+        $table->string('photo')->nullable();
+        $table->string('role');
+        $table->foreignId('user_id')->constrained('users')->cascadeOnDelete(); // Link to users
+        $table->timestamps();
+        $table->softDeletes();
         });
     }
 

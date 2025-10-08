@@ -9,7 +9,7 @@ class DepartmentController extends Controller
 {
     public function index()
     {
-        $departments = Department::paginate(10);
+        $departments = Department::with('head')->paginate(10); // eager load head
         return view('departments.index', compact('departments'));
     }
 
@@ -23,11 +23,13 @@ class DepartmentController extends Controller
         $request->validate([
             'name' => 'required|unique:departments,name',
             'description' => 'nullable|string',
+            'head_id' => 'nullable|exists:staff,id', // validate head
         ]);
 
-        Department::create($request->all());
+        Department::create($request->only(['name', 'description', 'head_id']));
 
-        return redirect()->route('departments.index')->with('success', 'Department created successfully.');
+        return redirect()->route('departments.index')
+                         ->with('success', 'Department created successfully.');
     }
 
     public function edit(Department $department)
@@ -40,16 +42,19 @@ class DepartmentController extends Controller
         $request->validate([
             'name' => 'required|unique:departments,name,' . $department->id,
             'description' => 'nullable|string',
+            'head_id' => 'nullable|exists:staff,id', // validate head
         ]);
 
-        $department->update($request->all());
+        $department->update($request->only(['name', 'description', 'head_id']));
 
-        return redirect()->route('departments.index')->with('success', 'Department updated successfully.');
+        return redirect()->route('departments.index')
+                         ->with('success', 'Department updated successfully.');
     }
 
     public function destroy(Department $department)
     {
         $department->delete();
-        return redirect()->route('departments.index')->with('success', 'Department deleted successfully.');
+        return redirect()->route('departments.index')
+                         ->with('success', 'Department deleted successfully.');
     }
 }

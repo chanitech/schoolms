@@ -104,5 +104,8 @@ Route::prefix('results')->group(function () {
 
 Route::resource('departments', DepartmentController::class)->middleware('auth');
 
+Route::resource('staff', StaffController::class);
+
+
 
 });
