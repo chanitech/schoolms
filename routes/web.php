@@ -17,6 +17,7 @@ use App\Http\Controllers\DivisionController;
 use App\Http\Controllers\StudentResultController;
 use App\Http\Controllers\MarkController;
 use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\JobCardController;
 
 
 
@@ -105,6 +106,9 @@ Route::prefix('results')->group(function () {
 Route::resource('departments', DepartmentController::class)->middleware('auth');
 
 Route::resource('staff', StaffController::class);
+
+Route::resource('jobcards', JobCardController::class);
+
 
 
 

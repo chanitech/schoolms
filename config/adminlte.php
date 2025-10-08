@@ -342,7 +342,8 @@ return [
         'icon' => 'fas fa-user-tie',
         'submenu' => [
             ['text' => 'Staff', 'url' => 'staff', 'icon' => 'fas fa-users-cog'],
-            ['text' => 'Departments', 'url' => 'departments', 'icon' => 'fas fa-sitemap'],
+            ['text' => 'Departments', 'url' => 'departments', 'icon' => 'fas fa-sitemap'], 
+            ['text' => 'Job Cards', 'url' => 'jobcards', 'icon' => 'fas fa-briefcase'],
             ['text' => 'Attendance', 'url' => 'attendance', 'icon' => 'fas fa-calendar-check'],
             ['text' => 'Leaves', 'url' => 'leaves', 'icon' => 'fas fa-file-signature'],
             ['text' => 'Events', 'url' => 'events', 'icon' => 'fas fa-calendar-alt'],
