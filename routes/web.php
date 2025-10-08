@@ -71,8 +71,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('grades', GradeController::class);
     // Divisions CRUD
     Route::resource('divisions', DivisionController::class);
+
+    // AJAX: get students by class & session
+    Route::get('/marks/students', [MarkController::class, 'getStudents'])->name('marks.students');
         // Marks CRUD      
-    Route::resource('marks', MarkController::class);     
+    Route::resource('marks', MarkController::class);  
+
+
+    // Class-wise results
+    Route::get('/results/class', [StudentResultController::class, 'classResults'])->name('results.class');
+    
+   
 
 
     // Student Results with GPA & Division  

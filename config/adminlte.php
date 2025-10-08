@@ -14,7 +14,7 @@ return [
     |
     */
 
-    'title' => 'AdminLTE 3',
+    'title' => 'MEMA',
     'title_prefix' => '',
     'title_postfix' => '',
 
@@ -63,7 +63,7 @@ return [
     |
     */
 
-    'logo' => '<b>Admin</b>LTE',
+    'logo' => '<b>MEMA</b>SMS',
     'logo_img' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
     'logo_img_class' => 'brand-image img-circle elevation-3',
     'logo_img_xl' => null,
@@ -313,13 +313,14 @@ return [
         'submenu' => [
             ['text' => 'Students', 'url' => 'students', 'icon' => 'fas fa-user-graduate'],
             ['text' => 'Guardians', 'url' => 'guardians', 'icon' => 'fas fa-users'],
+            ['text' => 'Attendance', 'url' => 'attendance', 'icon' => 'fas fa-calendar-check'],
             ['text' => 'Enrollments', 'url' => 'enrollments', 'icon' => 'fas fa-clipboard-list'],
         ],
     ],
 
     // Academic Management
     [
-        'text' => 'Academic Management',
+        'text' => 'Academic',
         'icon' => 'fas fa-book',
         'submenu' => [
             ['text' => 'Classes', 'url' => 'classes', 'icon' => 'fas fa-chalkboard'],
@@ -331,6 +332,7 @@ return [
             ['text' => 'Divisions', 'url' => 'divisions', 'icon' => 'fas fa-object-group'],
             ['text' => 'Grading & GPA', 'url' => 'grades', 'icon' => 'fas fa-star'],
             ['text' => 'Student Results', 'url' => 'results', 'icon' => 'fas fa-chart-bar'],
+            ['text' => 'Class Results', 'url' => '/results/class', 'icon' => 'fas fa-chart-bar'],
         ],
     ],
 
@@ -351,7 +353,7 @@ return [
 
     // Finance & Fees
     [
-        'text' => 'Finance & Fees',
+        'text' => 'Fees',
         'icon' => 'fas fa-wallet',
         'submenu' => [
             ['text' => 'Invoices', 'url' => 'fees', 'icon' => 'fas fa-file-invoice-dollar'],

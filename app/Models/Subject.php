@@ -29,4 +29,10 @@ class Subject extends Model
             'class_id'          // Foreign key on pivot table for the related model
         )->withTimestamps();
     }
+
+    public function marks()
+{
+    return $this->hasMany(Mark::class);
+}
+
 }

@@ -6,20 +6,24 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up(): void
+    /**
+     * Run the migrations.
+     */
+   public function up(): void
     {
-        Schema::create('marks', function (Blueprint $table) {
+        Schema::create('student_results', function (Blueprint $table) {
             $table->id();
             $table->foreignId('student_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('subject_id')->constrained()->cascadeOnDelete();
             $table->foreignId('exam_id')->constrained()->cascadeOnDelete();
-            $table->decimal('mark', 5, 2); // e.g., 0 - 100
+            $table->decimal('gpa', 4, 2)->default(0);
+            $table->integer('total_points')->default(0);
+            $table->string('division')->nullable();
             $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('marks');
+        Schema::dropIfExists('student_results');
     }
 };

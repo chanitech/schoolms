@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Student;
 use App\Models\Subject;
 use App\Models\Exam;
+use App\Models\Grade;
 
 class Mark extends Model
 {
@@ -17,9 +18,12 @@ class Mark extends Model
         'student_id',
         'subject_id',
         'exam_id',
+        'academic_session_id', // <- add this
         'mark',
+        'grade_id',
     ];
 
+    // Relationships
     public function student()
     {
         return $this->belongsTo(Student::class);
@@ -33,5 +37,10 @@ class Mark extends Model
     public function exam()
     {
         return $this->belongsTo(Exam::class);
+    }
+
+    public function grade()
+    {
+        return $this->belongsTo(Grade::class);
     }
 }

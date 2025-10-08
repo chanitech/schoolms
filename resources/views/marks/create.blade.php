@@ -1,77 +1,116 @@
 @extends('adminlte::page')
 
-@section('title', 'Add Mark')
-
-@section('content_header')
-    <h1>Add Mark</h1>
-@stop
+@section('title', 'Add Marks')
 
 @section('content')
 <div class="card">
     <div class="card-body">
-        <form action="{{ route('marks.store') }}" method="POST">
+        <form action="{{ route('marks.store') }}" method="POST" id="marksForm">
             @csrf
 
-            {{-- Student --}}
-            <div class="form-group mb-3">
-                <label for="student_id">Student</label>
-                <select name="student_id" id="student_id" class="form-control @error('student_id') is-invalid @enderror" required>
-                    <option value="">Select Student</option>
-                    @foreach($students as $student)
-                        <option value="{{ $student->id }}" {{ old('student_id') == $student->id ? 'selected' : '' }}>
-                            {{ $student->first_name }} {{ $student->last_name }} ({{ $student->admission_no }})
-                        </option>
-                    @endforeach
-                </select>
-                @error('student_id')
-                    <span class="text-danger">{{ $message }}</span>
-                @enderror
+            <div class="row mb-3">
+                <div class="col">
+                    <label>Academic Session</label>
+                    <select name="academic_session_id" id="session" class="form-control" required>
+                        <option value="">Select Session</option>
+                        @foreach($sessions as $session)
+                            <option value="{{ $session->id }}">{{ $session->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="col">
+                    <label>Class</label>
+                    <select name="class_id" id="class" class="form-control" required>
+                        <option value="">Select Class</option>
+                        @foreach($classes as $class)
+                            <option value="{{ $class->id }}">{{ $class->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="col">
+                    <label>Subject</label>
+                    <select name="subject_id" id="subject" class="form-control" required>
+                        <option value="">Select Subject</option>
+                        @foreach($subjects as $subject)
+                            <option value="{{ $subject->id }}">{{ $subject->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="col">
+                    <label>Exam</label>
+                    <select name="exam_id" id="exam" class="form-control" required>
+                        <option value="">Select Exam</option>
+                        @foreach($exams as $exam)
+                            <option value="{{ $exam->id }}">{{ $exam->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
 
-            {{-- Subject --}}
-            <div class="form-group mb-3">
-                <label for="subject_id">Subject</label>
-                <select name="subject_id" id="subject_id" class="form-control @error('subject_id') is-invalid @enderror" required>
-                    <option value="">Select Subject</option>
-                    @foreach($subjects as $subject)
-                        <option value="{{ $subject->id }}" {{ old('subject_id') == $subject->id ? 'selected' : '' }}>
-                            {{ $subject->name }} ({{ $subject->code }})
-                        </option>
-                    @endforeach
-                </select>
-                @error('subject_id')
-                    <span class="text-danger">{{ $message }}</span>
-                @enderror
+            <div class="row">
+                <div class="col">
+                    <table class="table table-bordered" id="students-table">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Mark</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="2" class="text-center">Select class & session to load students</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
-            {{-- Exam --}}
-            <div class="form-group mb-3">
-                <label for="exam_id">Exam</label>
-                <select name="exam_id" id="exam_id" class="form-control @error('exam_id') is-invalid @enderror" required>
-                    <option value="">Select Exam</option>
-                    @foreach($exams as $exam)
-                        <option value="{{ $exam->id }}" {{ old('exam_id') == $exam->id ? 'selected' : '' }}>
-                            {{ $exam->name }} ({{ $exam->term }})
-                        </option>
-                    @endforeach
-                </select>
-                @error('exam_id')
-                    <span class="text-danger">{{ $message }}</span>
-                @enderror
-            </div>
-
-            {{-- Mark --}}
-            <div class="form-group mb-3">
-                <label for="mark">Mark</label>
-                <input type="number" name="mark" id="mark" class="form-control @error('mark') is-invalid @enderror" value="{{ old('mark') }}" min="0" max="100" step="0.01" required>
-                @error('mark')
-                    <span class="text-danger">{{ $message }}</span>
-                @enderror
-            </div>
-
-            <button type="submit" class="btn btn-success">Save Mark</button>
-            <a href="{{ route('marks.index') }}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">Save Marks</button>
         </form>
     </div>
 </div>
-@stop
+@endsection
+
+@section('js')
+<script>
+$(document).ready(function(){
+
+    function loadStudents() {
+        let class_id = $('#class').val();
+        let session_id = $('#session').val();
+
+        if(class_id && session_id){
+            $.ajax({
+                url: "{{ route('marks.students') }}",
+                type: 'GET',
+                data: { class_id: class_id, session_id: session_id },
+                success: function(students){
+                    let tbody = '';
+                    if(students.length > 0){
+                        students.forEach(function(student){
+                            tbody += `<tr>
+                                <td>${student.first_name} ${student.last_name}</td>
+                                <td>
+                                    <input type="number" name="marks[${student.id}]" class="form-control" required min="0" max="100">
+                                </td>
+                            </tr>`;
+                        });
+                    } else {
+                        tbody = `<tr><td colspan="2" class="text-center">No students found</td></tr>`;
+                    }
+                    $('#students-table tbody').html(tbody);
+                },
+                error: function(xhr){
+                    alert('Error loading students: ' + xhr.responseJSON?.error || 'Unknown error');
+                }
+            });
+        }
+    }
+
+    $('#class, #session').change(loadStudents);
+});
+</script>
+@endsection

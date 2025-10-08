@@ -8,31 +8,28 @@ use App\Models\Division;
 class StudentResultService
 {
     /**
-     * Calculate GPA and Division for a student
-     * 
-     * @param array $marks Array of subjects and marks, e.g. ['Math' => 75, 'Biology' => 60]
-     * @return array ['gpa' => 1.86, 'total_points' => 13, 'division' => 'I']
+     * Calculate GPA & Division (TZ O-Level system)
+     *
+     * @param array $marks ['Math' => 75, 'Biology' => 60, ...]
+     * @return array ['gpa'=>1.86, 'total_points'=>13, 'division'=>'I']
      */
     public static function calculateGpaAndDivision(array $marks)
     {
-        // Step 1: Convert marks to points
         $points = [];
+
+        // Convert marks to points
         foreach ($marks as $subject => $mark) {
             $grade = Grade::gradeForMark($mark);
-            $points[] = $grade ? $grade->point : 5; // if no grade found, assign fail point
+            $points[] = $grade ? $grade->point : 5; // fail point if missing
         }
 
-        // Step 2: Take best 7 subjects (lowest points)
-        sort($points); // ascending order, lower is better
-        $points = array_slice($points, 0, 7);
+        // Best 7 subjects (lowest points)
+        sort($points); // lowest first
+        $bestPoints = array_slice($points, 0, 7);
 
-        // Step 3: Sum points
-        $totalPoints = array_sum($points);
+        $totalPoints = array_sum($bestPoints);
+        $gpa = $totalPoints / count($bestPoints);
 
-        // Step 4: Calculate GPA
-        $gpa = $totalPoints / count($points);
-
-        // Step 5: Find Division
         $division = Division::where('min_points', '<=', $totalPoints)
                             ->where('max_points', '>=', $totalPoints)
                             ->first();
