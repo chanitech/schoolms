@@ -16,6 +16,7 @@ use App\Http\Controllers\GradeController;
 use App\Http\Controllers\DivisionController;  
 use App\Http\Controllers\StudentResultController;
 use App\Http\Controllers\MarkController;
+use App\Http\Controllers\DepartmentController;
 
 
 
@@ -96,6 +97,12 @@ Route::prefix('results')->group(function () {
     Route::get('/', [StudentResultController::class, 'index'])->name('results.index');
     Route::get('/{student}', [StudentResultController::class, 'show'])->name('results.show');
 });
+
+
+
+
+
+Route::resource('departments', DepartmentController::class)->middleware('auth');
 
 
 });
