@@ -348,7 +348,6 @@ return [
             ['text' => 'Attendance', 'url' => 'attendance', 'icon' => 'fas fa-calendar-check'],
             ['text' => 'Leaves', 'url' => 'leaves', 'icon' => 'fas fa-file-signature'],
             ['text' => 'Events', 'url' => 'events', 'icon' => 'fas fa-calendar-alt'],
-            ['text' => 'Salaries', 'url' => 'salaries', 'icon' => 'fas fa-money-bill-wave'],
             ['text' => 'HR Reports', 'url' => 'hr-reports', 'icon' => 'fas fa-chart-line'],
         ],
     ],

@@ -18,6 +18,7 @@ use App\Http\Controllers\StudentResultController;
 use App\Http\Controllers\MarkController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\JobCardController;
+use App\Http\Controllers\AttendanceController;
 
 
 
@@ -122,6 +123,33 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('jobcards/{jobcard}/rate', [JobCardController::class, 'rateTask'])->name('jobcards.rateTask');
 });
 
+
+
+Route::prefix('attendance')->name('attendance.')->group(function () {
+    Route::get('/', [AttendanceController::class, 'index'])->name('index');
+    Route::get('/create', [AttendanceController::class, 'create'])->name('create');
+    Route::post('/', [AttendanceController::class, 'store'])->name('store');
+    Route::get('/{attendance}/edit', [AttendanceController::class, 'edit'])->name('edit');
+    Route::put('/{attendance}', [AttendanceController::class, 'update'])->name('update');
+    Route::delete('/{attendance}', [AttendanceController::class, 'destroy'])->name('destroy');
+
+    Route::get('/filter', [AttendanceController::class, 'filter'])->name('filter');
+    Route::get('/export/excel', [AttendanceController::class, 'exportExcel'])->name('export.excel');
+    Route::get('/export/pdf', [AttendanceController::class, 'exportPDF'])->name('export.pdf');
+    Route::get('/bulk', [AttendanceController::class, 'bulkCreate'])->name('bulk.create');
+    Route::post('/bulk/store', [AttendanceController::class, 'bulkStore'])->name('bulk.store');
+
+    // Bulk marking
+    Route::get('/bulk', [AttendanceController::class, 'bulkCreate'])->name('bulk.create');
+    Route::post('/bulk/store', [AttendanceController::class, 'bulkStore'])->name('bulk.store');
+
+    // Filtering
+    Route::get('/filter', [AttendanceController::class, 'filter'])->name('filter');
+
+    // Export
+    Route::get('/export/excel', [AttendanceController::class, 'exportExcel'])->name('export.excel');
+    Route::get('/export/pdf', [AttendanceController::class, 'exportPDF'])->name('export.pdf');
+});
 
 
 
