@@ -107,7 +107,25 @@ Route::resource('departments', DepartmentController::class)->middleware('auth');
 
 Route::resource('staff', StaffController::class);
 
-Route::resource('jobcards', JobCardController::class);
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('jobcards', [JobCardController::class, 'index'])->name('jobcards.index');
+    Route::get('jobcards/create', [JobCardController::class, 'create'])->name('jobcards.create');
+    Route::post('jobcards', [JobCardController::class, 'store'])->name('jobcards.store');
+    Route::get('jobcards/{jobcard}/edit', [JobCardController::class, 'edit'])->name('jobcards.edit');
+    Route::patch('jobcards/{jobcard}', [JobCardController::class, 'update'])->name('jobcards.update');
+    Route::delete('jobcards/{jobcard}', [JobCardController::class, 'destroy'])->name('jobcards.destroy');
+
+    // Staff routes
+    Route::get('jobcards/my', [JobCardController::class, 'myJobCards'])->name('jobcards.my');
+    Route::patch('jobcards/{jobcard}/status', [JobCardController::class, 'updateStatus'])->name('jobcards.updateStatus');
+    Route::patch('jobcards/{jobcard}/rate', [JobCardController::class, 'rateTask'])->name('jobcards.rateTask');
+});
+
+
+
+
+
 
 
 

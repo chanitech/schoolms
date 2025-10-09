@@ -51,6 +51,17 @@ public function staffProfile()
 
 
 
+public function staff()
+{
+    return $this->hasOne(\App\Models\Staff::class, 'user_id');
+}
+
+
+
+
+
+
+
     /**
      * The attributes that should be hidden for serialization.
      *

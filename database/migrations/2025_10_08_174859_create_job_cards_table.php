@@ -12,7 +12,7 @@ return new class extends Migration
     $table->id();
     $table->string('title');
     $table->text('description')->nullable();
-    $table->foreignId('assigned_by')->constrained('users')->cascadeOnDelete();
+    $table->foreignId('assigned_by')->constrained('staff')->onDelete('cascade');
     $table->foreignId('assigned_to')->constrained('staff')->cascadeOnDelete();
     $table->enum('status', ['pending', 'in_progress', 'completed'])->default('pending');
     $table->tinyInteger('rating')->nullable(); // 1-5 scale
