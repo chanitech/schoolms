@@ -347,6 +347,7 @@ return [
             ['text' => 'my Job Cards', 'url' => 'jobcards/my', 'icon' => 'fas fa-clipboard-list'],
             ['text' => 'Attendance', 'url' => 'attendance', 'icon' => 'fas fa-calendar-check'],
             ['text' => 'Leaves', 'url' => 'leaves', 'icon' => 'fas fa-file-signature'],
+            ['text' => 'Received Leaves', 'url' => 'leaves/received', 'icon' => 'fas fa-inbox'],
             ['text' => 'Events', 'url' => 'events', 'icon' => 'fas fa-calendar-alt'],
             ['text' => 'HR Reports', 'url' => 'hr-reports', 'icon' => 'fas fa-chart-line'],
         ],

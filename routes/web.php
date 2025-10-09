@@ -1,27 +1,27 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\StudentController;
-use App\Http\Controllers\GuardianController;
-use App\Http\Controllers\SchoolClassController;
-use App\Http\Controllers\AcademicSessionController;
-use App\Http\Controllers\EnrollmentController;
-use App\Http\Controllers\StaffController;   
-use App\Http\Controllers\SubjectController;
-use App\Http\Controllers\DormitoryController;
-use App\Http\Controllers\ExamController;
-use App\Http\Controllers\GradeController;     
-use App\Http\Controllers\DivisionController;  
-use App\Http\Controllers\StudentResultController;
-use App\Http\Controllers\MarkController;
-use App\Http\Controllers\DepartmentController;
-use App\Http\Controllers\JobCardController;
-use App\Http\Controllers\AttendanceController;
-
-
-
+use App\Http\Controllers\{
+    HomeController,
+    ProfileController,
+    StudentController,
+    GuardianController,
+    SchoolClassController,
+    AcademicSessionController,
+    EnrollmentController,
+    StaffController,
+    SubjectController,
+    DormitoryController,
+    ExamController,
+    GradeController,
+    DivisionController,
+    StudentResultController,
+    MarkController,
+    DepartmentController,
+    JobCardController,
+    AttendanceController,
+    LeaveController
+};
 
 /*
 |--------------------------------------------------------------------------
@@ -30,132 +30,96 @@ use App\Http\Controllers\AttendanceController;
 */
 
 // Welcome page
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', fn() => view('welcome'));
 
-// Authentication routes (if using Laravel Breeze / Jetstream / Auth)
+// Authentication routes
 require __DIR__.'/auth.php';
 
-// Home / Dashboard
+// Authenticated routes
 Route::middleware(['auth', 'verified'])->group(function () {
+
+    // Dashboard
     Route::get('/dashboard', [HomeController::class, 'index'])->name('dashboard');
-    
-    // Profile routes
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Students CRUD
-    Route::resource('students', StudentController::class);
-    // Guardians CRUD
-    Route::resource('guardians', GuardianController::class);
-    // Enrollments CRUD
-    Route::resource('enrollments', EnrollmentController::class);
+    // Profile
+    Route::prefix('profile')->group(function () {
+        Route::get('/', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/', [ProfileController::class, 'update'])->name('profile.update');
+        Route::delete('/', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    });
 
+    // Students & Guardians
+    Route::resources([
+        'students' => StudentController::class,
+        'guardians' => GuardianController::class,
+        'enrollments' => EnrollmentController::class,
+        'classes' => SchoolClassController::class,
+        'dormitories' => DormitoryController::class,
+        'sessions' => AcademicSessionController::class,
+        'staff' => StaffController::class,
+        'subjects' => SubjectController::class,
+        'exams' => ExamController::class,
+        'grades' => GradeController::class,
+        'divisions' => DivisionController::class,
+        'departments' => DepartmentController::class,
+    ]);
 
-    // Classes CRUD
-    Route::resource('classes', SchoolClassController::class);
-
-    // Dormitories CRUD
-    Route::resource('dormitories', DormitoryController::class);
-   
-
-    // Academic Sessions CRUD
-    Route::resource('sessions', AcademicSessionController::class);
-
-    // Staff CRUD
-    Route::resource('staff', StaffController::class);
-    // Subjects CRUD
-    Route::resource('subjects', SubjectController::class);
-    // Exams CRUD
-    Route::resource('exams', ExamController::class);
-    // Grades CRUD
-    Route::resource('grades', GradeController::class);
-    // Divisions CRUD
-    Route::resource('divisions', DivisionController::class);
-
-    // AJAX: get students by class & session
+    // Marks
     Route::get('/marks/students', [MarkController::class, 'getStudents'])->name('marks.students');
-        // Marks CRUD      
-    Route::resource('marks', MarkController::class);  
+    Route::resource('marks', MarkController::class);
 
+    // Results
+    Route::prefix('results')->name('results.')->group(function () {
+        Route::get('/', [StudentResultController::class, 'index'])->name('index');
+        Route::get('/class', [StudentResultController::class, 'classResults'])->name('class');
+        Route::get('/{student}', [StudentResultController::class, 'show'])->name('show');
+    });
 
-    // Class-wise results
-    Route::get('/results/class', [StudentResultController::class, 'classResults'])->name('results.class');
-    
-   
+    // JobCards
+    Route::prefix('jobcards')->name('jobcards.')->group(function () {
+        Route::get('/', [JobCardController::class, 'index'])->name('index');
+        Route::get('/create', [JobCardController::class, 'create'])->name('create');
+        Route::post('/', [JobCardController::class, 'store'])->name('store');
+        Route::get('/{jobcard}/edit', [JobCardController::class, 'edit'])->name('edit');
+        Route::patch('/{jobcard}', [JobCardController::class, 'update'])->name('update');
+        Route::delete('/{jobcard}', [JobCardController::class, 'destroy'])->name('destroy');
 
+        Route::get('/my', [JobCardController::class, 'myJobCards'])->name('my');
+        Route::patch('/{jobcard}/status', [JobCardController::class, 'updateStatus'])->name('updateStatus');
+        Route::patch('/{jobcard}/rate', [JobCardController::class, 'rateTask'])->name('rateTask');
+    });
 
-    // Student Results with GPA & Division  
+    // Attendance
+    Route::prefix('attendance')->name('attendance.')->group(function () {
+        Route::get('/', [AttendanceController::class, 'index'])->name('index');
+        Route::get('/create', [AttendanceController::class, 'create'])->name('create');
+        Route::post('/', [AttendanceController::class, 'store'])->name('store');
+        Route::get('/{attendance}/edit', [AttendanceController::class, 'edit'])->name('edit');
+        Route::put('/{attendance}', [AttendanceController::class, 'update'])->name('update');
+        Route::delete('/{attendance}', [AttendanceController::class, 'destroy'])->name('destroy');
 
-    Route::get('/students/{student}/results', [StudentResultController::class, 'show'])
-     ->name('students.results');
+        Route::get('/bulk', [AttendanceController::class, 'bulkCreate'])->name('bulk.create');
+        Route::post('/bulk/store', [AttendanceController::class, 'bulkStore'])->name('bulk.store');
 
+        Route::get('/filter', [AttendanceController::class, 'filter'])->name('filter');
 
-     
+        Route::get('/export/excel', [AttendanceController::class, 'exportExcel'])->name('export.excel');
+        Route::get('/export/pdf', [AttendanceController::class, 'exportPDF'])->name('export.pdf');
+    });
 
-Route::prefix('results')->group(function () {
-    Route::get('/', [StudentResultController::class, 'index'])->name('results.index');
-    Route::get('/{student}', [StudentResultController::class, 'show'])->name('results.show');
-});
+    // Leaves
+    Route::prefix('leaves')->name('leaves.')->group(function () {
+        Route::get('/', [LeaveController::class, 'index'])->name('index');
+        Route::resource('/', LeaveController::class)->except(['index']); // optional
 
+        // Received leaves for HOD/Director
+        Route::get('/received', [LeaveController::class, 'received'])->name('received');
+        Route::post('/{leave}/approve', [LeaveController::class, 'approve'])->name('approve');
+        Route::post('/{leave}/reject', [LeaveController::class, 'reject'])->name('reject');
 
-
-
-
-Route::resource('departments', DepartmentController::class)->middleware('auth');
-
-Route::resource('staff', StaffController::class);
-
-
-Route::middleware(['auth'])->group(function () {
-    Route::get('jobcards', [JobCardController::class, 'index'])->name('jobcards.index');
-    Route::get('jobcards/create', [JobCardController::class, 'create'])->name('jobcards.create');
-    Route::post('jobcards', [JobCardController::class, 'store'])->name('jobcards.store');
-    Route::get('jobcards/{jobcard}/edit', [JobCardController::class, 'edit'])->name('jobcards.edit');
-    Route::patch('jobcards/{jobcard}', [JobCardController::class, 'update'])->name('jobcards.update');
-    Route::delete('jobcards/{jobcard}', [JobCardController::class, 'destroy'])->name('jobcards.destroy');
-
-    // Staff routes
-    Route::get('jobcards/my', [JobCardController::class, 'myJobCards'])->name('jobcards.my');
-    Route::patch('jobcards/{jobcard}/status', [JobCardController::class, 'updateStatus'])->name('jobcards.updateStatus');
-    Route::patch('jobcards/{jobcard}/rate', [JobCardController::class, 'rateTask'])->name('jobcards.rateTask');
-});
-
-
-
-Route::prefix('attendance')->name('attendance.')->group(function () {
-    Route::get('/', [AttendanceController::class, 'index'])->name('index');
-    Route::get('/create', [AttendanceController::class, 'create'])->name('create');
-    Route::post('/', [AttendanceController::class, 'store'])->name('store');
-    Route::get('/{attendance}/edit', [AttendanceController::class, 'edit'])->name('edit');
-    Route::put('/{attendance}', [AttendanceController::class, 'update'])->name('update');
-    Route::delete('/{attendance}', [AttendanceController::class, 'destroy'])->name('destroy');
-
-    Route::get('/filter', [AttendanceController::class, 'filter'])->name('filter');
-    Route::get('/export/excel', [AttendanceController::class, 'exportExcel'])->name('export.excel');
-    Route::get('/export/pdf', [AttendanceController::class, 'exportPDF'])->name('export.pdf');
-    Route::get('/bulk', [AttendanceController::class, 'bulkCreate'])->name('bulk.create');
-    Route::post('/bulk/store', [AttendanceController::class, 'bulkStore'])->name('bulk.store');
-
-    // Bulk marking
-    Route::get('/bulk', [AttendanceController::class, 'bulkCreate'])->name('bulk.create');
-    Route::post('/bulk/store', [AttendanceController::class, 'bulkStore'])->name('bulk.store');
-
-    // Filtering
-    Route::get('/filter', [AttendanceController::class, 'filter'])->name('filter');
-
-    // Export
-    Route::get('/export/excel', [AttendanceController::class, 'exportExcel'])->name('export.excel');
-    Route::get('/export/pdf', [AttendanceController::class, 'exportPDF'])->name('export.pdf');
-});
-
-
-
-
-
-
-
+        // Export received leaves
+        Route::get('/received/export/excel', [LeaveController::class, 'exportReceivedExcel'])->name('received.export.excel');
+        Route::get('/received/export/pdf', [LeaveController::class, 'exportReceivedPdf'])->name('received.export.pdf');
+    });
 
 });

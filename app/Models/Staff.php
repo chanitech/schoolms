@@ -93,21 +93,32 @@ class Staff extends Model
      * === Custom Role Helpers ===
      */
 
-    // ✅ Check if this staff member can assign tasks
     public function isAssigner(): bool
     {
         return $this->role === 'assigner';
     }
 
-    // ✅ Check if this staff member is the one receiving tasks
     public function isAssignee(): bool
     {
         return $this->role === 'assignee';
     }
 
-    // ✅ Optional: generic check for roles
     public function hasRole(string $role): bool
     {
         return $this->role === $role;
+    }
+
+    /**
+     * === New Helpers for Leaves/Approval ===
+     */
+
+    public function isHod(): bool
+    {
+        return $this->role === 'hod';
+    }
+
+    public function isDirector(): bool
+    {
+        return $this->role === 'director';
     }
 }
