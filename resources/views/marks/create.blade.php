@@ -2,6 +2,10 @@
 
 @section('title', 'Add Marks')
 
+@section('content_header')
+    <h1>Add Marks</h1>
+@stop
+
 @section('content')
 <div class="card">
     <div class="card-body">
@@ -9,8 +13,8 @@
             @csrf
 
             <div class="row mb-3">
-                <div class="col">
-                    <label>Academic Session</label>
+                <div class="col-md-3">
+                    <label for="session">Academic Session</label>
                     <select name="academic_session_id" id="session" class="form-control" required>
                         <option value="">Select Session</option>
                         @foreach($sessions as $session)
@@ -19,8 +23,8 @@
                     </select>
                 </div>
 
-                <div class="col">
-                    <label>Class</label>
+                <div class="col-md-3">
+                    <label for="class">Class</label>
                     <select name="class_id" id="class" class="form-control" required>
                         <option value="">Select Class</option>
                         @foreach($classes as $class)
@@ -29,8 +33,8 @@
                     </select>
                 </div>
 
-                <div class="col">
-                    <label>Subject</label>
+                <div class="col-md-3">
+                    <label for="subject">Subject</label>
                     <select name="subject_id" id="subject" class="form-control" required>
                         <option value="">Select Subject</option>
                         @foreach($subjects as $subject)
@@ -39,8 +43,8 @@
                     </select>
                 </div>
 
-                <div class="col">
-                    <label>Exam</label>
+                <div class="col-md-3">
+                    <label for="exam">Exam</label>
                     <select name="exam_id" id="exam" class="form-control" required>
                         <option value="">Select Exam</option>
                         @foreach($exams as $exam)
@@ -51,7 +55,7 @@
             </div>
 
             <div class="row">
-                <div class="col">
+                <div class="col-12">
                     <table class="table table-bordered" id="students-table">
                         <thead>
                             <tr>
@@ -72,7 +76,7 @@
         </form>
     </div>
 </div>
-@endsection
+@stop
 
 @section('js')
 <script>
@@ -104,9 +108,13 @@ $(document).ready(function(){
                     $('#students-table tbody').html(tbody);
                 },
                 error: function(xhr){
-                    alert('Error loading students: ' + xhr.responseJSON?.error || 'Unknown error');
+                    let message = xhr.responseJSON?.error || 'Failed to load students';
+                    $('#students-table tbody').html(`<tr><td colspan="2" class="text-center text-danger">${message}</td></tr>`);
+                    console.error('AJAX error:', message);
                 }
             });
+        } else {
+            $('#students-table tbody').html('<tr><td colspan="2" class="text-center">Select class & session to load students</td></tr>');
         }
     }
 

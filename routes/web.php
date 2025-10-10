@@ -20,7 +20,8 @@ use App\Http\Controllers\{
     DepartmentController,
     JobCardController,
     AttendanceController,
-    LeaveController
+    LeaveController,
+    EventController
 };
 
 /*
@@ -29,7 +30,6 @@ use App\Http\Controllers\{
 |--------------------------------------------------------------------------
 */
 
-// Welcome page
 Route::get('/', fn() => view('welcome'));
 
 // Authentication routes
@@ -42,13 +42,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [HomeController::class, 'index'])->name('dashboard');
 
     // Profile
-    Route::prefix('profile')->group(function () {
-        Route::get('/', [ProfileController::class, 'edit'])->name('profile.edit');
-        Route::patch('/', [ProfileController::class, 'update'])->name('profile.update');
-        Route::delete('/', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::prefix('profile')->name('profile.')->group(function () {
+        Route::get('/', [ProfileController::class, 'edit'])->name('edit');
+        Route::patch('/', [ProfileController::class, 'update'])->name('update');
+        Route::delete('/', [ProfileController::class, 'destroy'])->name('destroy');
     });
 
-    // Students & Guardians
+    // Resource routes
     Route::resources([
         'students' => StudentController::class,
         'guardians' => GuardianController::class,
@@ -64,9 +64,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'departments' => DepartmentController::class,
     ]);
 
-    // Marks
-    Route::get('/marks/students', [MarkController::class, 'getStudents'])->name('marks.students');
-    Route::resource('marks', MarkController::class);
+    // Marks routes
+    Route::prefix('marks')->name('marks.')->group(function () {
+        // Custom AJAX route must come first
+        Route::get('students', [MarkController::class, 'getStudents'])->name('students');
+
+        // Resource-like routes for marks
+        Route::get('/', [MarkController::class, 'index'])->name('index');
+        Route::get('/create', [MarkController::class, 'create'])->name('create');
+        Route::post('/', [MarkController::class, 'store'])->name('store');
+        Route::get('/{mark}/edit', [MarkController::class, 'edit'])->name('edit');
+        Route::put('/{mark}', [MarkController::class, 'update'])->name('update');
+        Route::delete('/{mark}', [MarkController::class, 'destroy'])->name('destroy');
+        // Optional show route (remove if not implemented)
+        // Route::get('/{mark}', [MarkController::class, 'show'])->name('show');
+    });
 
     // Results
     Route::prefix('results')->name('results.')->group(function () {
@@ -83,7 +95,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/{jobcard}/edit', [JobCardController::class, 'edit'])->name('edit');
         Route::patch('/{jobcard}', [JobCardController::class, 'update'])->name('update');
         Route::delete('/{jobcard}', [JobCardController::class, 'destroy'])->name('destroy');
-
         Route::get('/my', [JobCardController::class, 'myJobCards'])->name('my');
         Route::patch('/{jobcard}/status', [JobCardController::class, 'updateStatus'])->name('updateStatus');
         Route::patch('/{jobcard}/rate', [JobCardController::class, 'rateTask'])->name('rateTask');
@@ -97,12 +108,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/{attendance}/edit', [AttendanceController::class, 'edit'])->name('edit');
         Route::put('/{attendance}', [AttendanceController::class, 'update'])->name('update');
         Route::delete('/{attendance}', [AttendanceController::class, 'destroy'])->name('destroy');
-
         Route::get('/bulk', [AttendanceController::class, 'bulkCreate'])->name('bulk.create');
         Route::post('/bulk/store', [AttendanceController::class, 'bulkStore'])->name('bulk.store');
-
         Route::get('/filter', [AttendanceController::class, 'filter'])->name('filter');
-
         Route::get('/export/excel', [AttendanceController::class, 'exportExcel'])->name('export.excel');
         Route::get('/export/pdf', [AttendanceController::class, 'exportPDF'])->name('export.pdf');
     });
@@ -110,16 +118,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Leaves
     Route::prefix('leaves')->name('leaves.')->group(function () {
         Route::get('/', [LeaveController::class, 'index'])->name('index');
-        Route::resource('/', LeaveController::class)->except(['index']); // optional
-
-        // Received leaves for HOD/Director
         Route::get('/received', [LeaveController::class, 'received'])->name('received');
         Route::post('/{leave}/approve', [LeaveController::class, 'approve'])->name('approve');
         Route::post('/{leave}/reject', [LeaveController::class, 'reject'])->name('reject');
-
-        // Export received leaves
         Route::get('/received/export/excel', [LeaveController::class, 'exportReceivedExcel'])->name('received.export.excel');
         Route::get('/received/export/pdf', [LeaveController::class, 'exportReceivedPdf'])->name('received.export.pdf');
     });
 
+    // Events
+    Route::prefix('events')->name('events.')->group(function () {
+        Route::get('/', [EventController::class, 'index'])->name('index');
+        Route::get('/create', [EventController::class, 'create'])->name('create');
+        Route::post('/', [EventController::class, 'store'])->name('store');
+        Route::get('/{event}/edit', [EventController::class, 'edit'])->name('edit');
+        Route::put('/{event}', [EventController::class, 'update'])->name('update');
+        Route::delete('/{event}', [EventController::class, 'destroy'])->name('destroy');
+        Route::get('/export/excel', [EventController::class, 'exportExcel'])->name('export.excel');
+        Route::get('/export/pdf', [EventController::class, 'exportPDF'])->name('export.pdf');
+        Route::get('/calendar', [EventController::class, 'calendar'])->name('calendar');
+        Route::get('/fetch', [EventController::class, 'fetchEvents'])->name('fetch');
+    });
 });

@@ -5,102 +5,81 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Mark;
 use App\Models\Student;
+use App\Models\SchoolClass;
 use App\Models\Subject;
 use App\Models\Exam;
-use App\Models\Grade;
 use App\Models\AcademicSession;
-use App\Models\SchoolClass; 
-use App\Services\StudentResultService;
-use Illuminate\Support\Facades\Log;
+use App\Models\Grade;
 
 class MarkController extends Controller
 {
     /**
-     * Display all marks with optional class filter.
+     * Display a listing of marks.
      */
     public function index(Request $request)
     {
+        $sessions = AcademicSession::all();
         $classes = SchoolClass::all();
+        $subjects = Subject::all();
+        $exams = Exam::all();
 
-        $marksQuery = Mark::with(['student.class','subject','exam','grade']);
+        $marksQuery = Mark::with(['student.class', 'subject', 'exam', 'grade']);
 
-        // Optional filter: only marks for selected class
+        if ($request->filled('academic_session_id')) {
+            $marksQuery->where('academic_session_id', $request->academic_session_id);
+        }
+
         if ($request->filled('class_id')) {
-            $marksQuery->whereHas('student', function($q) use($request){
+            $marksQuery->whereHas('student', function ($q) use ($request) {
                 $q->where('class_id', $request->class_id);
             });
         }
 
-        $marks = $marksQuery->paginate(10)->withQueryString();
+        if ($request->filled('subject_id')) {
+            $marksQuery->where('subject_id', $request->subject_id);
+        }
 
-        return view('marks.index', compact('marks','classes'));
+        $marks = $marksQuery->orderBy('created_at', 'desc')->paginate(20);
+
+        return view('marks.index', compact('marks', 'sessions', 'classes', 'subjects', 'exams'));
     }
 
     /**
-     * Show form to create new marks.
+     * Show the form for creating marks.
      */
     public function create()
     {
-        $subjects = Subject::all();
-        $exams    = Exam::all();
-        $grades   = Grade::all();
         $sessions = AcademicSession::all();
-        $classes  = SchoolClass::all();
+        $classes = SchoolClass::all();
+        $subjects = Subject::all();
+        $exams = Exam::all();
 
-        return view('marks.create', compact('subjects','exams','grades','sessions','classes'));
+        return view('marks.create', compact('sessions', 'classes', 'subjects', 'exams'));
     }
 
     /**
-     * AJAX: Get students based on class & session.
+     * Store newly created marks.
      */
-    public function getStudents(Request $request)
-{
-    $request->validate([
-        'class_id' => 'required|exists:school_classes,id',
-        'session_id' => 'required|exists:academic_sessions,id',
-    ]);
+    public function store(Request $request)
+    {
+        $request->validate([
+            'academic_session_id' => 'required|exists:academic_sessions,id',
+            'subject_id' => 'required|exists:subjects,id',
+            'exam_id' => 'required|exists:exams,id',
+            'marks' => 'required|array',
+            'marks.*' => 'required|numeric|min:0|max:100',
+        ]);
 
-    try {
-        $students = Student::select('students.id', 'students.first_name', 'students.last_name')
-            ->join('enrollments', 'students.id', '=', 'enrollments.student_id')
-            ->where('enrollments.class_id', $request->class_id)
-            ->where('enrollments.academic_session_id', $request->session_id)
-            ->where('enrollments.status', 'active')
-            ->get();
+        foreach ($request->marks as $student_id => $markValue) {
+            // 🔹 Find the correct grade for this mark
+            $grade = Grade::where('min_mark', '<=', $markValue)
+                ->where('max_mark', '>=', $markValue)
+                ->first();
 
-        return response()->json($students);
+            // 🔹 Find student class
+            $student = Student::find($student_id);
 
-    } catch (\Exception $e) {
-        return response()->json([
-            'error' => 'Failed to load students. ' . $e->getMessage()
-        ], 500);
-    }
-}
-
-
-
-    /**
-     * Store multiple marks for selected students.
-     */
-
-public function store(Request $request)
-{
-    Log::info('Store request received', $request->all());
-
-    $request->validate([
-        'class_id' => 'required|exists:school_classes,id',
-        'academic_session_id' => 'required|exists:academic_sessions,id',
-        'subject_id' => 'required|exists:subjects,id',
-        'exam_id' => 'required|exists:exams,id',
-        'marks' => 'required|array',
-        'marks.*' => 'numeric|min:0|max:100',
-    ]);
-
-    foreach ($request->marks as $student_id => $mark_value) {
-        Log::info("Saving mark for student $student_id: $mark_value");
-        $grade = Grade::gradeForMark($mark_value);
-
-        try {
+            // 🔹 Save mark with auto-grade and class
             Mark::updateOrCreate(
                 [
                     'student_id' => $student_id,
@@ -109,81 +88,79 @@ public function store(Request $request)
                     'academic_session_id' => $request->academic_session_id,
                 ],
                 [
-                    'mark' => $mark_value,
-                    'grade_id' => $grade ? $grade->id : null,
+                    'mark' => $markValue,
+                    'grade_id' => $grade?->id,
+                    'class_id' => $student?->class_id,
                 ]
             );
-        } catch (\Exception $e) {
-            Log::error("Failed to save mark for student $student_id: " . $e->getMessage());
         }
+
+        return redirect()->route('marks.index')->with('success', 'Marks saved successfully with grades!');
     }
 
-    return redirect()->route('marks.index')->with('success','Marks recorded successfully.');
-}
+    /**
+     * AJAX: Get students of a class and session.
+     */
+    public function getStudents(Request $request)
+    {
+        $request->validate([
+            'class_id' => 'required|exists:school_classes,id',
+            'session_id' => 'required|exists:academic_sessions,id',
+        ]);
 
+        $students = Student::where('class_id', $request->class_id)
+            ->where('academic_session_id', $request->session_id)
+            ->get(['id', 'first_name', 'last_name']);
+
+        return response()->json($students);
+    }
 
     /**
-     * Show form to edit a single mark.
+     * Show the form for editing the specified mark.
      */
     public function edit(Mark $mark)
     {
-        $students = Student::all();
-        $subjects = Subject::all();
-        $exams    = Exam::all();
-        $grades   = Grade::all();
         $sessions = AcademicSession::all();
-        $classes  = SchoolClass::all();
+        $subjects = Subject::all();
+        $exams = Exam::all();
 
-        return view('marks.edit', compact('mark','students','subjects','exams','grades','sessions','classes'));
+        return view('marks.edit', compact('mark', 'sessions', 'subjects', 'exams'));
     }
 
     /**
-     * Update a single mark.
+     * Update the specified mark.
      */
     public function update(Request $request, Mark $mark)
     {
         $request->validate([
-            'student_id' => 'required|exists:students,id',
+            'academic_session_id' => 'required|exists:academic_sessions,id',
             'subject_id' => 'required|exists:subjects,id',
             'exam_id' => 'required|exists:exams,id',
-            'academic_session_id' => 'required|exists:academic_sessions,id',
             'mark' => 'required|numeric|min:0|max:100',
         ]);
 
-        $grade = Grade::gradeForMark($request->mark);
+        // 🔹 Determine grade
+        $grade = Grade::where('min_mark', '<=', $request->mark)
+            ->where('max_mark', '>=', $request->mark)
+            ->first();
 
         $mark->update([
-            'student_id' => $request->student_id,
+            'academic_session_id' => $request->academic_session_id,
             'subject_id' => $request->subject_id,
             'exam_id' => $request->exam_id,
-            'academic_session_id' => $request->academic_session_id,
             'mark' => $request->mark,
-            'grade_id' => $grade ? $grade->id : null,
+            'grade_id' => $grade?->id,
         ]);
 
-        return redirect()->route('marks.index')->with('success','Mark updated successfully.');
+        return redirect()->route('marks.index')->with('success', 'Mark updated successfully with grade!');
     }
 
     /**
-     * Delete a mark.
+     * Remove the specified mark.
      */
     public function destroy(Mark $mark)
     {
         $mark->delete();
-        return redirect()->route('marks.index')->with('success','Mark deleted successfully.');
-    }
-
-    /**
-     * Show GPA & Division for a student.
-     */
-    public function studentResult(Student $student)
-    {
-        $marks = $student->marks()->with('subject')->get()->mapWithKeys(function($m){
-            return [$m->subject->name ?? 'N/A' => $m->mark];
-        })->toArray();
-
-        $result = StudentResultService::calculateGpaAndDivision($marks);
-
-        return view('marks.result', compact('student','result'));
+        return redirect()->route('marks.index')->with('success', 'Mark deleted successfully!');
     }
 }

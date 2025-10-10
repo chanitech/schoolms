@@ -10,6 +10,7 @@ use App\Models\Subject;
 use App\Models\Exam;
 use App\Models\Grade;
 
+
 class Mark extends Model
 {
     use HasFactory, SoftDeletes;
@@ -19,6 +20,7 @@ class Mark extends Model
         'subject_id',
         'exam_id',
         'academic_session_id', // <- add this
+        'class_id', 
         'mark',
         'grade_id',
     ];
@@ -31,7 +33,7 @@ class Mark extends Model
 
     public function subject()
     {
-        return $this->belongsTo(Subject::class);
+        return $this->belongsTo(Subject::class)->withTrashed();
     }
 
     public function exam()
@@ -39,8 +41,13 @@ class Mark extends Model
         return $this->belongsTo(Exam::class);
     }
 
+
+
     public function grade()
-    {
-        return $this->belongsTo(Grade::class);
-    }
+{
+    return $this->belongsTo(Grade::class, 'grade_id');
+}
+
+
+    
 }
