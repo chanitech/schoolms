@@ -85,6 +85,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/', [StudentResultController::class, 'index'])->name('index');
         Route::get('/class', [StudentResultController::class, 'classResults'])->name('class');
         Route::get('/{student}', [StudentResultController::class, 'show'])->name('show');
+
+       // Route::get('/results/class', [StudentResultController::class, 'classResults'])->name('results.class');
+       
+        // Export routes
+    Route::get('/export/excel', [StudentResultController::class, 'exportExcel'])->name('export.excel');
+    Route::get('/export/pdf', [StudentResultController::class, 'exportPDF'])->name('export.pdf');
+
+
+
     });
 
     // JobCards
@@ -116,14 +125,29 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // Leaves
+  //  Route::prefix('leaves')->name('leaves.')->group(function () {
+  //      Route::get('/', [LeaveController::class, 'index'])->name('index');
+  //      Route::get('/received', [LeaveController::class, 'received'])->name('received');
+  //      Route::post('/{leave}/approve', [LeaveController::class, 'approve'])->name('approve');
+  //      Route::post('/{leave}/reject', [LeaveController::class, 'reject'])->name('reject');
+  //      Route::get('/received/export/excel', [LeaveController::class, 'exportReceivedExcel'])->name('received.export.excel');
+  //      Route::get('/received/export/pdf', [LeaveController::class, 'exportReceivedPdf'])->name('received.export.pdf');
+  //  });
+
+
+    // Leaves
     Route::prefix('leaves')->name('leaves.')->group(function () {
-        Route::get('/', [LeaveController::class, 'index'])->name('index');
-        Route::get('/received', [LeaveController::class, 'received'])->name('received');
-        Route::post('/{leave}/approve', [LeaveController::class, 'approve'])->name('approve');
-        Route::post('/{leave}/reject', [LeaveController::class, 'reject'])->name('reject');
-        Route::get('/received/export/excel', [LeaveController::class, 'exportReceivedExcel'])->name('received.export.excel');
-        Route::get('/received/export/pdf', [LeaveController::class, 'exportReceivedPdf'])->name('received.export.pdf');
-    });
+    Route::get('/', [LeaveController::class, 'index'])->name('index');
+    Route::get('/create', [LeaveController::class, 'create'])->name('create'); // <-- ✅ Add this
+    Route::post('/', [LeaveController::class, 'store'])->name('store');       // <-- Optional if you need to handle form submission
+
+    Route::get('/received', [LeaveController::class, 'received'])->name('received');
+    Route::post('/{leave}/approve', [LeaveController::class, 'approve'])->name('approve');
+    Route::post('/{leave}/reject', [LeaveController::class, 'reject'])->name('reject');
+    Route::get('/received/export/excel', [LeaveController::class, 'exportReceivedExcel'])->name('received.export.excel');
+    Route::get('/received/export/pdf', [LeaveController::class, 'exportReceivedPdf'])->name('received.export.pdf');
+});
+
 
     // Events
     Route::prefix('events')->name('events.')->group(function () {
