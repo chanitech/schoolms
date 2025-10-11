@@ -64,7 +64,7 @@ return [
     */
 
     'logo' => '<b>MEMA</b>SMS',
-    'logo_img' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
+    'logo_img' => 'vendor/adminlte/dist/img/MEMA.webp',
     'logo_img_class' => 'brand-image img-circle elevation-3',
     'logo_img_xl' => null,
     'logo_img_xl_class' => 'brand-image-xs',
@@ -86,7 +86,7 @@ return [
     'auth_logo' => [
         'enabled' => false,
         'img' => [
-            'path' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
+            'path' => 'vendor/adminlte/dist/img/MEMA.webp',
             'alt' => 'Auth Logo',
             'class' => '',
             'width' => 50,
@@ -113,11 +113,11 @@ return [
         'enabled' => true,
         'mode' => 'fullscreen',
         'img' => [
-            'path' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
+            'path' => 'vendor/adminlte/dist/img/MEMA.webp',
             'alt' => 'AdminLTE Preloader Image',
             'effect' => 'animation__shake',
-            'width' => 60,
-            'height' => 60,
+            'width' => 600,
+            'height' => 600,
         ],
     ],
 
@@ -313,7 +313,7 @@ return [
         'submenu' => [
             ['text' => 'Students', 'url' => 'students', 'icon' => 'fas fa-user-graduate'],
             ['text' => 'Guardians', 'url' => 'guardians', 'icon' => 'fas fa-users'],
-            ['text' => 'Attendance', 'url' => 'attendance', 'icon' => 'fas fa-calendar-check'],
+            //['text' => 'Attendance', 'url' => 'attendance', 'icon' => 'fas fa-calendar-check'],
             ['text' => 'Enrollments', 'url' => 'enrollments', 'icon' => 'fas fa-clipboard-list'],
         ],
     ],
@@ -387,18 +387,54 @@ return [
         ],
     ],
 
+
     // System Settings
-    [
-        'text' => 'System Settings',
-        'icon' => 'fas fa-cogs',
-        'submenu' => [
-            ['text' => 'Profile', 'url' => 'profile', 'icon' => 'fas fa-user-cog'],
-            ['text' => 'School Info', 'url' => 'school-info', 'icon' => 'fas fa-school'],
-            ['text' => 'Academic Years & Terms', 'url' => 'settings/academic', 'icon' => 'fas fa-calendar'],
-            ['text' => 'Roles & Permissions', 'url' => 'settings/roles', 'icon' => 'fas fa-user-shield'],
-            ['text' => 'System Logs', 'url' => 'settings/logs', 'icon' => 'fas fa-file-alt'],
+[
+    'text' => 'System Settings',
+    'icon' => 'fas fa-cogs',
+    'submenu' => [
+        [
+            'text' => 'Profile',
+            'url'  => '/profile',
+            'icon' => 'fas fa-user-cog',
+        ],
+        [
+            'text' => 'School Info',
+            'url'  => '/school-info',
+            'icon' => 'fas fa-school',
+        ],
+        [
+            'text' => 'Academic Years & Terms',
+            'url'  => '/settings/academic',
+            'icon' => 'fas fa-calendar',
+        ],
+        [
+            'text' => 'Roles & Permissions',
+            'icon' => 'fas fa-user-shield',
+            'submenu' => [
+                [
+                    'text' => 'Roles',
+                    'url'  => '/settings/roles',
+                    'icon' => 'fas fa-user-shield',
+                ],
+                [
+                    'text' => 'Permissions',
+                    'url'  => '/settings/permissions',
+                    'icon' => 'fas fa-key',
+                ],
+            ],
+        ],
+        [
+            'text' => 'System Logs',
+            'url'  => '/settings/logs',
+            'icon' => 'fas fa-file-alt',
         ],
     ],
+],
+
+    
+
+   
 ],
 
 

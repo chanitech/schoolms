@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\SchoolClass;
+use App\Models\User;
 
 class Subject extends Model
 {
@@ -15,6 +16,7 @@ class Subject extends Model
         'name',
         'code',
         'type',
+        'teacher_id', // <-- new field for assigned teacher
     ];
 
     /**
@@ -30,9 +32,21 @@ class Subject extends Model
         )->withTimestamps();
     }
 
+    /**
+     * Marks for this subject
+     */
     public function marks()
-{
-    return $this->hasMany(Mark::class);
-}
+    {
+        return $this->hasMany(Mark::class);
+    }
 
+    /**
+     * Teacher assigned to this subject
+     */
+    public function teacher()
+    {
+        return $this->belongsTo(User::class, 'teacher_id');
+    }
+
+    
 }

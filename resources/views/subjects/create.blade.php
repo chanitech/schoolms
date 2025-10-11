@@ -40,6 +40,19 @@
                 <small class="text-muted">Hold Ctrl (Windows) or Cmd (Mac) to select multiple classes.</small>
             </div>
 
+           <div class="form-group mb-2">
+    <label>Assign Subject Teacher</label>
+    <select name="teacher_id" class="form-control" required>
+        <option value="">-- Select Teacher --</option>
+        @foreach($teachers as $teacher)
+            <option value="{{ $teacher->id }}" {{ old('teacher_id') == $teacher->id ? 'selected' : '' }}>
+                {{ $teacher->first_name }} {{ $teacher->last_name }}
+            </option>
+        @endforeach
+    </select>
+</div>
+
+
             <button type="submit" class="btn btn-success">Save Subject</button>
         </form>
     </div>
