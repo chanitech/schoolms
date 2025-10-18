@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\User;
 use App\Models\Department;
 use App\Models\JobCard;
+use Spatie\Permission\Traits\HasRoles;
 
 /**
  * @property int $id
@@ -18,14 +19,16 @@ use App\Models\JobCard;
  * @property int $department_id
  * @property string|null $position
  * @property string|null $photo
- * @property string $role
  * @property int $user_id
  * @property User $user
  * @property Department $department
  */
 class Staff extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, HasRoles;
+
+    // Make sure Spatie knows the guard
+    protected $guard_name = 'web';
 
     protected $fillable = [
         'first_name',
@@ -35,16 +38,23 @@ class Staff extends Model
         'department_id',
         'position',
         'photo',
-        'role',
         'user_id',
     ];
 
     /**
-     * Full name accessor.
+     * Accessor for full name.
      */
     public function getNameAttribute(): string
     {
         return "{$this->first_name} {$this->last_name}";
+    }
+
+    /**
+     * Accessor for primary Spatie role name.
+     */
+    public function getRoleNameAttribute(): string
+    {
+        return $this->roles->pluck('name')->first() ?? 'Staff';
     }
 
     /**
@@ -56,7 +66,7 @@ class Staff extends Model
     }
 
     /**
-     * Linked user relationship.
+     * Linked User relationship.
      */
     public function user()
     {
@@ -64,7 +74,7 @@ class Staff extends Model
     }
 
     /**
-     * JobCards assigned to this staff (they need to complete these).
+     * JobCards assigned to this staff (tasks they need to complete).
      */
     public function jobcards()
     {
@@ -90,35 +100,25 @@ class Staff extends Model
     }
 
     /**
-     * === Custom Role Helpers ===
+     * === Role helper methods using Spatie ===
      */
-
     public function isAssigner(): bool
     {
-        return $this->role === 'assigner';
+        return $this->hasRole('assigner');
     }
 
     public function isAssignee(): bool
     {
-        return $this->role === 'assignee';
+        return $this->hasRole('assignee');
     }
-
-    public function hasRole(string $role): bool
-    {
-        return $this->role === $role;
-    }
-
-    /**
-     * === New Helpers for Leaves/Approval ===
-     */
 
     public function isHod(): bool
     {
-        return $this->role === 'hod';
+        return $this->hasRole('hod');
     }
 
     public function isDirector(): bool
     {
-        return $this->role === 'director';
+        return $this->hasRole('director');
     }
 }

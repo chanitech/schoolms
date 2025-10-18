@@ -26,7 +26,8 @@ use App\Http\Controllers\{
     AcademicYearController,
     RoleController,
     SystemLogController,
-    PermissionController
+    PermissionController,
+    HRReportController
 };
 
 /*
@@ -168,4 +169,68 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/calendar', [EventController::class, 'calendar'])->name('calendar');
         Route::get('/fetch', [EventController::class, 'fetchEvents'])->name('fetch');
     });
+
+
+
+
+
+
+    // HR Reports
+Route::prefix('hr-reports')
+    ->middleware(['auth'])
+    ->name('hr-reports.')
+    ->group(function () {
+
+        Route::get('/', [HRReportController::class, 'index'])
+            ->name('index')
+            ->middleware('permission:view hr reports');
+
+        Route::get('/staff', [HRReportController::class, 'staffReport'])
+            ->name('staff')
+            ->middleware('permission:view staff report');
+
+        Route::get('/attendance', [HRReportController::class, 'attendanceReport'])
+            ->name('attendance')
+            ->middleware('permission:view attendance report');
+
+        Route::get('/leaves', [HRReportController::class, 'leaveReport'])
+            ->name('leaves')
+            ->middleware('permission:view leave report');
+
+        Route::get('/leaves/export/excel', [HRReportController::class, 'exportLeaveExcel'])
+            ->name('leaves.export.excel')
+            ->middleware('permission:view leave report');
+
+        Route::get('/leaves/export/pdf', [HRReportController::class, 'exportLeavePDF'])
+            ->name('leaves.export.pdf')
+            ->middleware('permission:view leave report');
+
+        Route::get('/jobcards', [HRReportController::class, 'jobCardReport'])
+            ->name('jobcards');
+            //->middleware('permission:view job card report');
+
+        Route::get('/evaluation', [HRReportController::class, 'evaluationReport'])
+            ->name('evaluation');
+           // ->middleware('permission:view evaluation report');
+
+        Route::get('/evaluation/export', [HRReportController::class, 'exportEvaluation'])
+            ->name('evaluation.export');
+           //->middleware('permission:view evaluation report');
+
+        Route::get('/events', [HRReportController::class, 'eventReport'])
+            ->name('events')
+            ->middleware('permission:view event report');
+
+        Route::get('/summary', [HRReportController::class, 'summaryDashboard'])
+            ->name('summary')
+            ->middleware('permission:view hr summary dashboard');
+});
+
+Route::get('/hr-reports/evaluation/export', [HRReportController::class, 'exportEvaluation'])
+    ->name('hr.reports.export.evaluation');
+
+
+
+
+
 });

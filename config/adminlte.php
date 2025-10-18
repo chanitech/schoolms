@@ -116,8 +116,8 @@ return [
             'path' => 'vendor/adminlte/dist/img/MEMA.webp',
             'alt' => 'AdminLTE Preloader Image',
             'effect' => 'animation__shake',
-            'width' => 600,
-            'height' => 600,
+            'width' => 50,
+            'height' => 50,
         ],
     ],
 
@@ -349,13 +349,32 @@ return [
             ['text' => 'Leaves', 'url' => 'leaves', 'icon' => 'fas fa-file-signature'],
             ['text' => 'Received Leaves', 'url' => 'leaves/received', 'icon' => 'fas fa-inbox'],
             ['text' => 'Events', 'url' => 'events', 'icon' => 'fas fa-calendar-alt'],
-            ['text' => 'HR Reports', 'url' => 'hr-reports', 'icon' => 'fas fa-chart-line'],
+            //['text' => 'HR Reports', 'url' => 'hr-reports', 'icon' => 'fas fa-chart-line'],
         ],
     ],
 
+
+
+
+    [
+    'text' => 'HR Reports',
+    'icon' => 'fas fa-chart-line',
+    'submenu' => [
+        //['text' => 'Summary Dashboard', 'url' => 'hr-reports/summary', 'icon' => 'fas fa-tachometer-alt'],
+        ['text' => 'Staff Report', 'url' => 'hr-reports/staff', 'icon' => 'fas fa-users'],
+        ['text' => 'Attendance Report', 'url' => 'hr-reports/attendance', 'icon' => 'fas fa-calendar-check'],
+        ['text' => 'Leave Report', 'url' => 'hr-reports/leaves', 'icon' => 'fas fa-plane-departure'],
+        ['text' => 'Job Cards Report', 'url' => 'hr-reports/jobcards', 'icon' => 'fas fa-briefcase'],
+        ['text' => 'Evaluation Report', 'url' => 'hr-reports/evaluation', 'icon' => 'fas fa-star'],
+    ]
+],
+
+
+
+
     // Finance & Fees
     [
-        'text' => 'Fees',
+        'text' => 'Finance & Fees',
         'icon' => 'fas fa-wallet',
         'submenu' => [
             ['text' => 'Invoices', 'url' => 'fees', 'icon' => 'fas fa-file-invoice-dollar'],

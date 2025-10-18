@@ -63,4 +63,10 @@ class Leave extends Model
     {
         return $query->where('status', 'rejected');
     }
+
+    // Add this relationship
+    public function staff()
+    {
+        return $this->belongsTo(Staff::class, 'staff_id');
+    }
 }

@@ -41,6 +41,9 @@
                             <option value="{{ $subject->id }}">{{ $subject->name }}</option>
                         @endforeach
                     </select>
+                    @if(auth()->user()->hasRole('Teacher'))
+                        <small class="text-muted">Only your assigned subjects are shown</small>
+                    @endif
                 </div>
 
                 <div class="col-md-3">

@@ -45,11 +45,17 @@
                 <select name="subject_id" id="subject" class="form-control">
                     <option value="">All Subjects</option>
                     @foreach($subjects as $subject)
+                        @if(auth()->user()->hasRole('Teacher'))
+                            @continue(auth()->id() != $subject->teacher_id)
+                        @endif
                         <option value="{{ $subject->id }}" {{ request('subject_id') == $subject->id ? 'selected' : '' }}>
                             {{ $subject->name }}
                         </option>
                     @endforeach
                 </select>
+                @if(auth()->user()->hasRole('Teacher'))
+                    <small class="text-muted">You can only filter your own subjects</small>
+                @endif
             </div>
 
             <div class="col-md-3 mt-4">

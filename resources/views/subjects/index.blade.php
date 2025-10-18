@@ -15,41 +15,55 @@
             <button class="btn btn-info">Search</button>
         </form>
 
-        <table class="table table-bordered">
-            <thead>
+        <table class="table table-bordered table-striped text-center align-middle">
+            <thead class="table-light">
                 <tr>
+                    <th>#</th>
                     <th>Name</th>
                     <th>Code</th>
                     <th>Type</th>
                     <th>Classes</th>
+                    <th>Teacher</th> {{-- ✅ New column --}}
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach($subjects as $subject)
+                @forelse($subjects as $i => $subject)
                 <tr>
+                    <td>{{ $subjects->firstItem() + $i }}</td>
                     <td>{{ $subject->name }}</td>
-                    <td>{{ $subject->code }}</td>
+                    <td>{{ $subject->code ?? '—' }}</td>
                     <td>{{ ucfirst($subject->type) }}</td>
                     <td>
-                        @foreach($subject->classes as $class)
-                            <span class="badge bg-success">{{ $class->name }}</span>
-                        @endforeach
+                        @if($subject->classes->isNotEmpty())
+                            @foreach($subject->classes as $class)
+                                <span class="badge bg-success">{{ $class->name }}</span>
+                            @endforeach
+                        @else
+                            <span class="text-muted">—</span>
+                        @endif
                     </td>
+                    <td>{{ $subject->teacher_name }}</td> {{-- ✅ Clean display --}}
                     <td>
                         <a href="{{ route('subjects.edit', $subject->id) }}" class="btn btn-sm btn-warning">Edit</a>
-                        <form action="{{ route('subjects.destroy', $subject->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure?');">
+                        <form action="{{ route('subjects.destroy', $subject->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this subject?');">
                             @csrf
                             @method('DELETE')
                             <button class="btn btn-sm btn-danger">Delete</button>
                         </form>
                     </td>
                 </tr>
-                @endforeach
+                @empty
+                <tr>
+                    <td colspan="7" class="text-muted">No subjects found.</td>
+                </tr>
+                @endforelse
             </tbody>
         </table>
 
-        {{ $subjects->links() }}
+        <div class="mt-2">
+            {{ $subjects->links() }}
+        </div>
     </div>
 </div>
 @endsection

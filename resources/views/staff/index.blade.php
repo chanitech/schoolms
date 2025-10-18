@@ -31,12 +31,13 @@
                 <tbody>
                     @foreach($staffs as $i => $staff)
                     <tr>
-                        <td>{{ $i+1 }}</td>
+                        <td>{{ $staffs->firstItem() + $i }}</td>
                         <td>{{ $staff->name }}</td>
                         <td>{{ $staff->email }}</td>
                         <td>{{ $staff->department->name ?? '-' }}</td>
                         <td>{{ $staff->position ?? '-' }}</td>
-                        <td>{{ $staff->role }}</td>
+                        <!-- ✅ Display Spatie Role -->
+                        <td>{{ $staff->role_name }}</td>
                         <td>
                             <a href="{{ route('staff.edit', $staff->id) }}" class="btn btn-primary btn-sm">Edit</a>
                             <form action="{{ route('staff.destroy', $staff->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete staff?');">
@@ -49,7 +50,10 @@
                     @endforeach
                 </tbody>
             </table>
-            {{ $staffs->links() }}
+
+            <div class="mt-2">
+                {{ $staffs->links() }}
+            </div>
         </div>
     </div>
 </div>
