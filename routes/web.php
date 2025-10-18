@@ -144,17 +144,27 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/export/pdf', [AttendanceController::class, 'exportPDF'])->name('export.pdf');
     });
 
-    // Leaves
-    Route::prefix('leaves')->name('leaves.')->group(function () {
-        Route::get('/', [LeaveController::class, 'index'])->name('index');
-        Route::get('/create', [LeaveController::class, 'create'])->name('create');
-        Route::post('/', [LeaveController::class, 'store'])->name('store');
-        Route::get('/received', [LeaveController::class, 'received'])->name('received');
-        Route::post('/{leave}/approve', [LeaveController::class, 'approve'])->name('approve');
-        Route::post('/{leave}/reject', [LeaveController::class, 'reject'])->name('reject');
-        Route::get('/received/export/excel', [LeaveController::class, 'exportReceivedExcel'])->name('received.export.excel');
-        Route::get('/received/export/pdf', [LeaveController::class, 'exportReceivedPdf'])->name('received.export.pdf');
-    });
+   // Leaves
+Route::prefix('leaves')->name('leaves.')->group(function () {
+    Route::get('/', [LeaveController::class, 'index'])->name('index');
+    Route::get('/create', [LeaveController::class, 'create'])->name('create');
+    Route::post('/', [LeaveController::class, 'store'])->name('store');
+
+    // Edit & Update
+    Route::get('/{leave}/edit', [LeaveController::class, 'edit'])->name('edit');
+    Route::put('/{leave}', [LeaveController::class, 'update'])->name('update');
+
+    // Delete
+    Route::delete('/{leave}', [LeaveController::class, 'destroy'])->name('destroy');
+
+    Route::get('/received', [LeaveController::class, 'received'])->name('received');
+    Route::post('/{leave}/approve', [LeaveController::class, 'approve'])->name('approve');
+    Route::post('/{leave}/reject', [LeaveController::class, 'reject'])->name('reject');
+
+    Route::get('/received/export/excel', [LeaveController::class, 'exportReceivedExcel'])->name('received.export.excel');
+    Route::get('/received/export/pdf', [LeaveController::class, 'exportReceivedPdf'])->name('received.export.pdf');
+});
+
 
     // Events
     Route::prefix('events')->name('events.')->group(function () {

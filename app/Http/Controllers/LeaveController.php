@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Leave;
 use App\Models\Staff;
+use App\Models\Department;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
@@ -12,46 +14,67 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class LeaveController extends Controller
 {
-    /**
-     * Display a listing of the logged-in user's leave requests.
-     */
-    public function index()
+    public function __construct()
     {
-        $user = Auth::user();
-        $staff = $user->staff;
+        $this->middleware('permission:view leaves')->only(['index', 'received']);
+        $this->middleware('permission:create leaves')->only(['create', 'store']);
+        $this->middleware('permission:edit leaves')->only(['edit', 'update']);
+        $this->middleware('permission:delete leaves')->only(['destroy']);
+        $this->middleware('permission:approve received leaves')->only(['approve', 'reject']);
+    }
 
-        // Get all leaves requested by the logged-in staff
-        $leaves = Leave::where('staff_id', $staff->id)
-                       ->orderByDesc('start_date')
-                       ->paginate(10);
+    public function index(Request $request)
+    {
+        /** @var User $user */
+        $user = Auth::user();
+
+        $query = Leave::with(['requester.department'])->orderByDesc('start_date');
+
+        if ($user->staff) {
+            $query->where('staff_id', $user->staff->id);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        if ($request->filled('start_date_from')) {
+            $query->where('start_date', '>=', $request->start_date_from);
+        }
+        if ($request->filled('start_date_to')) {
+            $query->where('start_date', '<=', $request->start_date_to);
+        }
+
+        $leaves = $query->paginate(10)->withQueryString();
 
         return view('leaves.index', compact('leaves'));
     }
 
-    /**
-     * Show the form for creating a new leave request.
-     */
     public function create()
     {
+        /** @var User $user */
         $user = Auth::user();
         $staff = $user->staff;
 
-        // Staff can select to send to HOD or Director
-        // Example: all staff with role = 'hod' or 'director'
-        $recipients = Staff::whereIn('role', ['hod', 'director'])
-                           ->orderBy('first_name')
-                           ->get();
+        if (!$staff) {
+            abort(403, 'You do not have a staff profile to request leave.');
+        }
+
+        $recipients = Staff::whereHas('user.roles', function ($q) {
+            $q->whereIn('name', ['hod', 'director']);
+        })->orderBy('first_name')->get();
 
         return view('leaves.create', compact('recipients', 'staff'));
     }
 
-    /**
-     * Store a newly created leave request.
-     */
     public function store(Request $request)
     {
+        /** @var User $user */
         $user = Auth::user();
         $staff = $user->staff;
+
+        if (!$staff) {
+            abort(403, 'You do not have a staff profile to request leave.');
+        }
 
         $request->validate([
             'start_date'   => 'required|date',
@@ -72,36 +95,33 @@ class LeaveController extends Controller
         ]);
 
         return redirect()->route('leaves.index')
-                         ->with('success', 'Leave request submitted successfully and is pending approval.');
+                         ->with('success', 'Leave request submitted successfully.');
     }
 
-    /**
-     * Show the form for editing a pending leave request.
-     */
     public function edit(Leave $leave)
     {
+        /** @var User $user */
         $user = Auth::user();
+        $staff = $user->staff;
 
-        // Only the owner of a pending leave can edit
-        if ($leave->staff_id !== $user->staff->id || $leave->status !== 'pending') {
+        if (!$staff || $leave->staff_id !== $staff->id || $leave->status !== 'pending') {
             abort(403, 'You are not authorized to edit this leave.');
         }
 
-        $recipients = Staff::whereIn('role', ['hod', 'director'])
-                           ->orderBy('first_name')
-                           ->get();
+        $recipients = Staff::whereHas('user.roles', function ($q) {
+            $q->whereIn('name', ['hod', 'director']);
+        })->orderBy('first_name')->get();
 
         return view('leaves.edit', compact('leave', 'recipients'));
     }
 
-    /**
-     * Update the specified pending leave request.
-     */
     public function update(Request $request, Leave $leave)
     {
+        /** @var User $user */
         $user = Auth::user();
+        $staff = $user->staff;
 
-        if ($leave->staff_id !== $user->staff->id || $leave->status !== 'pending') {
+        if (!$staff || $leave->staff_id !== $staff->id || $leave->status !== 'pending') {
             abort(403, 'You are not authorized to update this leave.');
         }
 
@@ -125,14 +145,13 @@ class LeaveController extends Controller
                          ->with('success', 'Leave updated successfully.');
     }
 
-    /**
-     * Remove a pending leave request.
-     */
     public function destroy(Leave $leave)
     {
+        /** @var User $user */
         $user = Auth::user();
+        $staff = $user->staff;
 
-        if ($leave->staff_id !== $user->staff->id || $leave->status !== 'pending') {
+        if (!$staff || $leave->staff_id !== $staff->id || $leave->status !== 'pending') {
             abort(403, 'You are not authorized to delete this leave.');
         }
 
@@ -142,125 +161,135 @@ class LeaveController extends Controller
                          ->with('success', 'Leave deleted successfully.');
     }
 
+    public function received(Request $request)
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        $query = Leave::with(['requester.department']);
 
+        if ($user->hasRole('admin') || $user->hasRole('director')) {
+            // admin and director can see all
+        } elseif ($user->hasRole('hod') && $user->staff) {
+            $departmentId = $user->staff->department_id;
+            $query->whereHas('requester', function ($q) use ($departmentId) {
+                $q->where('department_id', $departmentId);
+            });
+        } elseif ($user->staff) {
+            $query->where('requested_to', $user->staff->id);
+        } else {
+            abort(403, 'You are not authorized to view this page.');
+        }
 
+        // Filters
+        if ($request->filled('department_id')) {
+            $query->whereHas('requester', function ($q) use ($request) {
+                $q->where('department_id', $request->department_id);
+            });
+        }
+        if ($request->filled('staff_name')) {
+            $query->whereHas('requester', function ($q) use ($request) {
+                $q->where('first_name', 'like', '%'.$request->staff_name.'%')
+                  ->orWhere('last_name', 'like', '%'.$request->staff_name.'%');
+            });
+        }
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        if ($request->filled('start_date_from')) {
+            $query->where('start_date', '>=', $request->start_date_from);
+        }
+        if ($request->filled('start_date_to')) {
+            $query->where('start_date', '<=', $request->start_date_to);
+        }
 
-    /**
- * Display leaves received by the logged-in staff (HOD/Director).
- */
-    /**
- * Display leaves received by the logged-in user (HOD/Director).
- */
-public function received(Request $request)
-{
-    /** @var \App\Models\User $user */
-    $user = Auth::user();
-    $staff = $user->staff;
+        $leaves = $query->orderBy('start_date', 'desc')->paginate(10)->withQueryString();
+        $departments = Department::orderBy('name')->get();
 
-    // Base query: leaves sent to current user
-    $query = Leave::with('requester')
-                  ->where('requested_to', $staff->id);
-
-    // Filter: staff name
-    if ($request->filled('staff_name')) {
-        $query->whereHas('requester', function($q) use ($request) {
-            $q->where('first_name', 'like', '%'.$request->staff_name.'%')
-              ->orWhere('last_name', 'like', '%'.$request->staff_name.'%');
-        });
+        return view('leaves.received', compact('leaves', 'departments'));
     }
 
-    // Filter: start_date range
-    if ($request->filled('start_date_from')) {
-        $query->where('start_date', '>=', $request->start_date_from);
-    }
-    if ($request->filled('start_date_to')) {
-        $query->where('start_date', '<=', $request->start_date_to);
-    }
+    public function approve(Leave $leave)
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        $staff = $user->staff;
 
-    // Filter: status
-    if ($request->filled('status')) {
-        $query->where('status', $request->status);
-    }
+        if (($staff && $leave->requested_to !== $staff->id) && !$user->hasRole('admin') && !$user->hasRole('director')) {
+            abort(403, 'You are not authorized to approve this leave.');
+        }
 
-    $leaves = $query->orderBy('start_date', 'desc')
-                    ->paginate(10)
-                    ->withQueryString();
+        $leave->update(['status' => 'approved']);
 
-    // Summary counts
-    $summary = Leave::where('requested_to', $staff->id)
-                    ->selectRaw('status, COUNT(*) as count')
-                    ->groupBy('status')
-                    ->pluck('count', 'status')
-                    ->toArray();
-
-    return view('leaves.received', compact('leaves', 'summary'));
-}
-
-
-
-/**
- * Approve a leave request.
- */
-public function approve(Leave $leave)
-{
-    $user = Auth::user();
-    if ($leave->requested_to !== $user->staff->id || $leave->status !== 'pending') {
-        abort(403, 'You are not authorized to approve this leave.');
+        return redirect()->route('leaves.received')->with('success', 'Leave approved successfully.');
     }
 
-    $leave->update(['status' => 'approved']);
+    public function reject(Leave $leave)
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        $staff = $user->staff;
 
-    return redirect()->route('leaves.received')->with('success', 'Leave approved successfully.');
-}
+        if (($staff && $leave->requested_to !== $staff->id) && !$user->hasRole('admin') && !$user->hasRole('director')) {
+            abort(403, 'You are not authorized to reject this leave.');
+        }
 
-/**
- * Reject a leave request.
- */
-public function reject(Leave $leave)
-{
-    $user = Auth::user();
-    if ($leave->requested_to !== $user->staff->id || $leave->status !== 'pending') {
-        abort(403, 'You are not authorized to reject this leave.');
+        $leave->update(['status' => 'rejected']);
+
+        return redirect()->route('leaves.received')->with('success', 'Leave rejected successfully.');
     }
 
-    $leave->update(['status' => 'rejected']);
-
-    return redirect()->route('leaves.received')->with('success', 'Leave rejected successfully.');
-}
-
-
-// Excel export for received leaves
     public function exportReceivedExcel(Request $request)
     {
+        /** @var User $user */
         $user = Auth::user();
-        $staff = $user->staff;
+        $staffId = $user->staff->id ?? null;
 
-        $fileName = 'received_leaves.xlsx';
-        return Excel::download(new LeavesExport($staff->id, $request->all()), $fileName);
+        if (!$user->hasRole('admin') && !$user->hasRole('director') && !$user->hasRole('hod') && !$staffId) {
+            abort(403, 'Unauthorized');
+        }
+
+        $filters = $request->all();
+
+        return Excel::download(new LeavesExport($staffId, $filters), 'received_leaves.xlsx');
     }
 
-    // PDF export for received leaves
     public function exportReceivedPdf(Request $request)
     {
+        /** @var User $user */
         $user = Auth::user();
         $staff = $user->staff;
 
-        $leavesQuery = Leave::with('requester')->where('requested_to', $staff->id);
-
-        // Apply filters
-        if (!empty($request->staff_name)) {
-            $leavesQuery->whereHas('requester', fn($q) => 
-                $q->where('first_name', 'like', '%'.$request->staff_name.'%')
-                  ->orWhere('last_name', 'like', '%'.$request->staff_name.'%')
-            );
+        if (!$user->hasRole('admin') && !$user->hasRole('director') && !$user->hasRole('hod') && !$staff) {
+            abort(403, 'Unauthorized');
         }
-        if (!empty($request->start_date_from)) $leavesQuery->where('start_date', '>=', $request->start_date_from);
-        if (!empty($request->start_date_to)) $leavesQuery->where('start_date', '<=', $request->start_date_to);
-        if (!empty($request->status)) $leavesQuery->where('status', $request->status);
 
-        $leaves = $leavesQuery->get();
+        $leavesQuery = Leave::with(['requester.department']);
+
+        if ($user->hasRole('hod') && $staff) {
+            $departmentId = $staff->department_id;
+            $leavesQuery->whereHas('requester', function ($q) use ($departmentId) {
+                $q->where('department_id', $departmentId);
+            });
+        }
+
+        if ($request->filled('department_id')) {
+            $leavesQuery->whereHas('requester', function ($q) use ($request) {
+                $q->where('department_id', $request->department_id);
+            });
+        }
+        if ($request->filled('status')) {
+            $leavesQuery->where('status', $request->status);
+        }
+        if ($request->filled('start_date_from')) {
+            $leavesQuery->where('start_date', '>=', $request->start_date_from);
+        }
+        if ($request->filled('start_date_to')) {
+            $leavesQuery->where('start_date', '<=', $request->start_date_to);
+        }
+
+        $leaves = $leavesQuery->orderBy('start_date', 'desc')->get();
+
         $pdf = Pdf::loadView('leaves.received_pdf', compact('leaves'));
         return $pdf->download('received_leaves.pdf');
     }
-
 }
