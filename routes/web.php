@@ -116,18 +116,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/export/pdf', [StudentResultController::class, 'exportPDF'])->name('export.pdf');
     });
 
-    // JobCards
     Route::prefix('jobcards')->name('jobcards.')->group(function () {
-        Route::get('/', [JobCardController::class, 'index'])->name('index');
-        Route::get('/create', [JobCardController::class, 'create'])->name('create');
-        Route::post('/', [JobCardController::class, 'store'])->name('store');
-        Route::get('/{jobcard}/edit', [JobCardController::class, 'edit'])->name('edit');
-        Route::patch('/{jobcard}', [JobCardController::class, 'update'])->name('update');
-        Route::delete('/{jobcard}', [JobCardController::class, 'destroy'])->name('destroy');
-        Route::get('/my', [JobCardController::class, 'myJobCards'])->name('my');
-        Route::patch('/{jobcard}/status', [JobCardController::class, 'updateStatus'])->name('updateStatus');
-        Route::patch('/{jobcard}/rate', [JobCardController::class, 'rateTask'])->name('rateTask');
-    });
+    Route::get('/', [JobCardController::class, 'index'])->name('index');
+    Route::get('/create', [JobCardController::class, 'create'])->name('create');
+    Route::post('/', [JobCardController::class, 'store'])->name('store');
+    Route::get('/{jobcard}/edit', [JobCardController::class, 'edit'])->name('edit');
+    Route::put('/{jobcard}', [JobCardController::class, 'update'])->name('update');
+    Route::delete('/{jobcard}', [JobCardController::class, 'destroy'])->name('destroy');
+
+    // Staff routes
+    Route::get('/my', [JobCardController::class, 'myJobCards'])->name('my');
+
+    // Allow PATCH for status update
+    Route::patch('/{jobcard}/update-status', [JobCardController::class, 'updateStatus'])->name('updateStatus');
+
+    // Allow PATCH for rating task
+    Route::patch('/{jobcard}/rate-task', [JobCardController::class, 'rateTask'])->name('rateTask');
+});
 
     // Attendance
     Route::prefix('attendance')->name('attendance.')->group(function () {

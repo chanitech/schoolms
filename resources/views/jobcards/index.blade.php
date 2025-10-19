@@ -9,7 +9,9 @@
 @section('content')
 <div class="card">
     <div class="card-header">
-        <a href="{{ route('jobcards.create') }}" class="btn btn-primary">Create New Job Card</a>
+        @can('create jobcards')
+            <a href="{{ route('jobcards.create') }}" class="btn btn-primary">Create New Job Card</a>
+        @endcan
     </div>
     <div class="card-body table-responsive">
         <table class="table table-bordered table-hover">
@@ -40,7 +42,7 @@
                         @if($job->status === 'completed')
                             @if($job->rating)
                                 ⭐ {{ $job->rating }}/5
-                            @elseif($job->assigned_by && Auth::user()->staff && $job->assigned_by == Auth::user()->staff->id)
+                            @elseif(Auth::user()->staff && Auth::user()->staff->id === $job->assigned_by && auth()->user()->can('rate jobcards'))
                                 <form action="{{ route('jobcards.rateTask', $job->id) }}" method="POST" class="d-inline">
                                     @csrf
                                     @method('PATCH')
@@ -60,13 +62,17 @@
                         @endif
                     </td>
                     <td>
-                        <a href="{{ route('jobcards.edit', $job->id) }}" class="btn btn-sm btn-warning">Edit</a>
-                        <form action="{{ route('jobcards.destroy', $job->id) }}" method="POST" class="d-inline">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-sm btn-danger"
-                                onclick="return confirm('Are you sure you want to delete this job card?')">Delete</button>
-                        </form>
+                        @can('edit jobcards')
+                            <a href="{{ route('jobcards.edit', $job->id) }}" class="btn btn-sm btn-warning">Edit</a>
+                        @endcan
+                        @can('delete jobcards')
+                            <form action="{{ route('jobcards.destroy', $job->id) }}" method="POST" class="d-inline">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-sm btn-danger"
+                                    onclick="return confirm('Are you sure you want to delete this job card?')">Delete</button>
+                            </form>
+                        @endcan
                     </td>
                 </tr>
                 @empty

@@ -32,12 +32,13 @@
                         <td>
                             @if($job->rating)
                                 {{ $job->rating }} / 5
-                            @elseif(Auth::user()->staff?->id === $job->assigned_by && $job->status === 'completed')
+                            @elseif(Auth::user()->staff?->id === $job->assigned_by && $job->status === 'completed' && auth()->user()->can('rate jobcards'))
                                 <!-- Rating form for assigner -->
                                 <form action="{{ route('jobcards.rateTask', $job->id) }}" method="POST" class="d-flex justify-content-center">
                                     @csrf
                                     @method('PATCH')
-                                    <select name="rating" class="form-control form-control-sm me-1">
+                                    <select name="rating" class="form-control form-control-sm me-1" required>
+                                        <option value="">Rate</option>
                                         @for($i=1;$i<=5;$i++)
                                             <option value="{{ $i }}">{{ $i }}</option>
                                         @endfor
@@ -50,7 +51,7 @@
                         </td>
                         <td>{{ $job->due_date?->format('Y-m-d') ?? '-' }}</td>
                         <td>
-                            @if($job->assigned_to === Auth::user()->staff?->id && $job->status !== 'completed')
+                            @if($job->assigned_to === Auth::user()->staff?->id && $job->status !== 'completed' && auth()->user()->can('update job status'))
                                 <!-- Status update form for assignee -->
                                 <form action="{{ route('jobcards.updateStatus', $job->id) }}" method="POST">
                                     @csrf
