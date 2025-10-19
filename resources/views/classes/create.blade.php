@@ -21,13 +21,23 @@
 
                 <div class="col-md-4">
                     <label for="level" class="form-label">Level</label>
-                    <input type="text" name="level" class="form-control" value="{{ old('level') }}">
+                    <select name="level" class="form-control">
+                        <option value="">Select Level</option>
+                        @foreach([1,2,3,4,5,6] as $level)
+                            <option value="{{ $level }}" {{ old('level') == $level ? 'selected' : '' }}>{{ $level }}</option>
+                        @endforeach
+                    </select>
                     @error('level') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
 
                 <div class="col-md-4">
                     <label for="section" class="form-label">Section</label>
-                    <input type="text" name="section" class="form-control" value="{{ old('section') }}">
+                    <select name="section" class="form-control">
+                        <option value="">Select Section</option>
+                        @foreach(['A','B','C','D'] as $section)
+                            <option value="{{ $section }}" {{ old('section') == $section ? 'selected' : '' }}>{{ $section }}</option>
+                        @endforeach
+                    </select>
                     @error('section') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
             </div>

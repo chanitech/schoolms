@@ -17,56 +17,90 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class StudentResultController extends Controller
 {
+    public function __construct()
+    {
+        // Spatie permissions
+        $this->middleware('permission:view results')->only(['index', 'show', 'classResults']);
+        $this->middleware('permission:export results')->only([
+            'exportExcel', 'exportPDF',
+            'exportExcelNoticeBoard', 'exportPDFNoticeBoard'
+        ]);
+    }
+
     /**
      * Display paginated list of students.
      */
-    public function index()
-    {
-        $students = Student::paginate(10);
-        return view('results.index', compact('students'));
+    public function index(Request $request)
+{
+    $this->authorize('view results');
+
+    // Fetch all classes and sessions for filter dropdowns
+    $classes = \App\Models\SchoolClass::all();
+    $sessions = \App\Models\AcademicSession::all();
+
+    // Start query
+    $query = \App\Models\Student::with(['class', 'academicSession']);
+
+    // Apply class filter
+    if ($request->filled('class_id')) {
+        $query->where('class_id', $request->class_id);
     }
+
+    // Apply session filter
+    if ($request->filled('session_id')) {
+        $query->where('academic_session_id', $request->session_id);
+    }
+
+    // Paginate results
+    $students = $query->paginate(10)->withQueryString();
+
+    return view('results.index', compact('students', 'classes', 'sessions'));
+}
+
+
+
 
     /**
      * Display class results with filters.
      */
     public function classResults(Request $request)
-{
-    $classes = \App\Models\SchoolClass::all();
-    $exams = \App\Models\Exam::all();
+    {
+        $this->authorize('view results');
 
-    $selectedClassId = $request->class_id;
-    $selectedExamId = $request->exam_id;
+        $classes = \App\Models\SchoolClass::all();
+        $exams = Exam::all();
 
-    $studentsData = $this->getClassResultsDataWithSubjects($request);
+        $selectedClassId = $request->class_id;
+        $selectedExamId = $request->exam_id;
 
-    // Load subjects for table headers
-    $subjects = \App\Models\Subject::all();
+        $studentsData = $this->getClassResultsDataWithSubjects($request);
 
-    return view('results.class_results', compact(
-        'classes', 
-        'exams', 
-        'studentsData', 
-        'selectedClassId', 
-        'selectedExamId',
-        'subjects' // <-- pass subjects here
-    ));
-}
+        $subjects = Subject::all();
 
+        return view('results.class_results', compact(
+            'classes', 
+            'exams', 
+            'studentsData', 
+            'selectedClassId', 
+            'selectedExamId',
+            'subjects'
+        ));
+    }
 
     /**
      * Show detailed student result.
      */
     public function show(Student $student, Request $request)
     {
+        $this->authorize('view results');
+
         try {
             $exams = Exam::all();
             $selectedExam = $request->filled('exam_id') ? Exam::find($request->exam_id) : null;
             $grades = Grade::all();
 
             $marksQuery = $student->marks()->with('subject');
-            if ($selectedExam) {
-                $marksQuery->where('exam_id', $selectedExam->id);
-            }
+            if ($selectedExam) $marksQuery->where('exam_id', $selectedExam->id);
             $marks = $marksQuery->get();
 
             if ($marks->isEmpty()) {
@@ -211,6 +245,8 @@ class StudentResultController extends Controller
      */
     public function exportExcel(Request $request)
     {
+        $this->authorize('export results');
+
         $studentsData = $this->getClassResultsData($request);
         return Excel::download(new ClassResultsExport($studentsData), 'class_results.xlsx');
     }
@@ -219,31 +255,31 @@ class StudentResultController extends Controller
      * Export PDF for regular class results.
      */
     public function exportPDF(Request $request)
-{
-    $studentsData = $this->getClassResultsDataWithSubjects($request); // updated to include subjects per student
-    $classes = \App\Models\SchoolClass::all();
-    $exams = \App\Models\Exam::all();
-    $subjects = \App\Models\Subject::all(); // all subjects for the class
+    {
+        $this->authorize('export results');
 
-    $selectedClassId = $request->class_id;
-    $selectedExamId = $request->exam_id;
+        $studentsData = $this->getClassResultsDataWithSubjects($request);
+        $classes = \App\Models\SchoolClass::all();
+        $exams = Exam::all();
+        $subjects = Subject::all();
 
-    $pdf = Pdf::loadView('results.class_results_pdf', compact(
-        'studentsData', 'classes', 'exams', 'subjects', 'selectedClassId', 'selectedExamId'
-    ));
+        $selectedClassId = $request->class_id;
+        $selectedExamId = $request->exam_id;
 
-    return $pdf->download('class_results.pdf');
-}
+        $pdf = Pdf::loadView('results.class_results_pdf', compact(
+            'studentsData', 'classes', 'exams', 'subjects', 'selectedClassId', 'selectedExamId'
+        ));
 
-
-
-
+        return $pdf->download('class_results.pdf');
+    }
 
     /**
      * Export Excel for notice board (all subjects).
      */
     public function exportExcelNoticeBoard(Request $request)
     {
+        $this->authorize('export results');
+
         $data = $this->getClassResultsForNoticeBoard($request);
         return Excel::download(
             new ClassResultsExport($data['studentsData'], $data['subjects']),
@@ -256,6 +292,8 @@ class StudentResultController extends Controller
      */
     public function exportPDFNoticeBoard(Request $request)
     {
+        $this->authorize('export results');
+
         $data = $this->getClassResultsForNoticeBoard($request);
 
         $pdf = Pdf::loadView('results.class_results_notice_board_pdf', [
@@ -266,9 +304,8 @@ class StudentResultController extends Controller
         return $pdf->download('class_results_notice_board.pdf');
     }
 
-    /**
-     * Fetch filtered class results.
-     */
+    // --------------------- PRIVATE HELPERS --------------------- //
+
     private function getClassResultsData(Request $request)
     {
         $selectedClassId = $request->class_id;
@@ -314,9 +351,6 @@ class StudentResultController extends Controller
         return $studentsData;
     }
 
-    /**
-     * Fetch class results including all subjects for notice board.
-     */
     private function getClassResultsForNoticeBoard(Request $request)
     {
         $selectedClassId = $request->class_id;
@@ -325,7 +359,6 @@ class StudentResultController extends Controller
         $students = Student::where('class_id', $selectedClassId)->get();
         $grades = Grade::all();
 
-        // Get all subjects attempted in this class & exam
         $subjectIds = Mark::where('exam_id', $selectedExamId)
             ->whereIn('student_id', $students->pluck('id'))
             ->pluck('subject_id')
@@ -371,93 +404,66 @@ class StudentResultController extends Controller
         return ['studentsData' => $studentsData, 'subjects' => $subjects];
     }
 
+    private function getClassResultsDataWithSubjects(Request $request)
+    {
+        $selectedClassId = $request->class_id;
+        $selectedExamId = $request->exam_id;
+        $studentsData = [];
 
-    /**
- * Fetch filtered class results with all subjects
- */
-/**
- * Fetch filtered class results with all subjects
- */
-private function getClassResultsDataWithSubjects(Request $request)
-{
-    $selectedClassId = $request->class_id;
-    $selectedExamId = $request->exam_id;
-    $studentsData = [];
+        if ($selectedClassId && $selectedExamId) {
+            $students = Student::where('class_id', $selectedClassId)->get();
+            $grades = Grade::all();
+            $subjects = Subject::all();
 
-    if ($selectedClassId && $selectedExamId) {
-        // Load all students in class
-        $students = \App\Models\Student::where('class_id', $selectedClassId)->get();
+            foreach ($students as $student) {
+                $marks = $student->marks()->where('exam_id', $selectedExamId)->with('subject')->get()->keyBy('subject_id');
+                $subjectsData = [];
+                $totalMarks = 0;
+                $subjectCount = 0;
 
-        // Load all grades and subjects
-        $grades = \App\Models\Grade::all();
-        $subjects = \App\Models\Subject::all();
+                foreach ($subjects as $subject) {
+                    $mark = $marks->get($subject->id);
+                    if ($mark) {
+                        $grade = $grades->firstWhere(fn($g) => $mark->mark >= $g->min_mark && $mark->mark <= $g->max_mark);
+                        $subjectMark = $mark->mark;
+                    } else {
+                        $grade = null;
+                        $subjectMark = 0;
+                    }
 
-        foreach ($students as $student) {
-            // Load marks for this student for the selected exam, eager load subject
-            $marks = $student->marks()
-                ->where('exam_id', $selectedExamId)
-                ->with('subject')
-                ->get()
-                ->keyBy('subject_id'); // key by subject_id for easy lookup
+                    $subjectsData[$subject->id] = [
+                        'name' => $subject->name,
+                        'mark' => $subjectMark,
+                        'grade' => $grade->name ?? '-',
+                        'point' => $grade->point ?? 0,
+                    ];
 
-            $subjectsData = [];
-            $totalMarks = 0; // For calculating total
-            $subjectCount = 0;
-
-            foreach ($subjects as $subject) {
-                $mark = $marks->get($subject->id);
-                if ($mark) {
-                    $grade = $grades->firstWhere(fn($g) => $mark->mark >= $g->min_mark && $mark->mark <= $g->max_mark);
-                    $subjectMark = $mark->mark;
-                } else {
-                    $grade = null;
-                    $subjectMark = 0;
+                    $totalMarks += $subjectMark;
+                    $subjectCount++;
                 }
 
-                $subjectsData[$subject->id] = [
-                    'name' => $subject->name,
-                    'mark' => $subjectMark,
-                    'grade' => $grade->name ?? '-',
-                    'point' => $grade->point ?? 0,
-                ];
+                $average = $subjectCount > 0 ? round($totalMarks / $subjectCount, 2) : 0;
 
-                $totalMarks += $subjectMark;
-                $subjectCount++;
+                $bestMarks = collect($subjectsData)->sortByDesc('mark')->take(7)->pluck('mark')->toArray();
+                $gpaResult = StudentResultService::calculateGpaAndDivision($bestMarks);
+
+                $studentsData[] = [
+                    'student' => $student,
+                    'subjectsData' => $subjectsData,
+                    'total_marks' => $totalMarks,
+                    'average' => $average,
+                    'total_points' => collect($subjectsData)->sum('point'),
+                    'gpa' => $gpaResult['gpa'],
+                    'division' => $gpaResult['division'],
+                ];
             }
 
-            // Calculate average
-            $average = $subjectCount > 0 ? round($totalMarks / $subjectCount, 2) : 0;
-
-            // Calculate total points and GPA using best 7 subjects
-            $bestMarks = collect($subjectsData)
-                ->sortByDesc('mark')
-                ->take(7)
-                ->pluck('mark')
-                ->toArray();
-
-            $gpaResult = \App\Services\StudentResultService::calculateGpaAndDivision($bestMarks);
-
-            $studentsData[] = [
-                'student' => $student,
-                'subjectsData' => $subjectsData,
-                'total_marks' => $totalMarks,
-                'average' => $average,
-                'total_points' => collect($subjectsData)->sum('point'),
-                'gpa' => $gpaResult['gpa'],
-                'division' => $gpaResult['division'],
-            ];
+            usort($studentsData, fn($a, $b) => $b['total_points'] <=> $a['total_points']);
+            foreach ($studentsData as $i => &$data) {
+                $data['position'] = $i + 1;
+            }
         }
 
-        // Sort by total points to assign positions
-        usort($studentsData, fn($a, $b) => $b['total_points'] <=> $a['total_points']);
-        foreach ($studentsData as $i => &$data) {
-            $data['position'] = $i + 1;
-        }
+        return $studentsData;
     }
-
-    return $studentsData;
-}
-
-
-
 }

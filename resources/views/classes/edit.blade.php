@@ -22,13 +22,23 @@
 
                 <div class="col-md-4">
                     <label for="level" class="form-label">Level</label>
-                    <input type="text" name="level" class="form-control" value="{{ old('level', $class->level) }}">
+                    <select name="level" class="form-control">
+                        <option value="">Select Level</option>
+                        @foreach([1,2,3,4] as $level)
+                            <option value="{{ $level }}" {{ old('level', $class->level) == $level ? 'selected' : '' }}>{{ $level }}</option>
+                        @endforeach
+                    </select>
                     @error('level') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
 
                 <div class="col-md-4">
                     <label for="section" class="form-label">Section</label>
-                    <input type="text" name="section" class="form-control" value="{{ old('section', $class->section) }}">
+                    <select name="section" class="form-control">
+                        <option value="">Select Section</option>
+                        @foreach(['A','B','C','D'] as $section)
+                            <option value="{{ $section }}" {{ old('section', $class->section) == $section ? 'selected' : '' }}>{{ $section }}</option>
+                        @endforeach
+                    </select>
                     @error('section') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
             </div>
@@ -45,7 +55,7 @@
                     <select name="class_teacher_id" class="form-control">
                         <option value="">Select Teacher</option>
                         @foreach($teachers as $teacher)
-                            <option value="{{ $teacher->id }}" {{ old('class_teacher_id', $class->class_teacher_id)==$teacher->id ? 'selected' : '' }}>
+                            <option value="{{ $teacher->id }}" {{ old('class_teacher_id', $class->class_teacher_id) == $teacher->id ? 'selected' : '' }}>
                                 {{ $teacher->first_name }} {{ $teacher->last_name }}
                             </option>
                         @endforeach

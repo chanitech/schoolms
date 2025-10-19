@@ -31,7 +31,7 @@
                     <th>Level</th>
                     <th>Section</th>
                     <th>Capacity</th>
-                    <th>Class Teacher</th>
+                    <th>Teacher</th>
                     <th width="150">Actions</th>
                 </tr>
             </thead>
