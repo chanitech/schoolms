@@ -8,7 +8,10 @@
 
 @section('content')
 <div class="container-fluid">
-    <a href="{{ route('staff.create') }}" class="btn btn-success mb-3">Add New Staff</a>
+
+    @can('create staff')
+        <a href="{{ route('staff.create') }}" class="btn btn-success mb-3">Add New Staff</a>
+    @endcan
 
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
@@ -29,25 +32,32 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($staffs as $i => $staff)
+                    @forelse($staffs as $i => $staff)
                     <tr>
                         <td>{{ $staffs->firstItem() + $i }}</td>
                         <td>{{ $staff->name }}</td>
                         <td>{{ $staff->email }}</td>
-                        <td>{{ $staff->department->name ?? '-' }}</td>
+                        <td>{{ $staff->department?->name ?? '-' }}</td>
                         <td>{{ $staff->position ?? '-' }}</td>
-                        <!-- ✅ Display Spatie Role -->
-                        <td>{{ $staff->role_name }}</td>
+                        <td>{{ $staff->roles->pluck('name')->join(', ') }}</td>
                         <td>
-                            <a href="{{ route('staff.edit', $staff->id) }}" class="btn btn-primary btn-sm">Edit</a>
-                            <form action="{{ route('staff.destroy', $staff->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete staff?');">
-                                @csrf
-                                @method('DELETE')
-                                <button class="btn btn-danger btn-sm">Delete</button>
-                            </form>
+                            @can('edit staff')
+                                <a href="{{ route('staff.edit', $staff->id) }}" class="btn btn-primary btn-sm">Edit</a>
+                            @endcan
+                            @can('delete staff')
+                                <form action="{{ route('staff.destroy', $staff->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete staff?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn btn-danger btn-sm">Delete</button>
+                                </form>
+                            @endcan
                         </td>
                     </tr>
-                    @endforeach
+                    @empty
+                        <tr>
+                            <td colspan="7" class="text-center">No staff found.</td>
+                        </tr>
+                    @endforelse
                 </tbody>
             </table>
 

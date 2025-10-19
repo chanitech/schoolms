@@ -11,7 +11,16 @@ use Spatie\Permission\Models\Role;
 
 class StaffController extends Controller
 {
-    // Display paginated staff list
+    public function __construct()
+    {
+        // Optional: restrict access based on permissions
+        $this->middleware('permission:view staff')->only('index');
+        $this->middleware('permission:create staff')->only(['create', 'store']);
+        $this->middleware('permission:edit staff')->only(['edit', 'update']);
+        $this->middleware('permission:delete staff')->only('destroy');
+    }
+
+    // List staff with roles & departments
     public function index()
     {
         $staffs = Staff::with('department', 'user', 'roles')->paginate(10);
@@ -26,7 +35,7 @@ class StaffController extends Controller
         return view('staff.create', compact('departments', 'roles'));
     }
 
-    // Store new staff and linked user
+    // Store new staff
     public function store(Request $request)
     {
         $request->validate([
@@ -46,16 +55,13 @@ class StaffController extends Controller
             'last_name'  => $request->last_name,
             'name'       => $request->first_name . ' ' . $request->last_name,
             'email'      => $request->email,
-            'password'   => Hash::make('password123'), // default password
+            'password'   => Hash::make('password123'),
         ]);
 
-        // Assign role to user
         $user->assignRole($request->role);
 
-        // Upload staff photo if provided
         $photoPath = $request->hasFile('photo') ? $request->file('photo')->store('staff', 'public') : null;
 
-        // Create staff profile linked to user
         $staff = Staff::create([
             'first_name'    => $request->first_name,
             'last_name'     => $request->last_name,
@@ -67,22 +73,21 @@ class StaffController extends Controller
             'user_id'       => $user->id,
         ]);
 
-        // Assign role to Staff model (optional for convenience)
         $staff->syncRoles([$request->role]);
 
         return redirect()->route('staff.index')
-            ->with('success', 'Staff created successfully. Default password: password123');
+                         ->with('success', 'Staff created successfully. Default password: password123');
     }
 
     // Show edit form
     public function edit(Staff $staff)
     {
         $departments = Department::all();
-        $roles = Role::all(); // Fetch all Spatie roles
+        $roles = Role::all();
         return view('staff.edit', compact('staff', 'departments', 'roles'));
     }
 
-    // Update staff and linked user
+    // Update staff
     public function update(Request $request, Staff $staff)
     {
         $request->validate([
@@ -96,7 +101,6 @@ class StaffController extends Controller
             'role'          => 'required|exists:roles,name',
         ]);
 
-        // Update linked user
         if ($staff->user) {
             $staff->user->update([
                 'first_name' => $request->first_name,
@@ -104,18 +108,14 @@ class StaffController extends Controller
                 'name'       => $request->first_name . ' ' . $request->last_name,
                 'email'      => $request->email,
             ]);
-
-            // Sync role on user
             $staff->user->syncRoles([$request->role]);
         }
 
-        // Upload new photo if exists
         $photoPath = $staff->photo;
         if ($request->hasFile('photo')) {
             $photoPath = $request->file('photo')->store('staff', 'public');
         }
 
-        // Update staff profile
         $staff->update([
             'first_name'    => $request->first_name,
             'last_name'     => $request->last_name,
@@ -126,19 +126,17 @@ class StaffController extends Controller
             'photo'         => $photoPath,
         ]);
 
-        // Sync role on staff model (optional)
         $staff->syncRoles([$request->role]);
 
         return redirect()->route('staff.index')->with('success', 'Staff updated successfully.');
     }
 
-    // Delete staff and linked user
+    // Delete staff
     public function destroy(Staff $staff)
     {
         if ($staff->user) {
             $staff->user->delete();
         }
-
         $staff->delete();
 
         return redirect()->route('staff.index')->with('success', 'Staff deleted successfully.');
