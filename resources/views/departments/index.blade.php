@@ -9,7 +9,9 @@
 @section('content')
 <div class="container-fluid">
 
-    <a href="{{ route('departments.create') }}" class="btn btn-success mb-3">Add Department</a>
+    @can('create departments')
+        <a href="{{ route('departments.create') }}" class="btn btn-success mb-3">Add Department</a>
+    @endcan
 
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
@@ -27,23 +29,32 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($departments as $dept)
+                    @forelse($departments as $dept)
                     <tr>
-                        <td>{{ $loop->iteration }}</td>
+                        <td>{{ $loop->iteration + ($departments->currentPage() - 1) * $departments->perPage() }}</td>
                         <td>{{ $dept->name }}</td>
-                        <td>{{ $dept->head->name ?? '-' }}</td>
+                        <td>{{ $dept->head?->name ?? '-' }}</td>
                         <td>
-                            <a href="{{ route('departments.edit', $dept->id) }}" class="btn btn-sm btn-primary">Edit</a>
-                            <form action="{{ route('departments.destroy', $dept->id) }}" method="POST" style="display:inline-block;">
-                                @csrf
-                                @method('DELETE')
-                                <button class="btn btn-sm btn-danger" onclick="return confirm('Delete this department?')">Delete</button>
-                            </form>
+                            @can('edit departments')
+                                <a href="{{ route('departments.edit', $dept->id) }}" class="btn btn-sm btn-primary">Edit</a>
+                            @endcan
+                            @can('delete departments')
+                                <form action="{{ route('departments.destroy', $dept->id) }}" method="POST" style="display:inline-block;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn btn-sm btn-danger" onclick="return confirm('Delete this department?')">Delete</button>
+                                </form>
+                            @endcan
                         </td>
                     </tr>
-                    @endforeach
+                    @empty
+                    <tr>
+                        <td colspan="4" class="text-center">No departments found.</td>
+                    </tr>
+                    @endforelse
                 </tbody>
             </table>
+
             {{ $departments->links() }}
         </div>
     </div>

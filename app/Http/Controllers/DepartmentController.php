@@ -3,10 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Models\Department;
+use App\Models\Staff;
 use Illuminate\Http\Request;
 
 class DepartmentController extends Controller
 {
+    public function __construct()
+    {
+        // Apply Spatie permissions if needed
+        $this->middleware('permission:view departments')->only('index');
+        $this->middleware('permission:create departments')->only(['create', 'store']);
+        $this->middleware('permission:edit departments')->only(['edit', 'update']);
+        $this->middleware('permission:delete departments')->only('destroy');
+    }
+
     public function index()
     {
         $departments = Department::with('head')->paginate(10); // eager load head
@@ -15,7 +25,9 @@ class DepartmentController extends Controller
 
     public function create()
     {
-        return view('departments.create');
+        // Only staff with HOD role can be assigned as head
+        $hods = Staff::role('HOD')->get();
+        return view('departments.create', compact('hods'));
     }
 
     public function store(Request $request)
@@ -23,7 +35,7 @@ class DepartmentController extends Controller
         $request->validate([
             'name' => 'required|unique:departments,name',
             'description' => 'nullable|string',
-            'head_id' => 'nullable|exists:staff,id', // validate head
+            'head_id' => 'nullable|exists:staff,id', // must be a valid staff
         ]);
 
         Department::create($request->only(['name', 'description', 'head_id']));
@@ -34,7 +46,8 @@ class DepartmentController extends Controller
 
     public function edit(Department $department)
     {
-        return view('departments.edit', compact('department'));
+        $hods = Staff::role('HOD')->get();
+        return view('departments.edit', compact('department', 'hods'));
     }
 
     public function update(Request $request, Department $department)
@@ -42,7 +55,7 @@ class DepartmentController extends Controller
         $request->validate([
             'name' => 'required|unique:departments,name,' . $department->id,
             'description' => 'nullable|string',
-            'head_id' => 'nullable|exists:staff,id', // validate head
+            'head_id' => 'nullable|exists:staff,id', // must be a valid staff
         ]);
 
         $department->update($request->only(['name', 'description', 'head_id']));
