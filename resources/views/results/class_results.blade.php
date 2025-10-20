@@ -93,16 +93,15 @@
                             <th>#</th>
                             <th>Student</th>
                             @php
-                                // Get subjects dynamically from first student's subjectsData
                                 $subjects = collect($studentsData)->first()['subjectsData'] ?? [];
                             @endphp
                             @foreach($subjects as $subject)
                                 <th>{{ $subject['name'] }}</th>
                             @endforeach
-                            <th>Total Marks</th>
-                            <th>Average</th>
+                            <th>Total Marks (Best 7)</th>
+                            <th>Average (Best 7)</th>
                             <th>Division</th>
-                            <th>Total Points</th>
+                            <th>Total Points (Best 7)</th>
                             <th>GPA</th>
                             <th>Position</th>
                         </tr>
@@ -116,14 +115,24 @@
                                 <td>{{ $subject['mark'] }} ({{ $subject['grade'] }})</td>
                             @endforeach
                             @php
-                                $totalMarks = collect($data['subjectsData'])->sum('mark');
-                                $subjectCount = count($data['subjectsData']);
+                                // NECTA Best 7 logic
+                                $coreSubjects = collect($data['subjectsData'])->where('type', 'core')->sortByDesc('mark');
+                                $electives = collect($data['subjectsData'])->where('type', 'elective')->sortByDesc('mark');
+
+                                $bestSubjects = $coreSubjects->take(7);
+                                if ($bestSubjects->count() < 7) {
+                                    $bestSubjects = $bestSubjects->merge($electives->take(7 - $bestSubjects->count()));
+                                }
+
+                                $totalMarks = $bestSubjects->sum('mark');
+                                $subjectCount = $bestSubjects->count();
                                 $average = $subjectCount ? number_format($totalMarks / $subjectCount, 2) : 0;
+                                $totalPoints = $bestSubjects->sum('point');
                             @endphp
                             <td>{{ $totalMarks }}</td>
                             <td>{{ $average }}</td>
                             <td>{{ $data['division'] }}</td>
-                            <td>{{ $data['total_points'] }}</td>
+                            <td>{{ $totalPoints }}</td>
                             <td>{{ number_format($data['gpa'], 2) }}</td>
                             <td>{{ $data['position'] }}/{{ count($studentsData) }}</td>
                         </tr>

@@ -27,7 +27,10 @@ use App\Http\Controllers\{
     RoleController,
     SystemLogController,
     PermissionController,
-    HRReportController
+    HRReportController,
+    BookController,
+    LendingController,
+    CategoryController
 };
 
 /*
@@ -190,6 +193,10 @@ Route::prefix('leaves')->name('leaves.')->group(function () {
 
 
 
+
+
+
+
     // HR Reports
 Route::prefix('hr-reports')
     ->middleware(['auth'])
@@ -243,6 +250,64 @@ Route::prefix('hr-reports')
 
 Route::get('/hr-reports/evaluation/export', [HRReportController::class, 'exportEvaluation'])
     ->name('hr.reports.export.evaluation');
+
+
+
+Route::group(['middleware' => ['auth']], function () {
+
+    // Library module
+    Route::prefix('library')->name('library.')->group(function () {
+
+        // 📘 AJAX Routes (must come before resource routes)
+        Route::get('lendings/get-students/{class_id}', [App\Http\Controllers\LendingController::class, 'getStudentsByClass'])
+            ->name('lendings.getStudentsByClass');
+
+        Route::get('lendings/get-staff/{role}', [App\Http\Controllers\LendingController::class, 'getStaffByRole'])
+            ->name('lendings.getStaffByRole');
+
+        // 📚 Books
+        Route::resource('books', App\Http\Controllers\BookController::class)->names([
+            'index' => 'books.index',
+            'create' => 'books.create',
+            'store' => 'books.store',
+            'edit' => 'books.edit',
+            'update' => 'books.update',
+            'destroy' => 'books.destroy',
+            'show' => 'books.show',
+        ]);
+
+        // 🗂 Categories
+        Route::resource('categories', App\Http\Controllers\CategoryController::class)->names([
+            'index' => 'categories.index',
+            'create' => 'categories.create',
+            'store' => 'categories.store',
+            'edit' => 'categories.edit',
+            'update' => 'categories.update',
+            'destroy' => 'categories.destroy',
+            'show' => 'categories.show',
+        ]);
+
+        // 🔄 Return Lending
+        Route::post('lendings/{lending}/return', [App\Http\Controllers\LendingController::class, 'returnBook'])
+            ->name('lendings.return');
+
+        // 📦 Lending
+        Route::resource('lendings', App\Http\Controllers\LendingController::class)->names([
+            'index' => 'lendings.index',
+            'create' => 'lendings.create',
+            'store' => 'lendings.store',
+            'edit' => 'lendings.edit',
+            'update' => 'lendings.update',
+            'destroy' => 'lendings.destroy',
+            'show' => 'lendings.show',
+        ]);
+    });
+
+});
+
+
+
+
 
 
 

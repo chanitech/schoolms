@@ -13,19 +13,19 @@
                 @csrf
 
                 <div class="row mb-3">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label for="name" class="form-label">Dormitory Name</label>
                         <input type="text" name="name" class="form-control" value="{{ old('name') }}">
                         @error('name') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
 
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label for="capacity" class="form-label">Capacity</label>
                         <input type="number" name="capacity" class="form-control" value="{{ old('capacity', 30) }}">
                         @error('capacity') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
 
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label for="gender" class="form-label">Gender</label>
                         <select name="gender" class="form-control">
                             <option value="">Select Gender</option>
@@ -33,6 +33,19 @@
                             <option value="female" {{ old('gender')=='female' ? 'selected' : '' }}>Female</option>
                         </select>
                         @error('gender') <span class="text-danger">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="dorm_master_id" class="form-label">Dorm Master</label>
+                        <select name="dorm_master_id" class="form-control">
+                            <option value="">Select Dorm Master</option>
+                            @foreach($dormMasters as $master)
+                                <option value="{{ $master->id }}" {{ old('dorm_master_id') == $master->id ? 'selected' : '' }}>
+                                    {{ $master->first_name }} {{ $master->last_name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('dorm_master_id') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
                 </div>
 

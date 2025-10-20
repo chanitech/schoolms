@@ -3,11 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\Dormitory;
-use App\Models\Staff; // Assuming dorm master is a staff member
+use App\Models\Staff; 
 use Illuminate\Http\Request;
+use Spatie\Permission\Models\Role;
 
 class DormitoryController extends Controller
 {
+    public function __construct()
+    {
+        // Apply permission middleware
+        $this->middleware('permission:view dormitories')->only(['index', 'show']);
+        $this->middleware('permission:create dormitories')->only(['create', 'store']);
+        $this->middleware('permission:edit dormitories')->only(['edit', 'update']);
+        $this->middleware('permission:delete dormitories')->only('destroy');
+    }
+
     // Display all dormitories
     public function index()
     {
@@ -18,8 +28,10 @@ class DormitoryController extends Controller
     // Show form to create a dormitory
     public function create()
     {
-        //$teachers = Staff::where('role', 'Teacher')->get(); // Only teachers as dorm masters
-        return view('dormitories.create');
+        // Only staff with the "Dorm Master" role
+        $dormMasters = Staff::role('Dorm Master')->get();
+
+        return view('dormitories.create', compact('dormMasters'));
     }
 
     // Store new dormitory
@@ -40,8 +52,8 @@ class DormitoryController extends Controller
     // Show form to edit dormitory
     public function edit(Dormitory $dormitory)
     {
-        $teachers = Staff::where('role', 'Teacher')->get();
-        return view('dormitories.edit', compact('dormitory', 'teachers'));
+        $dormMasters = Staff::role('Dorm Master')->get();
+        return view('dormitories.edit', compact('dormitory', 'dormMasters'));
     }
 
     // Update dormitory

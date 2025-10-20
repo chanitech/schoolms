@@ -14,6 +14,8 @@ use App\Services\StudentResultService;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ClassResultsExport;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\SchoolClass;
+use App\Models\Division;
 
 class StudentResultController extends Controller
 {
@@ -90,102 +92,79 @@ class StudentResultController extends Controller
     /**
      * Show detailed student result.
      */
-    public function show(Student $student, Request $request)
-    {
-        $this->authorize('view results');
+  public function show(Student $student, Request $request)
+{
+    $this->authorize('view results');
 
-        try {
-            $exams = Exam::all();
-            $selectedExam = $request->filled('exam_id') ? Exam::find($request->exam_id) : null;
-            $grades = Grade::all();
+    try {
+        $exams = Exam::all();
+        $selectedExam = $request->filled('exam_id') ? Exam::find($request->exam_id) : null;
+        $grades = Grade::all();
 
-            $marksQuery = $student->marks()->with('subject');
-            if ($selectedExam) $marksQuery->where('exam_id', $selectedExam->id);
-            $marks = $marksQuery->get();
+        $marksQuery = $student->marks()->with('subject');
+        if ($selectedExam) $marksQuery->where('exam_id', $selectedExam->id);
+        $marks = $marksQuery->get();
 
-            if ($marks->isEmpty()) {
-                return back()->with('warning', 'No marks found for this student in the selected exam.');
-            }
+        if ($marks->isEmpty()) {
+            return back()->with('warning', 'No marks found for this student in the selected exam.');
+        }
 
-            $subjectsData = $marks->map(function ($mark) use ($grades, $student, $selectedExam) {
-                $grade = $grades->firstWhere(fn($g) => $mark->mark >= $g->min_mark && $mark->mark <= $g->max_mark);
+        // Prepare subjects data
+        $subjectsData = $marks->map(function ($mark) use ($grades, $student, $selectedExam) {
+            $grade = $grades->firstWhere(fn($g) => $mark->mark >= $g->min_mark && $mark->mark <= $g->max_mark);
 
-                $subjectMarks = Mark::where('subject_id', $mark->subject_id)
-                    ->where('exam_id', $selectedExam->id ?? 0)
-                    ->orderByDesc('mark')
-                    ->pluck('student_id')
-                    ->toArray();
-                $subjectPosition = array_search($student->id, $subjectMarks) !== false
-                    ? array_search($student->id, $subjectMarks) + 1
-                    : '-';
+            $subjectMarks = Mark::where('subject_id', $mark->subject_id)
+                ->where('exam_id', $selectedExam->id ?? 0)
+                ->orderByDesc('mark')
+                ->pluck('student_id')
+                ->toArray();
 
-                return [
-                    'subject' => $mark->subject->name ?? 'Unknown',
-                    'type' => $mark->subject->type ?? 'core',
-                    'mark' => $mark->mark,
-                    'grade' => $grade->name ?? '-',
-                    'point' => $grade->point ?? 0,
-                    'remark' => $grade->description ?? '',
-                    'subject_position' => $subjectPosition,
-                ];
-            });
+            $subjectPosition = array_search($student->id, $subjectMarks) !== false
+                ? array_search($student->id, $subjectMarks) + 1
+                : '-';
 
-            $coreSubjects = $subjectsData->where('type', 'core')->sortByDesc('mark');
-            $electives = $subjectsData->where('type', 'elective')->sortByDesc('mark');
+            return [
+                'subject' => $mark->subject->name ?? 'Unknown',
+                'type' => $mark->subject->type ?? 'core',
+                'mark' => $mark->mark,
+                'grade' => $grade->name ?? '-',
+                'point' => $grade->point ?? 0,
+                'remark' => $grade->description ?? '',
+                'subject_position' => $subjectPosition,
+            ];
+        });
 
-            $bestSubjects = $coreSubjects->take(7);
-            if ($bestSubjects->count() < 7) {
-                $bestSubjects = $bestSubjects->merge($electives->take(7 - $bestSubjects->count()));
-            }
+        // NECTA Best 7: Core first, then electives
+        $coreSubjects = $subjectsData->where('type', 'core')->sortByDesc('mark');
+        $electives = $subjectsData->where('type', 'elective')->sortByDesc('mark');
 
-            $bestMarks = $bestSubjects->pluck('mark')->toArray();
-            $result = StudentResultService::calculateGpaAndDivision($bestMarks);
-            $totalPoints = $bestSubjects->sum('point');
+        $bestSubjects = $coreSubjects->take(7);
+        if ($bestSubjects->count() < 7) {
+            $bestSubjects = $bestSubjects->merge($electives->take(7 - $bestSubjects->count()));
+        }
 
-            if ($selectedExam) {
-                StudentResult::updateOrCreate(
-                    ['student_id' => $student->id, 'exam_id' => $selectedExam->id],
-                    ['gpa' => $result['gpa'], 'total_points' => $totalPoints, 'division' => $result['division']]
-                );
-            }
+        $bestMarks = $bestSubjects->pluck('mark')->toArray();
+        $totalPoints = $bestSubjects->sum('point');
+        $result = StudentResultService::calculateGpaAndDivision($bestMarks);
 
-            // Class rank
-            $rank = '-';
-            if ($selectedExam) {
-                $classStudents = Student::where('class_id', $student->class_id)->get();
-                $positions = [];
-                foreach ($classStudents as $s) {
-                    $sMarks = $s->marks()->with('subject')->where('exam_id', $selectedExam->id)->get();
-                    if ($sMarks->isEmpty()) continue;
+        if ($selectedExam) {
+            StudentResult::updateOrCreate(
+                ['student_id' => $student->id, 'exam_id' => $selectedExam->id],
+                ['gpa' => $result['gpa'], 'total_points' => $totalPoints, 'division' => $result['division']]
+            );
+        }
 
-                    $sSubjectsData = $sMarks->map(function ($m) use ($grades) {
-                        $g = $grades->firstWhere(fn($gr) => $m->mark >= $gr->min_mark && $m->mark <= $gr->max_mark);
-                        return [
-                            'mark' => $m->mark,
-                            'point' => $g->point ?? 0,
-                            'type' => $m->subject->type ?? 'core',
-                        ];
-                    });
+        // Class rank calculation (Best 7 logic applied for all students)
+        $rank = '-';
+        if ($selectedExam) {
+            $classStudents = Student::where('class_id', $student->class_id)->get();
+            $positions = [];
 
-                    $core = $sSubjectsData->where('type', 'core')->sortByDesc('mark');
-                    $electives = $sSubjectsData->where('type', 'elective')->sortByDesc('mark');
-                    $best = $core->take(7);
-                    if ($best->count() < 7) $best = $best->merge($electives->take(7 - $best->count()));
+            foreach ($classStudents as $s) {
+                $sMarks = $s->marks()->with('subject')->where('exam_id', $selectedExam->id)->get();
+                if ($sMarks->isEmpty()) continue;
 
-                    $positions[$s->id] = $best->sum('point');
-                }
-                arsort($positions);
-                $rankPosition = array_search($student->id, array_keys($positions));
-                $totalStudents = count($positions);
-                $rank = $rankPosition !== false ? ($rankPosition + 1) . '/' . $totalStudents : '-';
-            }
-
-            // GPA Trend
-            $gpaTrend = $exams->map(function ($exam) use ($student, $grades) {
-                $examMarks = $student->marks()->with('subject')->where('exam_id', $exam->id)->get();
-                if ($examMarks->isEmpty()) return null;
-
-                $examSubjectsData = $examMarks->map(function ($m) use ($grades) {
+                $sSubjectsData = $sMarks->map(function ($m) use ($grades) {
                     $g = $grades->firstWhere(fn($gr) => $m->mark >= $gr->min_mark && $m->mark <= $gr->max_mark);
                     return [
                         'mark' => $m->mark,
@@ -194,51 +173,90 @@ class StudentResultController extends Controller
                     ];
                 });
 
-                $core = $examSubjectsData->where('type', 'core')->sortByDesc('mark');
-                $electives = $examSubjectsData->where('type', 'elective')->sortByDesc('mark');
-                $best = $core->take(7);
-                if ($best->count() < 7) $best = $best->merge($electives->take(7 - $core->count()));
+                $sCore = $sSubjectsData->where('type', 'core')->sortByDesc('mark');
+                $sElectives = $sSubjectsData->where('type', 'elective')->sortByDesc('mark');
 
-                return [
-                    'exam' => $exam->name,
-                    'gpa' => StudentResultService::calculateGpaAndDivision($best->pluck('mark')->toArray())['gpa']
-                ];
-            })->filter();
+                $sBest = $sCore->take(7);
+                if ($sBest->count() < 7) {
+                    $sBest = $sBest->merge($sElectives->take(7 - $sBest->count()));
+                }
 
-            // Subject Trend
-            $subjects = Subject::all();
-            $subjectTrend = [];
-            foreach ($subjects as $subject) {
-                $marksByExam = $exams->map(function ($exam) use ($student, $subject) {
-                    $mark = Mark::where([
-                        'student_id' => $student->id,
-                        'subject_id' => $subject->id,
-                        'exam_id' => $exam->id,
-                    ])->value('mark') ?? 0;
-
-                    return ['exam' => $exam->name, 'mark' => $mark];
-                });
-                $subjectTrend[$subject->name] = $marksByExam;
+                $positions[$s->id] = $sBest->sum('point'); // total points from best 7
             }
 
-            return view('results.show', [
-                'student' => $student,
-                'exam' => $selectedExam,
-                'exams' => $exams,
-                'subjectsData' => $subjectsData,
-                'result' => $result,
-                'totalPoints' => $totalPoints,
-                'selected_exam_id' => $selectedExam->id ?? null,
-                'rank' => $rank,
-                'gpaTrend' => $gpaTrend,
-                'subjectTrend' => $subjectTrend,
-            ]);
+            // Sort descending (highest points first)
+            asort($positions);
 
-        } catch (\Throwable $e) {
-            Log::error('Error calculating student results: ' . $e->getMessage());
-            return back()->with('error', 'Something went wrong while calculating results.');
+            $rankPosition = array_search($student->id, array_keys($positions));
+            $totalStudents = count($positions);
+            $rank = $rankPosition !== false ? ($rankPosition + 1) . '/' . $totalStudents : '-';
         }
+
+        // GPA Trend
+        $gpaTrend = $exams->map(function ($exam) use ($student, $grades) {
+            $examMarks = $student->marks()->with('subject')->where('exam_id', $exam->id)->get();
+            if ($examMarks->isEmpty()) return null;
+
+            $examSubjectsData = $examMarks->map(function ($m) use ($grades) {
+                $g = $grades->firstWhere(fn($gr) => $m->mark >= $gr->min_mark && $m->mark <= $gr->max_mark);
+                return [
+                    'mark' => $m->mark,
+                    'point' => $g->point ?? 0,
+                    'type' => $m->subject->type ?? 'core',
+                ];
+            });
+
+            $core = $examSubjectsData->where('type', 'core')->sortByDesc('mark');
+            $electives = $examSubjectsData->where('type', 'elective')->sortByDesc('mark');
+
+            $best = $core->take(7);
+            if ($best->count() < 7) {
+                $best = $best->merge($electives->take(7 - $best->count()));
+            }
+
+            return [
+                'exam' => $exam->name,
+                'gpa' => StudentResultService::calculateGpaAndDivision($best->pluck('mark')->toArray())['gpa']
+            ];
+        })->filter();
+
+        // Subject Trend
+        $subjects = Subject::all();
+        $subjectTrend = [];
+        foreach ($subjects as $subject) {
+            $marksByExam = $exams->map(function ($exam) use ($student, $subject) {
+                $mark = Mark::where([
+                    'student_id' => $student->id,
+                    'subject_id' => $subject->id,
+                    'exam_id' => $exam->id,
+                ])->value('mark') ?? 0;
+
+                return ['exam' => $exam->name, 'mark' => $mark];
+            });
+            $subjectTrend[$subject->name] = $marksByExam;
+        }
+
+        return view('results.show', [
+            'student' => $student,
+            'exam' => $selectedExam,
+            'exams' => $exams,
+            'subjectsData' => $subjectsData,
+            'result' => $result,
+            'totalPoints' => $totalPoints,
+            'selected_exam_id' => $selectedExam->id ?? null,
+            'rank' => $rank,
+            'gpaTrend' => $gpaTrend,
+            'subjectTrend' => $subjectTrend,
+        ]);
+
+    } catch (\Throwable $e) {
+        Log::error('Error calculating student results: ' . $e->getMessage());
+        return back()->with('error', 'Something went wrong while calculating results.');
     }
+}
+
+
+
 
     /**
      * Export Excel for regular class results.
@@ -255,23 +273,62 @@ class StudentResultController extends Controller
      * Export PDF for regular class results.
      */
     public function exportPDF(Request $request)
-    {
-        $this->authorize('export results');
+{
+    $classId = $request->input('class_id');
+    $examId = $request->input('exam_id');
 
-        $studentsData = $this->getClassResultsDataWithSubjects($request);
-        $classes = \App\Models\SchoolClass::all();
-        $exams = Exam::all();
-        $subjects = Subject::all();
+    $students = Student::where('class_id', $classId)->get();
+    $subjects = Subject::all();
+    $grades = Grade::all();
 
-        $selectedClassId = $request->class_id;
-        $selectedExamId = $request->exam_id;
+    $studentsData = [];
 
-        $pdf = Pdf::loadView('results.class_results_pdf', compact(
-            'studentsData', 'classes', 'exams', 'subjects', 'selectedClassId', 'selectedExamId'
-        ));
+    // Prepare data for each student
+    foreach ($students as $student) {
+        $marks = Mark::where('student_id', $student->id)
+                     ->where('exam_id', $examId)
+                     ->get();
 
-        return $pdf->download('class_results.pdf');
+        $totalPoints = $marks->sum('marks'); // Or calculate as per your grading
+        $gpa = $marks->avg('marks'); // Example, replace with your GPA logic
+
+        $studentsData[] = [
+            'student' => $student,
+            'marks' => $marks,
+            'totalPoints' => $totalPoints,
+            'gpa' => round($gpa, 2),
+            // 'position' will be assigned after sorting
+        ];
     }
+
+    // Sort by totalPoints descending to determine positions
+    usort($studentsData, function ($a, $b) {
+        return $b['totalPoints'] <=> $a['totalPoints'];
+    });
+
+    // Assign positions
+    foreach ($studentsData as $index => &$studentData) {
+        $studentData['position'] = $index + 1;
+    }
+    unset($studentData);
+
+    // Generate PDF
+    $pdf = Pdf::loadView('results.class_results_pdf', [
+        'studentsData' => $studentsData,
+        'subjects' => $subjects,
+        'grades' => $grades,
+    ]);
+
+    return $pdf->download('class_results.pdf');
+}
+
+
+
+
+
+
+
+
 
     /**
      * Export Excel for notice board (all subjects).
@@ -405,65 +462,70 @@ class StudentResultController extends Controller
     }
 
     private function getClassResultsDataWithSubjects(Request $request)
-    {
-        $selectedClassId = $request->class_id;
-        $selectedExamId = $request->exam_id;
-        $studentsData = [];
+{
+    $selectedClassId = $request->class_id;
+    $selectedExamId = $request->exam_id;
+    $studentsData = [];
 
-        if ($selectedClassId && $selectedExamId) {
-            $students = Student::where('class_id', $selectedClassId)->get();
-            $grades = Grade::all();
-            $subjects = Subject::all();
+    if ($selectedClassId && $selectedExamId) {
+        $students = Student::where('class_id', $selectedClassId)->get();
+        $grades = Grade::all(); // NECTA grades with points
+        $subjects = Subject::all();
 
-            foreach ($students as $student) {
-                $marks = $student->marks()->where('exam_id', $selectedExamId)->with('subject')->get()->keyBy('subject_id');
-                $subjectsData = [];
-                $totalMarks = 0;
-                $subjectCount = 0;
+        foreach ($students as $student) {
+            $marks = $student->marks()->where('exam_id', $selectedExamId)->with('subject')->get();
+            $subjectsData = [];
 
-                foreach ($subjects as $subject) {
-                    $mark = $marks->get($subject->id);
-                    if ($mark) {
-                        $grade = $grades->firstWhere(fn($g) => $mark->mark >= $g->min_mark && $mark->mark <= $g->max_mark);
-                        $subjectMark = $mark->mark;
-                    } else {
-                        $grade = null;
-                        $subjectMark = 0;
-                    }
+            foreach ($marks as $mark) {
+                $grade = $grades->firstWhere(fn($g) => $mark->mark >= $g->min_mark && $mark->mark <= $g->max_mark);
 
-                    $subjectsData[$subject->id] = [
-                        'name' => $subject->name,
-                        'mark' => $subjectMark,
-                        'grade' => $grade->name ?? '-',
-                        'point' => $grade->point ?? 0,
-                    ];
-
-                    $totalMarks += $subjectMark;
-                    $subjectCount++;
-                }
-
-                $average = $subjectCount > 0 ? round($totalMarks / $subjectCount, 2) : 0;
-
-                $bestMarks = collect($subjectsData)->sortByDesc('mark')->take(7)->pluck('mark')->toArray();
-                $gpaResult = StudentResultService::calculateGpaAndDivision($bestMarks);
-
-                $studentsData[] = [
-                    'student' => $student,
-                    'subjectsData' => $subjectsData,
-                    'total_marks' => $totalMarks,
-                    'average' => $average,
-                    'total_points' => collect($subjectsData)->sum('point'),
-                    'gpa' => $gpaResult['gpa'],
-                    'division' => $gpaResult['division'],
+                $subjectsData[] = [
+                    'subject_id' => $mark->subject->id,
+                    'name' => $mark->subject->name,
+                    'type' => $mark->subject->type ?? 'core', // core or elective
+                    'mark' => $mark->mark,
+                    'point' => $grade->point ?? 0,
+                    'grade' => $grade->name ?? '-',
                 ];
             }
 
-            usort($studentsData, fn($a, $b) => $b['total_points'] <=> $a['total_points']);
-            foreach ($studentsData as $i => &$data) {
-                $data['position'] = $i + 1;
+            // --- NECTA Best 7 calculation ---
+            $coreSubjects = collect($subjectsData)->where('type', 'core')->sortByDesc('mark');
+            $electiveSubjects = collect($subjectsData)->where('type', 'elective')->sortByDesc('mark');
+
+            $bestSubjects = $coreSubjects->take(7);
+            if ($bestSubjects->count() < 7) {
+                $bestSubjects = $bestSubjects->merge($electiveSubjects->take(7 - $bestSubjects->count()));
             }
+
+            $totalPoints = $bestSubjects->sum('point');
+            $bestMarks = $bestSubjects->pluck('mark')->toArray();
+            $gpaResult = StudentResultService::calculateGpaAndDivision($bestMarks); // Your service can stay
+
+            $studentsData[] = [
+                'student' => $student,
+                'subjectsData' => $subjectsData,
+                'bestSubjects' => $bestSubjects,
+                'total_points' => $totalPoints,
+                'gpa' => $gpaResult['gpa'],
+                'division' => $gpaResult['division'],
+            ];
         }
 
-        return $studentsData;
+        // --- Rank by GPA then total points ---
+        usort($studentsData, function($a, $b) {
+            if ($a['gpa'] === $b['gpa']) {
+                return $b['total_points'] <=> $a['total_points'];
+            }
+            return $a['gpa'] <=> $b['gpa'];
+        });
+
+        foreach ($studentsData as $i => &$data) {
+            $data['position'] = $i + 1;
+        }
     }
+
+    return $studentsData;
+}
+
 }

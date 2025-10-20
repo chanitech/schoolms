@@ -383,16 +383,35 @@ return [
         ],
     ],
 
-    // Library
+    
+
     [
-        'text' => 'Library',
-        'icon' => 'fas fa-book',
-        'submenu' => [
-            ['text' => 'Books', 'url' => 'books', 'icon' => 'fas fa-book'],
-            ['text' => 'Categories', 'url' => 'categories', 'icon' => 'fas fa-tags'],
-            ['text' => 'Lending & Returns', 'url' => 'lendings', 'icon' => 'fas fa-exchange-alt'],
+    'text' => 'Library',
+    'icon' => 'fas fa-book',
+    //'can' => 'library.view',
+    'submenu' => [
+        [
+            'text' => 'Books',
+            'url' => 'library/books', // ❌ route() removed
+            'icon' => 'fas fa-book',
+            //'can' => 'library.view',
+        ],
+        [
+            'text' => 'Categories',
+            'url' => 'library/categories',
+            'icon' => 'fas fa-tags',
+            //'can' => 'library.view',
+        ],
+        [
+            'text' => 'Lending & Returns',
+            'url' => 'library/lendings',
+            'icon' => 'fas fa-exchange-alt',
+            //'can' => 'library.view',
         ],
     ],
+],
+
+
 
     // Reports
     [

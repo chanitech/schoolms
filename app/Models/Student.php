@@ -76,4 +76,6 @@ class Student extends Model
     {
         return $this->marks()->where('academic_session_id', $sessionId);
     }
+
+    
 }

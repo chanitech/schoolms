@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Mark;
 use App\Models\Student;
+use App\Models\Enrollment;
 use App\Models\SchoolClass;
 use App\Models\Subject;
 use App\Models\Exam;
@@ -24,6 +25,7 @@ class MarkController extends Controller
 
         $sessions = AcademicSession::all();
         $classes = SchoolClass::all();
+        $exams = Exam::all();
 
         // Only allow teachers to see their subjects
         if ($user->hasRole('Teacher')) {
@@ -31,8 +33,6 @@ class MarkController extends Controller
         } else {
             $subjects = Subject::all();
         }
-
-        $exams = Exam::all();
 
         $marksQuery = Mark::with(['student.class', 'subject', 'exam', 'grade']);
 
@@ -47,7 +47,6 @@ class MarkController extends Controller
         }
 
         if ($request->filled('subject_id')) {
-            // If teacher, ensure only their subject
             if ($user->hasRole('Teacher')) {
                 $marksQuery->where('subject_id', $request->subject_id)
                            ->whereHas('subject', fn($q) => $q->where('teacher_id', $user->id));
@@ -55,7 +54,6 @@ class MarkController extends Controller
                 $marksQuery->where('subject_id', $request->subject_id);
             }
         } elseif ($user->hasRole('Teacher')) {
-            // If teacher and no subject selected, only their subjects
             $marksQuery->whereHas('subject', fn($q) => $q->where('teacher_id', $user->id));
         }
 
@@ -76,7 +74,6 @@ class MarkController extends Controller
         $classes = SchoolClass::all();
         $exams = Exam::all();
 
-        // Only show teacher their subjects
         if ($user->hasRole('Teacher')) {
             $subjects = Subject::where('teacher_id', $user->id)->get();
         } else {
@@ -96,13 +93,13 @@ class MarkController extends Controller
 
         $request->validate([
             'academic_session_id' => 'required|exists:academic_sessions,id',
+            'class_id' => 'required|exists:school_classes,id',
             'subject_id' => 'required|exists:subjects,id',
             'exam_id' => 'required|exists:exams,id',
             'marks' => 'required|array',
             'marks.*' => 'required|numeric|min:0|max:100',
         ]);
 
-        // If teacher, ensure they can only mark their subject
         if ($user->hasRole('Teacher')) {
             $subject = Subject::where('id', $request->subject_id)
                               ->where('teacher_id', $user->id)
@@ -110,11 +107,17 @@ class MarkController extends Controller
         }
 
         foreach ($request->marks as $student_id => $markValue) {
+
+            // Only allow enrolled students
+            $enrollment = Enrollment::where('student_id', $student_id)
+                ->where('class_id', $request->class_id)
+                ->where('academic_session_id', $request->academic_session_id)
+                ->where('status', 'active')
+                ->firstOrFail();
+
             $grade = Grade::where('min_mark', '<=', $markValue)
                           ->where('max_mark', '>=', $markValue)
                           ->first();
-
-            $student = Student::findOrFail($student_id);
 
             Mark::updateOrCreate(
                 [
@@ -126,7 +129,7 @@ class MarkController extends Controller
                 [
                     'mark' => $markValue,
                     'grade_id' => $grade?->id,
-                    'class_id' => $student->class_id,
+                    'class_id' => $request->class_id,
                 ]
             );
         }
@@ -135,7 +138,7 @@ class MarkController extends Controller
     }
 
     /**
-     * AJAX: Get students of a class and session.
+     * AJAX: Get students of a class and session (enrolled only).
      */
     public function getStudents(Request $request)
     {
@@ -144,9 +147,16 @@ class MarkController extends Controller
             'session_id' => 'required|exists:academic_sessions,id',
         ]);
 
-        $students = Student::where('class_id', $request->class_id)
-                           ->where('academic_session_id', $request->session_id)
-                           ->get(['id', 'first_name', 'last_name']);
+        $students = Enrollment::with('student')
+            ->where('class_id', $request->class_id)
+            ->where('academic_session_id', $request->session_id)
+            ->where('status', 'active')
+            ->get()
+            ->map(fn($enrollment) => [
+                'id' => $enrollment->student->id,
+                'first_name' => $enrollment->student->first_name,
+                'last_name' => $enrollment->student->last_name,
+            ]);
 
         return response()->json($students);
     }
@@ -162,7 +172,6 @@ class MarkController extends Controller
         $sessions = AcademicSession::all();
         $exams = Exam::all();
 
-        // Only show subjects teacher can edit
         if ($user->hasRole('Teacher')) {
             $subjects = Subject::where('teacher_id', $user->id)->get();
         } else {
@@ -187,7 +196,6 @@ class MarkController extends Controller
             'mark' => 'required|numeric|min:0|max:100',
         ]);
 
-        // Ensure teacher can only update their subject
         if ($user->hasRole('Teacher')) {
             $subject = Subject::where('id', $request->subject_id)
                               ->where('teacher_id', $user->id)
