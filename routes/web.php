@@ -55,6 +55,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/', [ProfileController::class, 'edit'])->name('edit');
         Route::patch('/', [ProfileController::class, 'update'])->name('update');
         Route::delete('/', [ProfileController::class, 'destroy'])->name('destroy');
+        Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+
     });
 
     // System Settings: Roles & Permissions

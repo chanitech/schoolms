@@ -58,6 +58,34 @@ public function staff()
 }
 
 
+public function getProfilePhotoUrlAttribute()
+{
+    return $this->photo
+        ? asset('storage/' . $this->photo)
+        : asset('images/default-avatar.png'); // fallback image
+}
+
+
+public function adminlte_image()
+{
+    return $this->photo
+        ? asset('storage/' . $this->photo)
+        : asset('images/default-avatar.png');
+}
+
+public function adminlte_desc()
+{
+    return $this->email;
+}
+
+public function adminlte_profile_url()
+{
+    return 'profile';
+}
+
+
+
+
 
 
 
