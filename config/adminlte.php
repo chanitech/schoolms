@@ -441,11 +441,7 @@ return [
             'url'  => '/school-info',
             'icon' => 'fas fa-school',
         ],
-        [
-            'text' => 'Academic Years & Terms',
-            'url'  => '/settings/academic',
-            'icon' => 'fas fa-calendar',
-        ],
+        
         [
             'text' => 'Roles & Permissions',
             'icon' => 'fas fa-user-shield',
@@ -462,11 +458,7 @@ return [
                 ],
             ],
         ],
-        [
-            'text' => 'System Logs',
-            'url'  => '/settings/logs',
-            'icon' => 'fas fa-file-alt',
-        ],
+       
     ],
 ],
 

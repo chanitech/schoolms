@@ -145,6 +145,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/{jobcard}/rate-task', [JobCardController::class, 'rateTask'])->name('rateTask');
 });
 
+
+    
+
     // Attendance
     Route::prefix('attendance')->name('attendance.')->group(function () {
         Route::get('/', [AttendanceController::class, 'index'])->name('index');
