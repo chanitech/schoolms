@@ -83,6 +83,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'update'  => 'permissions.update',
             'destroy' => 'permissions.destroy',
         ]);
+
+        // ✅ School Info Routes
+    Route::get('school-info', [App\Http\Controllers\SchoolInfoController::class, 'index'])
+        ->name('school.info.index');
+    Route::post('school-info', [App\Http\Controllers\SchoolInfoController::class, 'update'])
+        ->name('school.info.update');
     });
 
     // Resource routes
