@@ -132,6 +132,13 @@
 
 @stop
 
+
+@section('footer')
+    <footer class="main-footer text-center">
+        <strong>&copy; {{ date('Y') }} MEMAsms.</strong> All rights reserved.
+    </footer>
+@stop
+
 @section('css')
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css" rel="stylesheet">
 <style>

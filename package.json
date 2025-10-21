@@ -25,6 +25,7 @@
     "dependencies": {
         "@fullcalendar/core": "^6.1.19",
         "@fullcalendar/daygrid": "^6.1.19",
+        "admin-lte": "^4.0.0-rc3",
         "icheck-bootstrap": "^3.0.1"
     }
 }
