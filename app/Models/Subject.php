@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\SchoolClass;
 use App\Models\User;
 use App\Models\Mark;
+use App\Models\Student;
 
 class Subject extends Model
 {
@@ -57,5 +58,31 @@ class Subject extends Model
         return $this->teacher
             ? "{$this->teacher->first_name} {$this->teacher->last_name}"
             : '—';
+    }
+
+    /**
+     * 🔹 All students assigned to this subject (pivot 'withdrawn' available)
+     */
+    public function students()
+    {
+        return $this->belongsToMany(Student::class, 'student_subject', 'subject_id', 'student_id')
+                    ->withPivot('withdrawn')
+                    ->withTimestamps();
+    }
+
+    /**
+     * 🔹 Only students who are actively taking this subject (not withdrawn)
+     */
+    public function activeStudents()
+    {
+        return $this->students()->wherePivot('withdrawn', 0);
+    }
+
+    /**
+     * 🔹 Optionally, a helper to get withdrawn students
+     */
+    public function withdrawnStudents()
+    {
+        return $this->students()->wherePivot('withdrawn', 1);
     }
 }

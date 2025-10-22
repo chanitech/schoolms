@@ -1,4 +1,5 @@
 @extends('adminlte::page')
+
 @section('title', 'Edit Staff')
 
 @section('content_header')
@@ -12,6 +13,7 @@
         @method('PUT')
 
         <div class="row g-3">
+
             <!-- First Name -->
             <div class="col-md-6">
                 <label>First Name</label>
@@ -61,18 +63,21 @@
                     value="{{ old('position', $staff->position) }}">
             </div>
 
-            <!-- Role (Spatie) -->
-            <div class="col-md-6">
-                <label>Role</label>
-                <select name="role" class="form-control" required>
-                    <option value="">-- Select Role --</option>
+            <!-- Roles (Multiple) -->
+            <div class="col-md-12">
+                <label>Roles</label>
+                <div class="row">
                     @foreach($roles as $role)
-                        <option value="{{ $role->name }}" 
-                            {{ old('role', $staff->role_name) == $role->name ? 'selected' : '' }}>
-                            {{ $role->name }}
-                        </option>
+                        <div class="col-md-3">
+                            <div class="form-check">
+                                <input type="checkbox" name="roles[]" value="{{ $role->name }}" 
+                                    class="form-check-input" id="role-{{ $role->id }}"
+                                    {{ in_array($role->name, old('roles', $staff->roles->pluck('name')->toArray())) ? 'checked' : '' }}>
+                                <label class="form-check-label" for="role-{{ $role->id }}">{{ $role->name }}</label>
+                            </div>
+                        </div>
                     @endforeach
-                </select>
+                </div>
             </div>
 
             <!-- Photo -->
@@ -83,12 +88,13 @@
                     <img src="{{ asset('storage/' . $staff->photo) }}" class="img-thumbnail mt-2" width="100">
                 @endif
             </div>
-        </div>
 
-        <!-- Buttons -->
-        <div class="col-md-12 mt-3">
-            <button class="btn btn-primary">Update Staff</button>
-            <a href="{{ route('staff.index') }}" class="btn btn-secondary">Cancel</a>
+            <!-- Buttons -->
+            <div class="col-md-12 mt-3">
+                <button class="btn btn-primary">Update Staff</button>
+                <a href="{{ route('staff.index') }}" class="btn btn-secondary">Cancel</a>
+            </div>
+
         </div>
     </form>
 </div>

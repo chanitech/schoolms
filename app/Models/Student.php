@@ -11,6 +11,7 @@ use App\Models\Dormitory;
 use App\Models\AcademicSession;
 use App\Models\Enrollment;
 use App\Models\Mark;
+use App\Models\Subject;
 
 class Student extends Model
 {
@@ -76,6 +77,26 @@ class Student extends Model
     {
         return $this->marks()->where('academic_session_id', $sessionId);
     }
+
+   public function subjects()
+{
+    return $this->belongsToMany(Subject::class, 'student_subject', 'student_id', 'subject_id')
+                ->withPivot('withdrawn')
+                ->withTimestamps();
+}
+
+// Student.php
+public function schoolClass()
+{
+    return $this->belongsTo(SchoolClass::class, 'class_id');
+}
+
+
+public function getFullNameAttribute()
+{
+    return $this->first_name . ' ' . $this->last_name;
+}
+
 
     
 }

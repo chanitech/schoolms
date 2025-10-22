@@ -13,7 +13,6 @@ class StaffController extends Controller
 {
     public function __construct()
     {
-        // Optional: restrict access based on permissions
         $this->middleware('permission:view staff')->only('index');
         $this->middleware('permission:create staff')->only(['create', 'store']);
         $this->middleware('permission:edit staff')->only(['edit', 'update']);
@@ -31,7 +30,7 @@ class StaffController extends Controller
     public function create()
     {
         $departments = Department::all();
-        $roles = Role::all(); // Fetch all Spatie roles
+        $roles = Role::all();
         return view('staff.create', compact('departments', 'roles'));
     }
 
@@ -46,23 +45,27 @@ class StaffController extends Controller
             'department_id' => 'required|exists:departments,id',
             'position'      => 'nullable|string',
             'photo'         => 'nullable|image|max:2048',
-            'role'          => 'required|exists:roles,name',
+            'roles'         => 'required|array',
+            'roles.*'       => 'exists:roles,name',
         ]);
 
-        // Create user for login
+        // Create user
         $user = User::create([
             'first_name' => $request->first_name,
             'last_name'  => $request->last_name,
             'name'       => $request->first_name . ' ' . $request->last_name,
             'email'      => $request->email,
-            'password'   => Hash::make('password123'),
+            'password'   => Hash::make('password123'), // default password
         ]);
 
-        $user->assignRole($request->role);
+        // Assign multiple roles
+        $user->syncRoles($request->roles);
 
+        // Handle photo
         $photoPath = $request->hasFile('photo') ? $request->file('photo')->store('staff', 'public') : null;
 
-        $staff = Staff::create([
+        // Create staff record
+        Staff::create([
             'first_name'    => $request->first_name,
             'last_name'     => $request->last_name,
             'email'         => $request->email,
@@ -72,8 +75,6 @@ class StaffController extends Controller
             'photo'         => $photoPath,
             'user_id'       => $user->id,
         ]);
-
-        $staff->syncRoles([$request->role]);
 
         return redirect()->route('staff.index')
                          ->with('success', 'Staff created successfully. Default password: password123');
@@ -98,9 +99,11 @@ class StaffController extends Controller
             'department_id' => 'required|exists:departments,id',
             'position'      => 'nullable|string',
             'photo'         => 'nullable|image|max:2048',
-            'role'          => 'required|exists:roles,name',
+            'roles'         => 'required|array',
+            'roles.*'       => 'exists:roles,name',
         ]);
 
+        // Update user info
         if ($staff->user) {
             $staff->user->update([
                 'first_name' => $request->first_name,
@@ -108,14 +111,18 @@ class StaffController extends Controller
                 'name'       => $request->first_name . ' ' . $request->last_name,
                 'email'      => $request->email,
             ]);
-            $staff->user->syncRoles([$request->role]);
+
+            // Sync multiple roles
+            $staff->user->syncRoles($request->roles);
         }
 
+        // Handle photo
         $photoPath = $staff->photo;
         if ($request->hasFile('photo')) {
             $photoPath = $request->file('photo')->store('staff', 'public');
         }
 
+        // Update staff record
         $staff->update([
             'first_name'    => $request->first_name,
             'last_name'     => $request->last_name,
@@ -126,8 +133,6 @@ class StaffController extends Controller
             'photo'         => $photoPath,
         ]);
 
-        $staff->syncRoles([$request->role]);
-
         return redirect()->route('staff.index')->with('success', 'Staff updated successfully.');
     }
 
@@ -137,6 +142,7 @@ class StaffController extends Controller
         if ($staff->user) {
             $staff->user->delete();
         }
+
         $staff->delete();
 
         return redirect()->route('staff.index')->with('success', 'Staff deleted successfully.');

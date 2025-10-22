@@ -16,6 +16,7 @@ use App\Exports\ClassResultsExport;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\SchoolClass;
 use App\Models\Division;
+use App\Models\SchoolInfo;
 
 class StudentResultController extends Controller
 {
@@ -272,55 +273,100 @@ class StudentResultController extends Controller
     /**
      * Export PDF for regular class results.
      */
-    public function exportPDF(Request $request)
+    
+
+public function exportPDF(Request $request)
 {
     $classId = $request->input('class_id');
     $examId = $request->input('exam_id');
 
+    // Fetch necessary data
     $students = Student::where('class_id', $classId)->get();
     $subjects = Subject::all();
     $grades = Grade::all();
+    $school = SchoolInfo::first(); // school info
 
     $studentsData = [];
 
-    // Prepare data for each student
     foreach ($students as $student) {
         $marks = Mark::where('student_id', $student->id)
                      ->where('exam_id', $examId)
+                     ->with('subject')
                      ->get();
 
-        $totalPoints = $marks->sum('marks'); // Or calculate as per your grading
-        $gpa = $marks->avg('marks'); // Example, replace with your GPA logic
+        $subjectsData = [];
+        foreach ($marks as $mark) {
+            $grade = $grades->firstWhere(fn($g) => $mark->mark >= $g->min_mark && $mark->mark <= $g->max_mark);
+            $subjectsData[] = [
+                'subject' => $mark->subject->name ?? '-',
+                'mark' => $mark->mark,
+                'grade' => $grade->name ?? '-',
+                'point' => $grade->point ?? 0,
+                'type' => $mark->subject->type ?? 'core',
+            ];
+        }
+
+        // NECTA Best 7: Core first, then electives
+        $coreSubjects = collect($subjectsData)->where('type', 'core')->sortByDesc('mark');
+        $electiveSubjects = collect($subjectsData)->where('type', 'elective')->sortByDesc('mark');
+
+        $bestSubjects = $coreSubjects->take(7);
+        if ($bestSubjects->count() < 7) {
+            $bestSubjects = $bestSubjects->merge($electiveSubjects->take(7 - $bestSubjects->count()));
+        }
+
+        $totalPoints = $bestSubjects->sum('point');
+        $bestMarks = $bestSubjects->pluck('mark')->toArray();
+        $gpaResult = StudentResultService::calculateGpaAndDivision($bestMarks);
 
         $studentsData[] = [
             'student' => $student,
-            'marks' => $marks,
-            'totalPoints' => $totalPoints,
-            'gpa' => round($gpa, 2),
-            // 'position' will be assigned after sorting
+            'subjectsData' => $subjectsData,
+            'bestSubjects' => $bestSubjects,
+            'total_points' => $totalPoints,
+            'gpa' => $gpaResult['gpa'],
+            'division' => $gpaResult['division'],
         ];
     }
 
-    // Sort by totalPoints descending to determine positions
+    // Sort by GPA then total points
     usort($studentsData, function ($a, $b) {
-        return $b['totalPoints'] <=> $a['totalPoints'];
+        if ($a['gpa'] === $b['gpa']) {
+            return $b['total_points'] <=> $a['total_points'];
+        }
+        return $b['gpa'] <=> $a['gpa'];
     });
 
-    // Assign positions
-    foreach ($studentsData as $index => &$studentData) {
-        $studentData['position'] = $index + 1;
+    foreach ($studentsData as $i => &$data) {
+        $data['position'] = $i + 1;
     }
-    unset($studentData);
 
     // Generate PDF
     $pdf = Pdf::loadView('results.class_results_pdf', [
         'studentsData' => $studentsData,
         'subjects' => $subjects,
         'grades' => $grades,
+        'school' => $school, // pass school info
+    ])
+    ->setPaper('A3', 'landscape')
+    ->setOptions([
+        'isHtml5ParserEnabled' => true,
+        'isRemoteEnabled' => true,
     ]);
+
+    // Add watermark
+    $pdf->getDomPDF()->getCanvas()->page_text(
+        520, 800,
+        $school->name ?? 'SCHOOL NAME',
+        'Arial', 50, [0.85, 0.85, 0.85], 0.5
+    );
 
     return $pdf->download('class_results.pdf');
 }
+
+
+
+
 
 
 

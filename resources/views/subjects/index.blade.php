@@ -23,7 +23,7 @@
                     <th>Code</th>
                     <th>Type</th>
                     <th>Classes</th>
-                    <th>Teacher</th> {{-- ✅ New column --}}
+                    <th>Teacher</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -43,9 +43,15 @@
                             <span class="text-muted">—</span>
                         @endif
                     </td>
-                    <td>{{ $subject->teacher_name }}</td> {{-- ✅ Clean display --}}
+                    <td>{{ $subject->teacher_name }}</td>
                     <td>
                         <a href="{{ route('subjects.edit', $subject->id) }}" class="btn btn-sm btn-warning">Edit</a>
+                        
+                        {{-- ✅ Assign Students Button --}}
+                        <a href="{{ route('subjects.assign_students', $subject->id) }}" class="btn btn-sm btn-info">
+                            Assign Students
+                        </a>
+
                         <form action="{{ route('subjects.destroy', $subject->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this subject?');">
                             @csrf
                             @method('DELETE')

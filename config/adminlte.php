@@ -438,7 +438,7 @@ return [
         ],
         [
             'text' => 'School Info',
-            'url'  => '/school-info',
+            'url'  => '/settings/school-info',
             'icon' => 'fas fa-school',
         ],
         

@@ -2,62 +2,74 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Class Results - {{ $class->name }} - {{ $exam->name }}</title>
+    <title>Class Results</title>
     <style>
-        body { font-family: Arial, sans-serif; font-size: 12px; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
-        th, td { border: 1px solid #000; padding: 5px; text-align: center; }
-        th { background-color: #f2f2f2; }
-        .text-left { text-align: left; }
-        .header { text-align: center; margin-bottom: 20px; }
-        .header img { width: 80px; }
-        .header h1, .header h3 { margin: 2px; }
+        @page {
+            margin: 20px 10px;
+            header: page-header;
+            footer: page-footer;
+        }
+        body { font-family: Arial, sans-serif; font-size: 11px; line-height: 1.2; }
+        table { width: 100%; border-collapse: collapse; page-break-inside: auto; }
+        th, td { border: 1px solid #000; padding: 4px; text-align: center; }
+        th { background-color: #f0f0f0; }
+        tr { page-break-inside: avoid; page-break-after: auto; }
+        .header { text-align: center; margin-bottom: 10px; }
+        .school-logo { height: 80px; }
+        h1, h2, h3 { margin: 0; }
+        .watermark {
+            position: fixed;
+            top: 45%;
+            left: 25%;
+            width: 50%;
+            text-align: center;
+            font-size: 100px;
+            color: rgba(200, 200, 200, 0.2);
+            transform: rotate(-45deg);
+            z-index: -1000;
+        }
+        .page-header { text-align: center; font-size: 14px; margin-bottom: 5px; }
     </style>
 </head>
 <body>
+    <div class="watermark">CONFIDENTIAL</div>
 
-<div class="header">
-    @if(isset($logo_img))
-        <img src="{{ $logo_img }}" alt="School Logo">
-    @endif
-    <h1>{{ $class->school->name ?? 'School Name' }}</h1>
-    <h3>Class Results: {{ $class->name }} - Exam: {{ $exam->name }}</h3>
-</div>
+    <div class="header">
+        @if($schoolInfo->logo)
+            <img src="{{ public_path('uploads/'.$schoolInfo->logo) }}" class="school-logo" alt="Logo">
+        @endif
+        <h1>{{ $schoolInfo->name ?? 'School Name' }}</h1>
+        <h3>{{ $schoolInfo->address ?? '' }} | {{ $schoolInfo->phone ?? '' }}</h3>
+        <h2>{{ $class->name ?? '' }} - {{ $exam->name ?? '' }} Results</h2>
+    </div>
 
-<table>
-    <thead>
-        <tr>
-            <th>#</th>
-            <th>Student</th>
-            @foreach($subjects as $subject)
-                <th>{{ $subject['name'] }}</th>
-            @endforeach
-            <th>Total Marks (Best 7)</th>
-            <th>Average (Best 7)</th>
-            <th>Division</th>
-            <th>Total Points (Best 7)</th>
-            <th>GPA</th>
-            <th>Position</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach($studentsData as $i => $student)
+    <table>
+        <thead>
             <tr>
-                <td>{{ $i + 1 }}</td>
-                <td class="text-left">{{ $student['student']->first_name }} {{ $student['student']->last_name }}</td>
-                @foreach($student['subjectsData'] as $sub)
-                    <td>{{ $sub['mark'] }} ({{ $sub['grade'] }})</td>
+                <th>Position</th>
+                <th>Student Name</th>
+                @foreach($subjects as $subject)
+                    <th>{{ $subject->name }}</th>
                 @endforeach
-                <td>{{ $student['totalMarks'] }}</td>
-                <td>{{ $student['average'] }}</td>
-                <td>{{ $student['division'] }}</td>
-                <td>{{ $student['totalPoints'] }}</td>
-                <td>{{ number_format($student['gpa'], 2) }}</td>
-                <td>{{ $student['position'] }}</td>
+                <th>Total Points</th>
+                <th>GPA</th>
+                <th>Division</th>
             </tr>
-        @endforeach
-    </tbody>
-</table>
-
+        </thead>
+        <tbody>
+            @foreach($studentsData as $data)
+                <tr>
+                    <td>{{ $data['position'] }}</td>
+                    <td>{{ $data['student']->full_name }}</td>
+                    @foreach($subjects as $subject)
+                        <td>{{ $data['subjectsData'][$subject->id]['mark'] ?? '-' }}</td>
+                    @endforeach
+                    <td>{{ $data['totalPoints'] }}</td>
+                    <td>{{ $data['gpa'] }}</td>
+                    <td>{{ $data['division'] }}</td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
 </body>
 </html>

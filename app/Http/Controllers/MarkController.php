@@ -86,80 +86,117 @@ class MarkController extends Controller
     /**
      * Store newly created marks.
      */
-    public function store(Request $request)
-    {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
+  public function store(Request $request)
+{
+    /** @var \App\Models\User $user */
+    $user = Auth::user();
 
-        $request->validate([
-            'academic_session_id' => 'required|exists:academic_sessions,id',
-            'class_id' => 'required|exists:school_classes,id',
-            'subject_id' => 'required|exists:subjects,id',
-            'exam_id' => 'required|exists:exams,id',
-            'marks' => 'required|array',
-            'marks.*' => 'required|numeric|min:0|max:100',
-        ]);
+    $request->validate([
+        'academic_session_id' => 'required|exists:academic_sessions,id',
+        'class_id' => 'required|exists:school_classes,id',
+        'subject_id' => 'required|exists:subjects,id',
+        'exam_id' => 'required|exists:exams,id',
+        'marks' => 'required|array',
+        'marks.*' => 'required|numeric|min:0|max:100',
+    ]);
 
-        if ($user->hasRole('Teacher')) {
-            $subject = Subject::where('id', $request->subject_id)
-                              ->where('teacher_id', $user->id)
-                              ->firstOrFail();
-        }
-
-        foreach ($request->marks as $student_id => $markValue) {
-
-            // Only allow enrolled students
-            $enrollment = Enrollment::where('student_id', $student_id)
-                ->where('class_id', $request->class_id)
-                ->where('academic_session_id', $request->academic_session_id)
-                ->where('status', 'active')
-                ->firstOrFail();
-
-            $grade = Grade::where('min_mark', '<=', $markValue)
-                          ->where('max_mark', '>=', $markValue)
-                          ->first();
-
-            Mark::updateOrCreate(
-                [
-                    'student_id' => $student_id,
-                    'subject_id' => $request->subject_id,
-                    'exam_id' => $request->exam_id,
-                    'academic_session_id' => $request->academic_session_id,
-                ],
-                [
-                    'mark' => $markValue,
-                    'grade_id' => $grade?->id,
-                    'class_id' => $request->class_id,
-                ]
-            );
-        }
-
-        return redirect()->route('marks.index')->with('success', 'Marks saved successfully with grades!');
+    if ($user->hasRole('Teacher')) {
+        $subject = Subject::where('id', $request->subject_id)
+                          ->where('teacher_id', $user->id)
+                          ->firstOrFail();
     }
+
+    foreach ($request->marks as $student_id => $markValue) {
+
+        // Check if the student is enrolled and not withdrawn from this subject
+        $enrollment = Enrollment::where('student_id', $student_id)
+            ->where('class_id', $request->class_id)
+            ->where('academic_session_id', $request->academic_session_id)
+            ->where('status', 'active')
+            ->first();
+
+        if (!$enrollment) {
+            continue; // Skip students not actively enrolled
+        }
+
+        $student = $enrollment->student;
+
+        // Skip student if withdrawn from this subject
+        if ($student->subjects()
+                    ->where('subject_id', $request->subject_id)
+                    ->wherePivot('withdrawn', 1)
+                    ->exists()) {
+            continue;
+        }
+
+        $grade = Grade::where('min_mark', '<=', $markValue)
+                      ->where('max_mark', '>=', $markValue)
+                      ->first();
+
+        Mark::updateOrCreate(
+            [
+                'student_id' => $student_id,
+                'subject_id' => $request->subject_id,
+                'exam_id' => $request->exam_id,
+                'academic_session_id' => $request->academic_session_id,
+            ],
+            [
+                'mark' => $markValue,
+                'grade_id' => $grade?->id,
+                'class_id' => $request->class_id,
+            ]
+        );
+    }
+
+    return redirect()->route('marks.index')->with('success', 'Marks saved successfully with grades!');
+}
+
 
     /**
      * AJAX: Get students of a class and session (enrolled only).
      */
-    public function getStudents(Request $request)
-    {
-        $request->validate([
-            'class_id' => 'required|exists:school_classes,id',
-            'session_id' => 'required|exists:academic_sessions,id',
-        ]);
+    /**
+ * AJAX: Get students of a class, session, and subject (enrolled only and not withdrawn)
+ */
+public function getStudents(Request $request)
+{
+    $request->validate([
+        'class_id' => 'required|exists:school_classes,id',
+        'session_id' => 'required|exists:academic_sessions,id',
+        'subject_id' => 'required|exists:subjects,id', // add this
+    ]);
 
-        $students = Enrollment::with('student')
-            ->where('class_id', $request->class_id)
-            ->where('academic_session_id', $request->session_id)
-            ->where('status', 'active')
-            ->get()
-            ->map(fn($enrollment) => [
-                'id' => $enrollment->student->id,
-                'first_name' => $enrollment->student->first_name,
-                'last_name' => $enrollment->student->last_name,
-            ]);
+    // Fetch enrollments for the class & session
+    $enrollments = Enrollment::with('student')
+        ->where('class_id', $request->class_id)
+        ->where('academic_session_id', $request->session_id)
+        ->where('status', 'active')
+        ->get();
 
-        return response()->json($students);
+    $students = [];
+
+    foreach ($enrollments as $enrollment) {
+        $student = $enrollment->student;
+
+        // Skip if student is withdrawn from this subject
+        $isWithdrawn = $student->subjects()
+                               ->where('subject_id', $request->subject_id)
+                               ->wherePivot('withdrawn', 1)
+                               ->exists();
+
+        if (!$isWithdrawn) {
+            $students[] = [
+                'id' => $student->id,
+                'first_name' => $student->first_name,
+                'last_name' => $student->last_name,
+            ];
+        }
     }
+
+    return response()->json($students);
+}
+
+
 
     /**
      * Show the form for editing a mark.

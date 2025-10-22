@@ -61,18 +61,21 @@
                     value="{{ old('position') }}">
             </div>
 
-            <!-- Role (Spatie) -->
-            <div class="col-md-6">
-                <label>Role</label>
-                <select name="role" class="form-control" required>
-                    <option value="">-- Select Role --</option>
+            <!-- Roles (Multiple) -->
+            <div class="col-md-12">
+                <label>Roles</label>
+                <div class="row">
                     @foreach($roles as $role)
-                        <option value="{{ $role->name }}" 
-                            {{ old('role') == $role->name ? 'selected' : '' }}>
-                            {{ $role->name }}
-                        </option>
+                        <div class="col-md-3">
+                            <div class="form-check">
+                                <input type="checkbox" name="roles[]" value="{{ $role->name }}" 
+                                    class="form-check-input" id="role-{{ $role->id }}"
+                                    {{ in_array($role->name, old('roles', [])) ? 'checked' : '' }}>
+                                <label class="form-check-label" for="role-{{ $role->id }}">{{ $role->name }}</label>
+                            </div>
+                        </div>
                     @endforeach
-                </select>
+                </div>
             </div>
 
             <!-- Photo -->
@@ -84,6 +87,7 @@
             <!-- Submit Button -->
             <div class="col-md-12 mt-3">
                 <button class="btn btn-success">Save Staff</button>
+                <a href="{{ route('staff.index') }}" class="btn btn-secondary">Cancel</a>
             </div>
 
         </div>

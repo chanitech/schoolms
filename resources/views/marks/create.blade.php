@@ -68,7 +68,7 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td colspan="2" class="text-center">Select class & session to load students</td>
+                                <td colspan="2" class="text-center">Select class, session & subject to load students</td>
                             </tr>
                         </tbody>
                     </table>
@@ -88,12 +88,17 @@ $(document).ready(function(){
     function loadStudents() {
         let class_id = $('#class').val();
         let session_id = $('#session').val();
+        let subject_id = $('#subject').val();
 
-        if(class_id && session_id){
+        if(class_id && session_id && subject_id){
             $.ajax({
                 url: "{{ route('marks.students') }}",
                 type: 'GET',
-                data: { class_id: class_id, session_id: session_id },
+                data: { 
+                    class_id: class_id, 
+                    session_id: session_id,
+                    subject_id: subject_id
+                },
                 success: function(students){
                     let tbody = '';
                     if(students.length > 0){
@@ -117,11 +122,14 @@ $(document).ready(function(){
                 }
             });
         } else {
-            $('#students-table tbody').html('<tr><td colspan="2" class="text-center">Select class & session to load students</td></tr>');
+            $('#students-table tbody').html('<tr><td colspan="2" class="text-center">Select class, session & subject to load students</td></tr>');
         }
     }
 
-    $('#class, #session').change(loadStudents);
+    // Trigger whenever class, session, or subject changes
+    $('#class, #session, #subject').change(loadStudents);
+
 });
 </script>
+
 @endsection

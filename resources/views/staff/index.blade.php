@@ -33,7 +33,7 @@
                     <th>Email</th>
                     <th>Department</th>
                     <th>Position</th>
-                    <th>Role</th>
+                    <th>Roles</th>
                     <th width="150">Actions</th>
                 </tr>
             </thead>
@@ -45,7 +45,10 @@
                         <td>{{ $staff->email }}</td>
                         <td>{{ $staff->department?->name ?? '-' }}</td>
                         <td>{{ $staff->position ?? '-' }}</td>
-                        <td>{{ $staff->roles->pluck('name')->join(', ') }}</td>
+                        <td>
+                            {{-- Get roles from related user --}}
+                            {{ $staff->user ? $staff->user->roles->pluck('name')->join(', ') : '-' }}
+                        </td>
                         <td>
                             @can('edit staff')
                                 <a href="{{ route('staff.edit', $staff->id) }}" class="btn btn-sm btn-warning">

@@ -107,6 +107,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'departments' => DepartmentController::class,
     ]);
 
+
+    Route::prefix('subjects')->middleware(['auth', 'verified'])->group(function () {
+    Route::get('{subject}/assign-students', [SubjectController::class, 'assignStudents'])->name('subjects.assign_students');
+    Route::put('{subject}/update-assigned-students', [SubjectController::class, 'updateAssignedStudents'])->name('subjects.updateAssignedStudents');
+});
+
+
+
     // Marks
     Route::prefix('marks')->name('marks.')->group(function () {
         Route::get('students', [MarkController::class, 'getStudents'])->name('students');
@@ -147,21 +155,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 
     
-
-    // Attendance
+    //Staff Attendance
     Route::prefix('attendance')->name('attendance.')->group(function () {
-        Route::get('/', [AttendanceController::class, 'index'])->name('index');
-        Route::get('/create', [AttendanceController::class, 'create'])->name('create');
-        Route::post('/', [AttendanceController::class, 'store'])->name('store');
-        Route::get('/{attendance}/edit', [AttendanceController::class, 'edit'])->name('edit');
-        Route::put('/{attendance}', [AttendanceController::class, 'update'])->name('update');
-        Route::delete('/{attendance}', [AttendanceController::class, 'destroy'])->name('destroy');
-        Route::get('/bulk', [AttendanceController::class, 'bulkCreate'])->name('bulk.create');
-        Route::post('/bulk/store', [AttendanceController::class, 'bulk.store']);
-        Route::get('/filter', [AttendanceController::class, 'filter'])->name('filter');
-        Route::get('/export/excel', [AttendanceController::class, 'exportExcel'])->name('export.excel');
-        Route::get('/export/pdf', [AttendanceController::class, 'exportPDF'])->name('export.pdf');
-    });
+    Route::get('/', [AttendanceController::class, 'index'])->name('index');
+    Route::get('/create', [AttendanceController::class, 'create'])->name('create');
+    Route::post('/', [AttendanceController::class, 'store'])->name('store');
+    Route::get('/{attendance}/edit', [AttendanceController::class, 'edit'])->name('edit');
+    Route::put('/{attendance}', [AttendanceController::class, 'update'])->name('update');
+    Route::delete('/{attendance}', [AttendanceController::class, 'destroy'])->name('destroy');
+    
+    Route::get('/bulk', [AttendanceController::class, 'bulkCreate'])->name('bulk.create');
+    Route::post('/bulk/store', [AttendanceController::class, 'bulkStore'])->name('bulk.store'); // ← fixed
+    
+    Route::get('/filter', [AttendanceController::class, 'filter'])->name('filter');
+    Route::get('/export/excel', [AttendanceController::class, 'exportExcel'])->name('export.excel');
+    Route::get('/export/pdf', [AttendanceController::class, 'exportPDF'])->name('export.pdf');
+});
+
 
    // Leaves
 Route::prefix('leaves')->name('leaves.')->group(function () {
