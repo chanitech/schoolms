@@ -5,10 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\SchoolClass;
-use App\Models\User;
-use App\Models\Mark;
-use App\Models\Student;
+use App\Models\{
+    SchoolClass,
+    User,
+    Mark,
+    Student,
+    Department
+};
 
 class Subject extends Model
 {
@@ -17,13 +20,22 @@ class Subject extends Model
     protected $fillable = [
         'name',
         'code',
-        'type',
+        'type',          // e.g. 'core' or 'elective'
         'teacher_id',
+        'department_id',
     ];
 
-    /**
-     * 🔹 Classes this subject belongs to (many-to-many)
-     */
+    /* ============================
+     | 🔹 RELATIONSHIPS
+     ============================ */
+
+    // Each subject belongs to one department
+    public function department()
+    {
+        return $this->belongsTo(Department::class);
+    }
+
+    // Classes this subject is offered to
     public function classes()
     {
         return $this->belongsToMany(
@@ -34,35 +46,19 @@ class Subject extends Model
         )->withTimestamps();
     }
 
-    /**
-     * 🔹 Marks related to this subject
-     */
+    // Marks recorded under this subject
     public function marks()
     {
         return $this->hasMany(Mark::class);
     }
 
-    /**
-     * 🔹 Teacher assigned to this subject
-     */
+    // Teacher assigned to this subject
     public function teacher()
     {
         return $this->belongsTo(User::class, 'teacher_id');
     }
 
-    /**
-     * 🔹 Accessor: Get the teacher’s full name easily
-     */
-    public function getTeacherNameAttribute(): string
-    {
-        return $this->teacher
-            ? "{$this->teacher->first_name} {$this->teacher->last_name}"
-            : '—';
-    }
-
-    /**
-     * 🔹 All students assigned to this subject (pivot 'withdrawn' available)
-     */
+    // Students taking this subject
     public function students()
     {
         return $this->belongsToMany(Student::class, 'student_subject', 'subject_id', 'student_id')
@@ -70,19 +66,58 @@ class Subject extends Model
                     ->withTimestamps();
     }
 
-    /**
-     * 🔹 Only students who are actively taking this subject (not withdrawn)
-     */
+    // Active students (not withdrawn)
     public function activeStudents()
     {
         return $this->students()->wherePivot('withdrawn', 0);
     }
 
-    /**
-     * 🔹 Optionally, a helper to get withdrawn students
-     */
+    // Withdrawn students
     public function withdrawnStudents()
     {
         return $this->students()->wherePivot('withdrawn', 1);
+    }
+
+    /* ============================
+     | 🔹 ACCESSORS
+     ============================ */
+
+    // Teacher’s full name
+    public function getTeacherNameAttribute(): string
+    {
+        return $this->teacher
+            ? trim("{$this->teacher->first_name} {$this->teacher->last_name}")
+            : '—';
+    }
+
+    /* ============================
+     | 🔹 SCOPES
+     ============================ */
+
+    // Filter by department
+    public function scopeOfDepartment($query, $departmentId)
+    {
+        return $query->where('department_id', $departmentId);
+    }
+
+    // Filter by type (core/elective)
+    public function scopeOfType($query, $type)
+    {
+        return $query->where('type', $type);
+    }
+
+    /* ============================
+     | 🔹 HELPERS
+     ============================ */
+
+    // Get average GPA or marks across all students in this subject
+    public function averageGpa()
+    {
+        return $this->marks()->avg('gpa');
+    }
+
+    public function averageScore()
+    {
+        return $this->marks()->avg('score');
     }
 }

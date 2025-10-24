@@ -44,6 +44,21 @@
                 @error('type') <small class="text-danger">{{ $message }}</small> @enderror
             </div>
 
+            <!-- Department -->
+            <div class="form-group mb-3">
+                <label class="fw-bold">Department</label>
+                <select name="department_id" class="form-control" required>
+                    <option value="">-- Select Department --</option>
+                    @foreach($departments as $department)
+                        <option value="{{ $department->id }}" 
+                            {{ old('department_id', $subject->department_id) == $department->id ? 'selected' : '' }}>
+                            {{ $department->name }}
+                        </option>
+                    @endforeach
+                </select>
+                @error('department_id') <small class="text-danger">{{ $message }}</small> @enderror
+            </div>
+
             <!-- Assign to Classes -->
             <div class="form-group mb-3">
                 <label class="fw-bold">Assign to Classes</label>

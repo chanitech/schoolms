@@ -41,12 +41,24 @@
             </div>
 
             <div class="col-md-3">
+                <label for="department">Department</label>
+                <select name="department_id" id="department" class="form-control">
+                    <option value="">All Departments</option>
+                    @foreach($departments as $department)
+                        <option value="{{ $department->id }}" {{ request('department_id') == $department->id ? 'selected' : '' }}>
+                            {{ $department->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="col-md-3">
                 <label for="subject">Subject</label>
                 <select name="subject_id" id="subject" class="form-control">
                     <option value="">All Subjects</option>
                     @foreach($subjects as $subject)
-                        @if(auth()->user()->hasRole('Teacher'))
-                            @continue(auth()->id() != $subject->teacher_id)
+                        @if(auth()->user()->hasRole('Teacher') && auth()->id() != $subject->teacher_id)
+                            @continue
                         @endif
                         <option value="{{ $subject->id }}" {{ request('subject_id') == $subject->id ? 'selected' : '' }}>
                             {{ $subject->name }}
@@ -69,6 +81,7 @@
                 <tr>
                     <th>Student</th>
                     <th>Class</th>
+                    <th>Department</th>
                     <th>Subject</th>
                     <th>Exam</th>
                     <th>Mark</th>
@@ -80,7 +93,8 @@
                 @forelse($marks as $mark)
                     <tr>
                         <td>{{ $mark->student->first_name }} {{ $mark->student->last_name }}</td>
-                        <td>{{ $mark->student->class->name ?? '-' }}</td>
+                        <td>{{ $mark->student->schoolClass->name ?? '-' }}</td>
+                        <td>{{ $mark->subject->department->name ?? '-' }}</td>
                         <td>{{ $mark->subject->name }}</td>
                         <td>{{ $mark->exam->name }}</td>
                         <td>{{ $mark->mark }}</td>
@@ -96,7 +110,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="text-center">No marks found.</td>
+                        <td colspan="8" class="text-center">No marks found.</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -108,4 +122,37 @@
         </div>
     </div>
 </div>
+@stop
+
+{{-- AJAX for dynamic Subject filtering --}}
+@section('js')
+<script>
+$(document).ready(function() {
+    $('#department').change(function() {
+        var department_id = $(this).val();
+        var url = "{{ route('marks.subjects.by.department') }}";
+
+        $.ajax({
+            url: url,
+            type: 'GET',
+            data: { department_id: department_id },
+            success: function(data) {
+                var subjectSelect = $('#subject');
+                subjectSelect.empty();
+                subjectSelect.append('<option value="">All Subjects</option>');
+
+                $.each(data, function(key, subject) {
+                    @if(auth()->user()->hasRole('Teacher'))
+                        if(subject.teacher_id != {{ auth()->id() }}) return true;
+                    @endif
+                    subjectSelect.append('<option value="'+subject.id+'">'+subject.name+'</option>');
+                });
+            },
+            error: function() {
+                alert('Could not fetch subjects for this department.');
+            }
+        });
+    });
+});
+</script>
 @stop

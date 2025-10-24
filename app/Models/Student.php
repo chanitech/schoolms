@@ -5,13 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\Guardian;
-use App\Models\SchoolClass;
-use App\Models\Dormitory;
-use App\Models\AcademicSession;
-use App\Models\Enrollment;
-use App\Models\Mark;
-use App\Models\Subject;
+use App\Models\{
+    Guardian,
+    SchoolClass,
+    Dormitory,
+    AcademicSession,
+    Enrollment,
+    Mark,
+    Subject,
+    Department
+};
 
 class Student extends Model
 {
@@ -28,6 +31,7 @@ class Student extends Model
         'photo',
         'guardian_id',
         'class_id',
+        'department_id',
         'dormitory_id',
         'academic_session_id',
         'admission_date',
@@ -37,66 +41,113 @@ class Student extends Model
         'email',
     ];
 
-    // Relationships
+    /* ============================
+     | 🔹 RELATIONSHIPS
+     ============================ */
+
+    // Guardian
     public function guardian()
     {
         return $this->belongsTo(Guardian::class);
     }
 
-    public function class()
+    // School Class
+    public function schoolClass()
     {
         return $this->belongsTo(SchoolClass::class, 'class_id');
     }
 
+    // Add this alias for backward compatibility
+public function class()
+{
+    return $this->schoolClass();
+}
+
+    // Dormitory
     public function dormitory()
     {
         return $this->belongsTo(Dormitory::class);
     }
 
+    // Academic Session
     public function academicSession()
     {
         return $this->belongsTo(AcademicSession::class);
     }
 
+    // Department (NEW)
+    public function department()
+    {
+        return $this->belongsTo(Department::class);
+    }
+
+    // Enrollments
     public function enrollments()
     {
         return $this->hasMany(Enrollment::class);
     }
 
+    // Marks
     public function marks()
     {
         return $this->hasMany(Mark::class);
     }
 
+    // Marks filtered by exam
     public function marksForExam($examId)
     {
         return $this->marks()->where('exam_id', $examId);
     }
 
+    // Marks filtered by session
     public function marksForSession($sessionId)
     {
         return $this->marks()->where('academic_session_id', $sessionId);
     }
 
-   public function subjects()
-{
-    return $this->belongsToMany(Subject::class, 'student_subject', 'student_id', 'subject_id')
-                ->withPivot('withdrawn')
-                ->withTimestamps();
-}
+    // Subjects (many-to-many)
+    public function subjects()
+    {
+        return $this->belongsToMany(Subject::class, 'student_subject', 'student_id', 'subject_id')
+                    ->withPivot('withdrawn')
+                    ->withTimestamps();
+    }
 
-// Student.php
-public function schoolClass()
-{
-    return $this->belongsTo(SchoolClass::class, 'class_id');
-}
+    // Active Subjects (not withdrawn)
+    public function activeSubjects()
+    {
+        return $this->subjects()->wherePivot('withdrawn', 0);
+    }
 
+    // Withdrawn Subjects
+    public function withdrawnSubjects()
+    {
+        return $this->subjects()->wherePivot('withdrawn', 1);
+    }
 
-public function getFullNameAttribute()
-{
-    return $this->first_name . ' ' . $this->last_name;
-}
+    /* ============================
+     | 🔹 ACCESSORS
+     ============================ */
 
+    public function getFullNameAttribute()
+    {
+        $names = array_filter([$this->first_name, $this->middle_name, $this->last_name]);
+        return implode(' ', $names);
+    }
 
-    
+    /* ============================
+     | 🔹 SCOPES
+     ============================ */
+
+    // Filter students by department
+    public function scopeOfDepartment($query, $departmentId)
+    {
+        return $query->where('department_id', $departmentId);
+    }
+
+    // Filter students by active status
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active');
+    }
 }

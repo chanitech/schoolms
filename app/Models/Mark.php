@@ -49,5 +49,34 @@ class Mark extends Model
 }
 
 
+// Inside Mark.php
+
+/**
+ * 🔹 Access the department of the mark via the subject
+ */
+public function department()
+{
+    return $this->hasOneThrough(
+        \App\Models\Department::class, // final model
+        \App\Models\Subject::class,    // intermediate model
+        'id',        // Foreign key on Subject (subject.id)
+        'id',        // Foreign key on Department (department.id)
+        'subject_id',// Local key on Mark (mark.subject_id)
+        'department_id' // Local key on Subject (subject.department_id)
+    );
+}
+
+/**
+ * 🔹 Scope to filter marks by department
+ */
+public function scopeOfDepartment($query, $departmentId)
+{
+    return $query->whereHas('subject', function($q) use ($departmentId) {
+        $q->where('department_id', $departmentId);
+    });
+}
+
+
+
     
 }

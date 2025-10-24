@@ -39,7 +39,9 @@ use App\Http\Controllers\{
 |--------------------------------------------------------------------------
 */
 
-Route::get('/', fn() => view('welcome'));
+Route::get('/', function () {
+    return redirect()->route('login');
+});
 
 // Authentication routes
 require __DIR__.'/auth.php';
@@ -107,6 +109,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'departments' => DepartmentController::class,
     ]);
 
+    Route::get('/marks/subjects-by-department', [\App\Http\Controllers\MarkController::class, 'getSubjectsByDepartment'])
+    ->name('marks.subjects.by.department');
 
     Route::prefix('subjects')->middleware(['auth', 'verified'])->group(function () {
     Route::get('{subject}/assign-students', [SubjectController::class, 'assignStudents'])->name('subjects.assign_students');
