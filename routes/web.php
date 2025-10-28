@@ -30,7 +30,8 @@ use App\Http\Controllers\{
     HRReportController,
     BookController,
     LendingController,
-    CategoryController
+    CategoryController,
+    ResultController
 };
 
 /*
@@ -111,6 +112,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/marks/subjects-by-department', [\App\Http\Controllers\MarkController::class, 'getSubjectsByDepartment'])
     ->name('marks.subjects.by.department');
+
+    Route::get('/results/classes-by-department', [App\Http\Controllers\StudentResultController::class, 'getClassesByDepartment'])
+    ->name('results.classes.by.department');
+
+
 
     Route::prefix('subjects')->middleware(['auth', 'verified'])->group(function () {
     Route::get('{subject}/assign-students', [SubjectController::class, 'assignStudents'])->name('subjects.assign_students');

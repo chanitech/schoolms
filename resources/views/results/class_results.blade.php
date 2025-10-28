@@ -12,7 +12,29 @@
 
         {{-- ================= Filter Form ================= --}}
         <form method="GET" action="{{ route('results.class') }}" class="mb-3 row g-2">
-            <div class="col-md-4">
+            <div class="col-md-3">
+                <select name="academic_session_id" class="form-control" required>
+                    <option value="">-- Select Academic Session --</option>
+                    @foreach($academicSessions as $session)
+                        <option value="{{ $session->id }}" {{ $selectedAcademicSessionId == $session->id ? 'selected' : '' }}>
+                            {{ $session->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <select name="department_id" class="form-control">
+                    <option value="">-- Select Department --</option>
+                    @foreach($departments as $department)
+                        <option value="{{ $department->id }}" {{ $selectedDepartmentId == $department->id ? 'selected' : '' }}>
+                            {{ $department->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="col-md-3">
                 <select name="class_id" class="form-control" required>
                     <option value="">-- Select Class --</option>
                     @foreach($classes as $class)
@@ -23,7 +45,7 @@
                 </select>
             </div>
 
-            <div class="col-md-4">
+            <div class="col-md-2">
                 <select name="exam_id" class="form-control" required>
                     <option value="">-- Select Exam --</option>
                     @foreach($exams as $exam)
@@ -34,8 +56,8 @@
                 </select>
             </div>
 
-            <div class="col-md-2">
-                <button type="submit" class="btn btn-success w-100">View Results</button>
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-success w-100">View</button>
             </div>
         </form>
 
@@ -43,10 +65,10 @@
         @if(!empty($studentsData))
         <div class="d-flex justify-content-end mb-3">
             <a href="{{ route('results.export.excel', request()->query()) }}" class="btn btn-outline-success me-2">
-                <i class="fas fa-file-excel"></i> Export Excel
+                <i class="fas fa-file-excel"></i> Excel
             </a>
             <a href="{{ route('results.export.pdf', request()->query()) }}" class="btn btn-outline-danger">
-                <i class="fas fa-file-pdf"></i> Export PDF
+                <i class="fas fa-file-pdf"></i> PDF
             </a>
         </div>
         @endif
@@ -56,6 +78,7 @@
             $totalStudents = count($studentsData);
             $averageGPA = $totalStudents ? number_format(collect($studentsData)->avg('gpa'), 2) : 'N/A';
             $highestPoints = $totalStudents ? max(collect($studentsData)->pluck('total_points')->toArray()) : 0;
+            $lowestPoints = $totalStudents ? min(collect($studentsData)->pluck('total_points')->toArray()) : 0;
             $divisionCounts = collect($studentsData)->groupBy('division')->map->count();
 
             // Subject averages
@@ -105,6 +128,16 @@
             </div>
 
             <div class="col-md-3">
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3>{{ $lowestPoints }}</h3>
+                        <p>Lowest Total Points</p>
+                    </div>
+                    <div class="icon"><i class="fas fa-arrow-down"></i></div>
+                </div>
+            </div>
+
+            <div class="col-md-3 mt-2">
                 <div class="small-box bg-secondary">
                     <div class="inner">
                         <h4>Divisions</h4>
@@ -121,30 +154,7 @@
             </div>
         </div>
 
-        {{-- ================= Best & Weakest Subjects ================= --}}
-        @if(!empty($subjectAverages))
-        <div class="row mb-4">
-            <div class="col-md-6">
-                <div class="small-box bg-gradient-success">
-                    <div class="inner">
-                        <h4>🏆 Best Performing Subject</h4>
-                        <p><strong>{{ $bestSubject }}</strong> — Avg: {{ $subjectAverages[$bestSubject]['average_mark'] ?? 'N/A' }}</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-6">
-                <div class="small-box bg-gradient-danger">
-                    <div class="inner">
-                        <h4>⚠️ Weakest Subject</h4>
-                        <p><strong>{{ $worstSubject }}</strong> — Avg: {{ $subjectAverages[$worstSubject]['average_mark'] ?? 'N/A' }}</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-        @endif
-
-        {{-- ================= Results Table ================= --}}
+        {{-- ================= Student Results Table ================= --}}
         @if(!empty($studentsData))
             @php
                 $allSubjects = collect($studentsData)
@@ -192,7 +202,6 @@
                                 <td>{{ $i + 1 }}</td>
                                 <td>{{ $data['student']->first_name }} {{ $data['student']->last_name }}</td>
 
-                                {{-- Subject Columns --}}
                                 @foreach($sortedSubjects as $subject)
                                     @php
                                         $subjectData = $studentSubjects->get($subject['name']);
@@ -208,16 +217,13 @@
                                     </td>
                                 @endforeach
 
-                                {{-- Totals --}}
                                 @php
                                     $coreSubjects = collect($data['subjectsData'])->where('type', 'core')->sortByDesc('mark');
                                     $electives = collect($data['subjectsData'])->where('type', 'elective')->sortByDesc('mark');
-
                                     $bestSubjects = $coreSubjects->take(7);
                                     if ($bestSubjects->count() < 7) {
                                         $bestSubjects = $bestSubjects->merge($electives->take(7 - $bestSubjects->count()));
                                     }
-
                                     $totalMarks = $bestSubjects->sum('mark');
                                     $subjectCount = $bestSubjects->count();
                                     $average = $subjectCount ? number_format($totalMarks / $subjectCount, 2) : 0;
@@ -265,7 +271,7 @@
                 </div>
             </div>
         @else
-            <p class="text-center text-muted">No results found. Please select class and exam above.</p>
+            <p class="text-center text-muted">No results found. Please select filters above.</p>
         @endif
     </div>
 </div>
