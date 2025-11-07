@@ -168,16 +168,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // === FULLCALENDAR ===
-    const calendarEl = document.getElementById('dashboardCalendar');
-    if (calendarEl) {
-        const calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth',
-            height: 450,
-            events: '{{ route('events.fetch') }}',
-        });
-        calendar.render();
-    }
+    
 });
 </script>
 @stop

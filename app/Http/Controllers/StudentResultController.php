@@ -276,7 +276,7 @@ public function show(Student $student, Request $request)
         ]);
 
     } catch (\Throwable $e) {
-        \Log::error('Error calculating student results: ' . $e->getMessage());
+        //\Log::error('Error calculating student results: ' . $e->getMessage());
         return back()->with('error', 'Something went wrong while calculating results.');
     }
 }
