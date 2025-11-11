@@ -31,7 +31,12 @@ use App\Http\Controllers\{
     BookController,
     LendingController,
     CategoryController,
-    ResultController
+    ResultController,
+    BillController,
+    StudentBillController,
+    PaymentController,
+    PocketTransactionController,
+    BudgetController
 };
 
 /*
@@ -136,14 +141,28 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/{mark}', [MarkController::class, 'destroy'])->name('destroy');
     });
 
-    // Results
-    Route::prefix('results')->name('results.')->group(function () {
-        Route::get('/', [StudentResultController::class, 'index'])->name('index');
-        Route::get('/class', [StudentResultController::class, 'classResults'])->name('class');
-        Route::get('/{student}', [StudentResultController::class, 'show'])->name('show');
-        Route::get('/export/excel', [StudentResultController::class, 'exportExcel'])->name('export.excel');
-        Route::get('/export/pdf', [StudentResultController::class, 'exportPDF'])->name('export.pdf');
-    });
+   // Results
+Route::prefix('results')->name('results.')->group(function () {
+    // Main results page
+    Route::get('/', [StudentResultController::class, 'index'])->name('index');
+
+    // Class results summary
+    Route::get('/class', [StudentResultController::class, 'classResults'])->name('class');
+
+    // Export filter form
+    Route::get('/export', [StudentResultController::class, 'showExportForm'])->name('export.form');
+
+    // Export PDF after submitting filters (POST)
+    Route::post('/export/pdf', [StudentResultController::class, 'exportResultsPdf'])->name('export.pdf');
+
+    // Optional: Export Excel
+    Route::get('/export/excel', [StudentResultController::class, 'exportExcel'])->name('export.excel');
+
+    // Show individual student result
+    Route::get('/{student}', [StudentResultController::class, 'show'])->name('show');
+});
+
+
 
     Route::prefix('jobcards')->name('jobcards.')->group(function () {
     Route::get('/', [JobCardController::class, 'index'])->name('index');
@@ -162,6 +181,132 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Allow PATCH for rating task
     Route::patch('/{jobcard}/rate-task', [JobCardController::class, 'rateTask'])->name('rateTask');
 });
+
+
+   
+
+
+Route::prefix('finance')->name('finance.')->middleware(['auth', 'verified'])->group(function () {
+
+    // 🧾 Bills CRUD
+    Route::resource('bills', BillController::class)->names([
+        'index'   => 'bills.index',
+        'create'  => 'bills.create',
+        'store'   => 'bills.store',
+        'show'    => 'bills.show',
+        'edit'    => 'bills.edit',
+        'update'  => 'bills.update',
+        'destroy' => 'bills.destroy',
+    ]);
+
+    // 👨‍🎓 Student Bills (link students to bills)
+    Route::resource('student-bills', StudentBillController::class)->names([
+        'index'   => 'student_bills.index',
+        'create'  => 'student_bills.create',
+        'store'   => 'student_bills.store',
+        'show'    => 'student_bills.show',
+        'edit'    => 'student_bills.edit',
+        'update'  => 'student_bills.update',
+        'destroy' => 'student_bills.destroy',
+    ]);
+
+    // 💵 Payments Module
+    Route::prefix('payments')->name('payments.')->group(function () {
+
+        // Step 1: Payment selection page (filter by Session → Class → Bill)
+        Route::get('/create', [PaymentController::class, 'create'])
+            ->name('create')
+            ->middleware('permission:record payments');
+
+        // Step 2: AJAX: Get students for selected session/class
+        Route::get('/students', [PaymentController::class, 'getStudents'])
+            ->name('students')
+            ->middleware('permission:record payments');
+
+        // Step 3: AJAX: Get student bills for selected student
+        Route::get('/student-bills', [PaymentController::class, 'getStudentBills'])
+            ->name('student-bills')
+            ->middleware('permission:record payments');
+
+        // Step 4: Individual payment form (click "Pay" on a student)
+        Route::get('/{studentBill}/create', [PaymentController::class, 'createIndividual'])
+            ->name('create.individual')
+            ->middleware('permission:record payments');
+
+        // Step 5: Store individual payment
+        Route::post('/store-individual', [PaymentController::class, 'storeIndividual'])
+            ->name('store.individual')
+            ->middleware('permission:record payments');
+
+        // Step 6: List all payments
+        Route::get('/', [PaymentController::class, 'index'])
+            ->name('index')
+            ->middleware('permission:view payments');
+
+        // Step 7: Payment receipt
+        Route::get('/{id}/receipt', [PaymentController::class, 'receipt'])
+            ->name('receipt')
+            ->middleware('permission:view payments');
+    });
+
+    // 💰 Pocket Money Transactions
+    Route::prefix('pocket')->name('pocket.')->group(function () {
+        Route::resource('transactions', PocketTransactionController::class)->names([
+            'index'   => 'index',
+            'create'  => 'create',
+            'store'   => 'store',
+            'show'    => 'show',
+            'edit'    => 'edit',
+            'update'  => 'update',
+            'destroy' => 'destroy',
+        ]);
+
+        // AJAX: Get students by class
+        Route::get('/students-by-class', [PocketTransactionController::class, 'getStudentsByClass'])
+            ->name('students-by-class');
+
+        // AJAX: Get last balance
+        Route::get('/last-balance', [PocketTransactionController::class, 'getLastBalance'])
+            ->name('last-balance');
+    });
+});
+
+
+
+   Route::prefix('finance/budgets')->name('finance.budgets.')->middleware('auth')->group(function () {
+
+    // List all budgets
+    Route::get('/', [BudgetController::class, 'index'])->name('index');
+
+    // Create budget
+    Route::get('/create', [BudgetController::class, 'create'])->name('create');
+    Route::post('/', [BudgetController::class, 'store'])->name('store');
+
+    // Pending approvals
+    Route::get('/pending', [BudgetController::class, 'pending'])->name('pending');
+
+    // Summary page (must be **before {budget}**)
+    Route::get('/summary', [BudgetController::class, 'summary'])->name('summary');
+
+    // Show budget details
+    Route::get('/{budget}', [BudgetController::class, 'show'])->name('show');
+
+    // Approve form and action
+    Route::get('/{budget}/approve', [BudgetController::class, 'approveForm'])->name('approve.form');
+    Route::post('/{budget}/approve', [BudgetController::class, 'approve'])->name('approve');
+
+    // AJAX approve/reject item
+    Route::post('/{budget}/item/approve', [BudgetController::class, 'approveItem'])->name('approve.item');
+});
+
+
+
+
+
+
+
+
+
 
 
     
@@ -220,7 +365,7 @@ Route::prefix('leaves')->name('leaves.')->group(function () {
     });
 
 
-
+  
 
 
 

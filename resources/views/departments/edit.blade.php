@@ -13,10 +13,10 @@
             <form action="{{ route('departments.update', $department->id) }}" method="POST">
                 @csrf
                 @method('PUT')
-                
+
                 <div class="mb-3">
                     <label for="name">Department Name</label>
-                    <input type="text" name="name" value="{{ $department->name }}" class="form-control" required>
+                    <input type="text" name="name" class="form-control" value="{{ old('name', $department->name) }}" required>
                 </div>
 
                 <div class="mb-3">
@@ -33,7 +33,16 @@
 
                 <div class="mb-3">
                     <label for="description">Description</label>
-                    <textarea name="description" class="form-control">{{ $department->description }}</textarea>
+                    <textarea name="description" class="form-control">{{ old('description', $department->description) }}</textarea>
+                </div>
+
+                <!-- Rank requires 7 subjects checkbox -->
+                <div class="mb-3 form-check">
+                    <input type="checkbox" name="rank_requires_7_subjects" class="form-check-input" id="rank_requires_7_subjects" value="1"
+                        {{ $department->rank_requires_7_subjects ? 'checked' : '' }}>
+                    <label class="form-check-label" for="rank_requires_7_subjects">
+                        Require 7 subjects for ranking
+                    </label>
                 </div>
 
                 <button type="submit" class="btn btn-success">Update</button>

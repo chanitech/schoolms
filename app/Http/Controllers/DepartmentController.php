@@ -36,9 +36,15 @@ class DepartmentController extends Controller
             'name' => 'required|unique:departments,name',
             'description' => 'nullable|string',
             'head_id' => 'nullable|exists:staff,id', // must be a valid staff
+            'rank_requires_7_subjects' => 'nullable|boolean', // new validation
         ]);
 
-        Department::create($request->only(['name', 'description', 'head_id']));
+        Department::create([
+            'name' => $request->name,
+            'description' => $request->description,
+            'head_id' => $request->head_id,
+            'rank_requires_7_subjects' => $request->has('rank_requires_7_subjects'), // ✅ save checkbox value
+        ]);
 
         return redirect()->route('departments.index')
                          ->with('success', 'Department created successfully.');
@@ -56,9 +62,15 @@ class DepartmentController extends Controller
             'name' => 'required|unique:departments,name,' . $department->id,
             'description' => 'nullable|string',
             'head_id' => 'nullable|exists:staff,id', // must be a valid staff
+            'rank_requires_7_subjects' => 'nullable|boolean', // new validation
         ]);
 
-        $department->update($request->only(['name', 'description', 'head_id']));
+        $department->update([
+            'name' => $request->name,
+            'description' => $request->description,
+            'head_id' => $request->head_id,
+            'rank_requires_7_subjects' => $request->has('rank_requires_7_subjects'), // ✅ update checkbox value
+        ]);
 
         return redirect()->route('departments.index')
                          ->with('success', 'Department updated successfully.');

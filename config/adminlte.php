@@ -319,22 +319,33 @@ return [
     ],
 
     // Academic Management
-    [
-        'text' => 'Academic',
-        'icon' => 'fas fa-book',
-        'submenu' => [
-            ['text' => 'Classes', 'url' => 'classes', 'icon' => 'fas fa-chalkboard'],
-            ['text' => 'Dormitories', 'url' => 'dormitories', 'icon' => 'fas fa-building'],
-            ['text' => 'Academic Sessions', 'url' => 'sessions', 'icon' => 'fas fa-calendar-alt'],
-            ['text' => 'Subjects', 'url' => 'subjects', 'icon' => 'fas fa-book-open'],
-            ['text' => 'Exams', 'url' => 'exams', 'icon' => 'fas fa-file-alt'],
-            ['text' => 'Marks', 'url' => 'marks', 'icon' => 'fas fa-pen'],
-            ['text' => 'Divisions', 'url' => 'divisions', 'icon' => 'fas fa-object-group'],
-            ['text' => 'Grading & GPA', 'url' => 'grades', 'icon' => 'fas fa-star'],
-            ['text' => 'Student Results', 'url' => 'results', 'icon' => 'fas fa-chart-bar'],
-            ['text' => 'Class Results', 'url' => '/results/class', 'icon' => 'fas fa-chart-bar'],
-        ],
+    // Academic Management
+[
+    'text' => 'Academic',
+    'icon' => 'fas fa-book',
+    'submenu' => [
+        ['text' => 'Classes', 'url' => 'classes', 'icon' => 'fas fa-chalkboard'],
+        ['text' => 'Dormitories', 'url' => 'dormitories', 'icon' => 'fas fa-building'],
+        ['text' => 'Academic Sessions', 'url' => 'sessions', 'icon' => 'fas fa-calendar-alt'],
+        ['text' => 'Subjects', 'url' => 'subjects', 'icon' => 'fas fa-book-open'],
+        ['text' => 'Exams', 'url' => 'exams', 'icon' => 'fas fa-file-alt'],
+        ['text' => 'Marks', 'url' => 'marks', 'icon' => 'fas fa-pen'],
+        ['text' => 'Divisions', 'url' => 'divisions', 'icon' => 'fas fa-object-group'],
+        ['text' => 'Grading & GPA', 'url' => 'grades', 'icon' => 'fas fa-star'],
+        ['text' => 'Student Results', 'url' => 'results', 'icon' => 'fas fa-chart-bar'],
+        ['text' => 'Class Results', 'url' => 'results/class', 'icon' => 'fas fa-chart-bar'],
+      [
+    'text' => 'Export Student Marksheet',
+    'route' => 'results.export.form', // <- matches route name exactly
+    'icon' => 'fas fa-file-pdf',
+],
+
+
+
     ],
+],
+
+
 
     // HR & Staff Management
     [
@@ -372,16 +383,62 @@ return [
 
 
 
-    // Finance & Fees
-    [
-        'text' => 'Finance & Fees',
-        'icon' => 'fas fa-wallet',
-        'submenu' => [
-            ['text' => 'Invoices', 'url' => 'fees', 'icon' => 'fas fa-file-invoice-dollar'],
-            ['text' => 'Payments', 'url' => 'payments', 'icon' => 'fas fa-credit-card'],
-            ['text' => 'Fee Reports', 'url' => 'fee-reports', 'icon' => 'fas fa-chart-line'],
+   // Finance & Fees
+[
+    'text' => 'Finance & Fees',
+    'icon' => 'fas fa-wallet',
+    'submenu' => [
+        [
+            'text' => 'Bills / Invoices',
+            'route' => 'finance.bills.index', 
+            'icon' => 'fas fa-file-invoice-dollar'
+        ],
+        [
+            'text' => 'Student Bills',
+            'route' => 'finance.student_bills.index', 
+            'icon' => 'fas fa-file-alt'
+        ],
+        [
+            'text' => 'Payments',
+            'route' => 'finance.payments.index', 
+            'icon' => 'fas fa-credit-card'
+        ],
+        [
+            'text' => 'Pocket Money',
+            'route' => 'finance.pocket.index', 
+            'icon' => 'fas fa-piggy-bank'
+        ],
+        [
+    'text' => 'Budgets',
+    'icon' => 'fas fa-file-invoice',
+    'submenu' => [
+        [
+            'text' => 'Submit Budget',
+            'route' => 'finance.budgets.create',
+            'icon' => 'fas fa-plus'
+        ],
+        [
+            'text' => 'Pending Approvals',
+            'route' => 'finance.budgets.pending',
+            'icon' => 'fas fa-check-circle'
+        ],
+        [
+            'text' => 'All Budgets',
+            'route' => 'finance.budgets.summary',
+            'icon' => 'fas fa-list'
         ],
     ],
+],
+
+        [
+            'text' => 'Fee Reports',
+            //'route' => 'finance.reports.index', // optional if you create reports page later
+            'icon' => 'fas fa-chart-line'
+        ],
+    ],
+],
+
+
 
     
 

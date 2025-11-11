@@ -150,4 +150,20 @@ public function class()
     {
         return $query->where('status', 'active');
     }
+
+    /**
+ * Student results
+ */
+public function results()
+{
+    return $this->marks();
+}
+
+// Add inside Student model
+public function getNameAttribute()
+{
+    return $this->full_name;
+}
+
+
 }

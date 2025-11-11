@@ -32,6 +32,14 @@
                     <textarea name="description" class="form-control"></textarea>
                 </div>
 
+                <!-- New field: Require 7 subjects for ranking -->
+                <div class="mb-3 form-check">
+                    <input type="checkbox" name="rank_requires_7_subjects" class="form-check-input" id="rank_requires_7_subjects" value="1">
+                    <label class="form-check-label" for="rank_requires_7_subjects">
+                        Require 7 subjects for ranking
+                    </label>
+                </div>
+
                 <button type="submit" class="btn btn-success">Save</button>
                 <a href="{{ route('departments.index') }}" class="btn btn-secondary">Cancel</a>
             </form>

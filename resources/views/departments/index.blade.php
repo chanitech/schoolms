@@ -25,6 +25,7 @@
                         <th>#</th>
                         <th>Name</th>
                         <th>Head</th>
+                        <th>Requires 7 Subjects for Ranking</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -34,6 +35,13 @@
                         <td>{{ $loop->iteration + ($departments->currentPage() - 1) * $departments->perPage() }}</td>
                         <td>{{ $dept->name }}</td>
                         <td>{{ $dept->head?->name ?? '-' }}</td>
+                        <td>
+                            @if($dept->rank_requires_7_subjects)
+                                <span class="badge bg-success">Yes</span>
+                            @else
+                                <span class="badge bg-secondary">No</span>
+                            @endif
+                        </td>
                         <td>
                             @can('edit departments')
                                 <a href="{{ route('departments.edit', $dept->id) }}" class="btn btn-sm btn-primary">Edit</a>
@@ -49,7 +57,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="4" class="text-center">No departments found.</td>
+                        <td colspan="5" class="text-center">No departments found.</td>
                     </tr>
                     @endforelse
                 </tbody>

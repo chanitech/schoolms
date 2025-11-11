@@ -13,6 +13,7 @@ class Department extends Model
         'name',
         'description',
         'head_id',
+        'rank_requires_7_subjects', // new field
     ];
 
     /**
