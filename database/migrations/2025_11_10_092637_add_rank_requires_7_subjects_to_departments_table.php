@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('departments', function (Blueprint $table) {
-    $table->boolean('rank_requires_7_subjects')->default(true);
-});
+  //      Schema::table('departments', function (Blueprint $table) {
+   // $table->boolean('rank_requires_7_subjects')->default(true);
+//});
     }
 
     /**
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('departments', function (Blueprint $table) {
+       // Schema::table('departments', function (Blueprint $table) {
             //
-        });
+       // });
     }
 };

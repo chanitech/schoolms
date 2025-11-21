@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('departments', function (Blueprint $table) {
-        $table->boolean('rank_requires_7_subjects')->default(true)->after('head_id');
-    });
+       // Schema::table('departments', function (Blueprint $table) {
+        //$table->boolean('rank_requires_7_subjects')->default(true)->after('head_id');
+   // });
     }
 
     /**
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('departments', function (Blueprint $table) {
-        $table->dropColumn('rank_requires_7_subjects');
-    });
+       // Schema::table('departments', function (Blueprint $table) {
+       // $table->dropColumn('rank_requires_7_subjects');
+    //});
     }
 };

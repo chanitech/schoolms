@@ -18,6 +18,10 @@
                             <th>Name</th>
                             <th>Term</th>
                             <th>Academic Session</th>
+                            <th>Include in Term Final</th>
+                            <th>Include in Year Final</th>
+                            <th>Terminal Exam</th>
+                            <th>Annual Exam</th> {{-- New column --}}
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -27,6 +31,34 @@
                                 <td>{{ $exam->name }}</td>
                                 <td>{{ $exam->term }}</td>
                                 <td>{{ $exam->academicSession->name ?? '-' }}</td>
+                                <td class="text-center">
+                                    @if($exam->include_in_term_final)
+                                        <span class="badge badge-success">Yes</span>
+                                    @else
+                                        <span class="badge badge-secondary">No</span>
+                                    @endif
+                                </td>
+                                <td class="text-center">
+                                    @if($exam->include_in_year_final)
+                                        <span class="badge badge-success">Yes</span>
+                                    @else
+                                        <span class="badge badge-secondary">No</span>
+                                    @endif
+                                </td>
+                                <td class="text-center">
+                                    @if($exam->is_terminal_exam)
+                                        <span class="badge badge-danger">Yes</span>
+                                    @else
+                                        <span class="badge badge-secondary">No</span>
+                                    @endif
+                                </td>
+                                <td class="text-center"> {{-- Annual exam --}}
+                                    @if($exam->is_annual_exam)
+                                        <span class="badge badge-info">Yes</span>
+                                    @else
+                                        <span class="badge badge-secondary">No</span>
+                                    @endif
+                                </td>
                                 <td>
                                     <a href="{{ route('exams.edit', $exam) }}" class="btn btn-sm btn-warning">Edit</a>
                                     <form action="{{ route('exams.destroy', $exam) }}" method="POST" class="d-inline">

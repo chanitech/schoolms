@@ -52,6 +52,30 @@
                     @enderror
                 </div>
 
+                {{-- Checkboxes --}}
+                <div class="form-group">
+                    <div class="form-check">
+                        <input type="checkbox" name="include_in_term_final" id="include_in_term_final"
+                               class="form-check-input" {{ old('include_in_term_final') ? 'checked' : '' }}>
+                        <label class="form-check-label" for="include_in_term_final">Include in Term Final Average</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" name="include_in_year_final" id="include_in_year_final"
+                               class="form-check-input" {{ old('include_in_year_final') ? 'checked' : '' }}>
+                        <label class="form-check-label" for="include_in_year_final">Include in Year/Annual Average</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" name="is_terminal_exam" id="is_terminal_exam"
+                               class="form-check-input" {{ old('is_terminal_exam') ? 'checked' : '' }}>
+                        <label class="form-check-label" for="is_terminal_exam">Mark as Terminal Exam</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" name="is_annual_exam" id="is_annual_exam"
+                               class="form-check-input" {{ old('is_annual_exam') ? 'checked' : '' }}>
+                        <label class="form-check-label" for="is_annual_exam">Mark as Annual Exam</label>
+                    </div>
+                </div>
+
                 <button type="submit" class="btn btn-success">Save</button>
                 <a href="{{ route('exams.index') }}" class="btn btn-secondary">Cancel</a>
             </form>

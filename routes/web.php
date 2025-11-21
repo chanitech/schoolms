@@ -36,7 +36,18 @@ use App\Http\Controllers\{
     StudentBillController,
     PaymentController,
     PocketTransactionController,
-    BudgetController
+    BudgetController,
+    CounselingIntakeFormController,
+    CounselingSessionReportController,
+    GroupCounselingSessionReportController,
+    IndividualSessionReportController,
+    ClassroomGuidanceController,
+    LearningProfileController,
+    InterestInventoryController,
+    AptitudeTestController,
+    AptitudeQuestionController,
+    
+    
 };
 
 /*
@@ -122,11 +133,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
     ->name('results.classes.by.department');
 
 
+    Route::get('results/export/pdf', [StudentResultController::class, 'exportPdf'])->name('results.export.pdf');
+      Route::get('results/show/{student}', [StudentResultController::class, 'show'])->name('results.show');
+
+
+
 
     Route::prefix('subjects')->middleware(['auth', 'verified'])->group(function () {
     Route::get('{subject}/assign-students', [SubjectController::class, 'assignStudents'])->name('subjects.assign_students');
     Route::put('{subject}/update-assigned-students', [SubjectController::class, 'updateAssignedStudents'])->name('subjects.updateAssignedStudents');
 });
+
+
+Route::get('/results/terminal-report', [StudentResultController::class, 'terminalReport'])
+    ->name('results.terminal_report')
+    ->middleware(['web', 'auth', 'verified', 'permission:view results']);
+
+
+
 
 
 
@@ -482,11 +506,87 @@ Route::group(['middleware' => ['auth']], function () {
 });
 
 
+// Intake Forms
+Route::prefix('counseling/intake')->group(function () {
+    Route::get('/', [CounselingIntakeFormController::class, 'index'])->name('counseling.intake.index');
+    Route::get('/create', [CounselingIntakeFormController::class, 'create'])->name('counseling.intake.create');
+    Route::post('/store', [CounselingIntakeFormController::class, 'store'])->name('counseling.intake.store');
+    Route::get('/{form}/edit', [CounselingIntakeFormController::class, 'edit'])->name('counseling.intake.edit');
+    Route::put('/{form}', [CounselingIntakeFormController::class, 'update'])->name('counseling.intake.update');
+
+    // 🗑️ Delete route
+    Route::delete('/{form}', [CounselingIntakeFormController::class, 'destroy'])->name('counseling.intake.destroy');
+
+    Route::get('/{form}', [CounselingIntakeFormController::class, 'show'])->name('counseling.intake.show');
+
+    Route::delete('/counseling/intake/{form}', [CounselingIntakeFormController::class, 'destroy'])
+     ->name('counseling.intake.destroy')
+     ->middleware(['auth', 'verified']);
+
+});
+
+
+Route::prefix('counseling/individual')->name('counseling.individual.')->middleware(['auth'])->group(function () {
+    Route::get('/', [\App\Http\Controllers\IndividualSessionReportController::class, 'index'])->name('index');
+    Route::get('/create', [\App\Http\Controllers\IndividualSessionReportController::class, 'create'])->name('create');
+    Route::post('/store', [\App\Http\Controllers\IndividualSessionReportController::class, 'store'])->name('store');
+    Route::get('/{individualSessionReport}', [\App\Http\Controllers\IndividualSessionReportController::class, 'show'])->name('show');
+    Route::get('/{individualSessionReport}/edit', [\App\Http\Controllers\IndividualSessionReportController::class, 'edit'])->name('edit');
+    Route::put('/{individualSessionReport}', [\App\Http\Controllers\IndividualSessionReportController::class, 'update'])->name('update');
+    Route::delete('/{individualSessionReport}', [\App\Http\Controllers\IndividualSessionReportController::class, 'destroy'])->name('destroy');
+});
+
+
+Route::middleware(['auth'])->group(function () {
+    Route::resource('classroom-guidances', ClassroomGuidanceController::class)->middleware('auth');
+
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::resource('interest-inventories', InterestInventoryController::class);
+    // optional PDF export route
+    Route::get('interest-inventories/{interestInventory}/export', [InterestInventoryController::class, 'exportPdf'])
+        ->name('interest-inventories.export');
+});
+
+
+
+Route::prefix('counseling/psychometric/aptitude')->middleware(['auth'])->group(function() {
+    Route::get('/', [AptitudeTestController::class, 'index'])->name('aptitude.index');
+    Route::get('/create', [AptitudeTestController::class, 'create'])->name('aptitude.create');
+    Route::post('/store', [AptitudeTestController::class, 'store'])->name('aptitude.store');
+    Route::get('/{aptitudeAttempt}', [AptitudeTestController::class, 'show'])->name('aptitude.show');
+    Route::get('/{aptitudeAttempt}/pdf', [AptitudeTestController::class, 'pdf'])->name('aptitude.pdf');
+});
+
+
+// Questions CRUD
+Route::prefix('aptitude/questions')->name('aptitude.questions.')->group(function() {
+    Route::get('/', [AptitudeQuestionController::class, 'index'])->name('index');
+    Route::get('/create', [AptitudeQuestionController::class, 'create'])->name('create');
+    Route::post('/store', [AptitudeQuestionController::class, 'store'])->name('store');
+    Route::get('/{aptitudeQuestion}/edit', [AptitudeQuestionController::class, 'edit'])->name('edit');
+    Route::put('/{aptitudeQuestion}/update', [AptitudeQuestionController::class, 'update'])->name('update');
+    Route::delete('/{aptitudeQuestion}/delete', [AptitudeQuestionController::class, 'destroy'])->name('destroy');
+});
 
 
 
 
 
 
+
+
+Route::resource('counseling/group', GroupCounselingSessionReportController::class)
+     ->names([
+         'index' => 'counseling.group.index',
+         'create' => 'counseling.group.create',
+         'store' => 'counseling.group.store',
+         'show' => 'counseling.group.show',
+         'edit' => 'counseling.group.edit',
+         'update' => 'counseling.group.update',
+         'destroy' => 'counseling.group.destroy',
+     ])
+     ->middleware('auth');
 
 });

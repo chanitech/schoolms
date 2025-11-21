@@ -318,6 +318,147 @@ return [
         ],
     ],
 
+
+
+
+
+
+   
+
+    
+[
+    'text' => 'Counseling Office',
+    'icon' => 'fas fa-user-md',
+    'can'  => 'view counseling intake forms', // <-- Only users with this permission will see it
+    
+    'submenu' => [
+
+        // ============================
+        //  INDIVIDUAL COUNSELING
+        // ============================
+        [
+            'text' => 'Individual Counseling',
+            'icon' => 'fas fa-user-edit',
+            'submenu' => [
+                [
+                    'text' => 'New Intake Form',
+                    'route' => 'counseling.intake.create',
+                    'icon' => 'far fa-circle',
+                ],
+                [
+                    'text' => 'All Intake Forms',
+                    'route' => 'counseling.intake.index',
+                    'icon' => 'far fa-circle',
+                ],
+                [
+                    'text' => 'New Session Report',
+                    'route' => 'counseling.individual.create',
+                    'icon' => 'far fa-circle',
+                ],
+                [
+                    'text' => 'All Session Reports',
+                    'route' => 'counseling.individual.index', // update when ready
+                    'icon' => 'far fa-circle',
+                ],
+            ],
+        ],
+
+        // ============================
+        //  GROUP COUNSELING
+        // ============================
+        [
+            'text' => 'Group Counseling',
+            'icon' => 'fas fa-users',
+            'submenu' => [
+                [
+                    'text' => 'New Group Session',
+                    'route' => 'counseling.group.create',
+                    'icon' => 'far fa-circle',
+                ],
+                [
+                    'text' => 'All Group Sessions',
+                    'route' => 'counseling.group.index',
+                    'icon' => 'far fa-circle',
+                ],
+            ],
+        ],
+
+        // ============================
+        //  CLASSROOM GUIDANCE
+        // ============================
+        [
+            'text' => 'Classroom Guidance',
+            'route' => 'classroom-guidances.index',
+            'icon' => 'fas fa-chalkboard-teacher',
+        ],
+
+        // ============================
+        //  LEARNING PROFILE
+        // ============================
+        [
+            'text' => 'Learning Profile',
+            'icon' => 'fas fa-brain',
+            'submenu' => [
+                [
+                    'text' => 'Interest Inventory',
+                    'route' => 'interest-inventories.index',
+                    'icon' => 'far fa-circle',
+                ],
+                [
+                    'text' => 'Aptitude Test',
+                    'icon' => 'far fa-file-alt', // changed from far fa-circle to a more relevant icon
+                    'route' => 'aptitude.index',
+                    
+                ],
+                
+                [
+            'text' => 'Aptitude Test Questions',
+            'icon' => 'far fa-circle',
+            'route' => 'aptitude.questions.create',
+                ],
+
+
+
+                [
+                    'text' => 'Multiple Intelligence',
+                    'icon' => 'far fa-circle',
+                    'url'  => '#',
+                ],
+                [
+                    'text' => 'Thinking Style (Gregorc)',
+                    'icon' => 'far fa-circle',
+                    'url'  => '#',
+                ],
+                [
+                    'text' => 'Learning Preferences & Styles',
+                    'icon' => 'far fa-circle',
+                    'url'  => '#',
+                ],
+                [
+                    'text' => 'Holland Code (RIASEC)',
+                    'icon' => 'far fa-circle',
+                    'url'  => '#',
+                ],
+                [
+                    'text' => 'MBTI Test',
+                    'icon' => 'far fa-circle',
+                    'url'  => '#',
+                ],
+                [
+                    'text' => 'Learning Profile Report',
+                    'icon' => 'far fa-circle',
+                    'url'  => '#',
+                ],
+            ],
+        ],
+    ],
+],
+
+
+
+
+    
+
     // Academic Management
     // Academic Management
 [
@@ -471,16 +612,16 @@ return [
 
 
     // Reports
-    [
-        'text' => 'Reports',
-        'icon' => 'fas fa-chart-bar',
-        'submenu' => [
-            ['text' => 'Student Reports', 'url' => 'reports/students', 'icon' => 'fas fa-user-graduate'],
-            ['text' => 'Staff Reports', 'url' => 'reports/staff', 'icon' => 'fas fa-users-cog'],
-            ['text' => 'Finance Reports', 'url' => 'reports/finance', 'icon' => 'fas fa-wallet'],
-            ['text' => 'Library Reports', 'url' => 'reports/library', 'icon' => 'fas fa-book'],
-        ],
-    ],
+    //[
+        //'text' => 'Reports',
+        //'icon' => 'fas fa-chart-bar',
+        //'submenu' => [
+            //['text' => 'Student Reports', 'url' => 'reports/students', 'icon' => 'fas fa-user-graduate'],
+            //['text' => 'Staff Reports', 'url' => 'reports/staff', 'icon' => 'fas fa-users-cog'],
+            //['text' => 'Finance Reports', 'url' => 'reports/finance', 'icon' => 'fas fa-wallet'],
+            //['text' => 'Library Reports', 'url' => 'reports/library', 'icon' => 'fas fa-book'],
+     //   ],
+    //],
 
 
     // System Settings

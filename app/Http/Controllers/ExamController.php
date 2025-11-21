@@ -52,7 +52,15 @@ class ExamController extends Controller
             'academic_session_id' => 'required|exists:academic_sessions,id',
         ]);
 
-        Exam::create($request->only('name', 'term', 'academic_session_id'));
+        $data = $request->only('name', 'term', 'academic_session_id');
+
+        // Handle checkboxes
+        $data['include_in_term_final'] = $request->has('include_in_term_final');
+        $data['include_in_year_final'] = $request->has('include_in_year_final');
+        $data['is_terminal_exam'] = $request->has('is_terminal_exam');
+        $data['is_annual_exam'] = $request->has('is_annual_exam'); // new
+
+        Exam::create($data);
 
         return redirect()->route('exams.index')->with('success', 'Exam created successfully.');
     }
@@ -77,7 +85,15 @@ class ExamController extends Controller
             'academic_session_id' => 'required|exists:academic_sessions,id',
         ]);
 
-        $exam->update($request->only('name', 'term', 'academic_session_id'));
+        $data = $request->only('name', 'term', 'academic_session_id');
+
+        // Handle checkboxes
+        $data['include_in_term_final'] = $request->has('include_in_term_final');
+        $data['include_in_year_final'] = $request->has('include_in_year_final');
+        $data['is_terminal_exam'] = $request->has('is_terminal_exam');
+        $data['is_annual_exam'] = $request->has('is_annual_exam'); // new
+
+        $exam->update($data);
 
         return redirect()->route('exams.index')->with('success', 'Exam updated successfully.');
     }
