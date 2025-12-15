@@ -19,147 +19,167 @@ class MarkController extends Controller
      * Display a listing of marks.
      */
     public function index(Request $request)
-    {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
+{
+    /** @var \App\Models\User $user */
+    $user = Auth::user();
 
-        $sessions = AcademicSession::all();
-        $classes = SchoolClass::all();
-        $exams = Exam::all();
-        $departments = \App\Models\Department::all();
+    $sessions = AcademicSession::all();
+    $classes = SchoolClass::all();
+    $departments = \App\Models\Department::all();
 
-        // Only allow teachers to see their subjects
-        if ($user->hasRole('Teacher')) {
-            $subjects = Subject::where('teacher_id', $user->id)->get();
-        } else {
-            $subjects = Subject::all();
-        }
+    // Base subjects query
+    $subjectsQuery = Subject::query();
 
-        $marksQuery = Mark::with(['student.schoolClass', 'subject', 'exam', 'grade']);
-
-        // Filter by academic session
-        if ($request->filled('academic_session_id')) {
-            $marksQuery->where('academic_session_id', $request->academic_session_id);
-        }
-
-        // Filter by class
-        if ($request->filled('class_id')) {
-            $marksQuery->whereHas('student', function ($q) use ($request) {
-                $q->where('class_id', $request->class_id);
-            });
-        }
-
-        // Filter by subject
-        if ($request->filled('subject_id')) {
-            $marksQuery->where('subject_id', $request->subject_id);
-        }
-
-        // Filter by department
-        if ($request->filled('department_id')) {
-            $marksQuery->whereHas('subject', function ($q) use ($request) {
-                $q->where('department_id', $request->department_id);
-            });
-        }
-
-        // Restrict teachers to their subjects only
-        if ($user->hasRole('Teacher')) {
-            $marksQuery->whereHas('subject', fn($q) => $q->where('teacher_id', $user->id));
-        }
-
-        $marks = $marksQuery->orderBy('created_at', 'desc')->paginate(20);
-
-        return view('marks.index', compact('marks', 'sessions', 'classes', 'subjects', 'exams', 'departments'));
+    // Teacher restriction
+    if ($user->hasRole('Teacher')) {
+        $subjectsQuery->whereHas('classes', fn($q) => $q->where('teacher_id', $user->id));
     }
+
+    // Apply department filter if exists
+    if ($request->filled('department_id')) {
+        $subjectsQuery->where('department_id', $request->department_id);
+    }
+
+    $subjects = $subjectsQuery->get();
+
+    // Marks query
+    $marksQuery = Mark::with(['student.schoolClass', 'subject.department', 'exam', 'grade']);
+
+    if ($request->filled('academic_session_id')) {
+        $marksQuery->where('academic_session_id', $request->academic_session_id);
+    }
+
+    if ($request->filled('class_id')) {
+        $marksQuery->whereHas('student', fn($q) => $q->where('class_id', $request->class_id));
+    }
+
+    if ($request->filled('department_id')) {
+        $marksQuery->whereHas('subject', fn($q) => $q->where('department_id', $request->department_id));
+    }
+
+    if ($request->filled('subject_id')) {
+        $marksQuery->where('subject_id', $request->subject_id);
+    }
+
+    // Teacher restriction on marks
+    if ($user->hasRole('Teacher')) {
+        $marksQuery->whereHas('subject.classes', fn($q) => $q->where('teacher_id', $user->id));
+    }
+
+    $marks = $marksQuery->orderBy('created_at', 'desc')->paginate(20);
+
+    return view('marks.index', compact('marks', 'sessions', 'classes', 'departments', 'subjects'));
+}
+
+
+
 
     /**
      * Show the form for creating marks.
      */
     public function create()
-    {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
+{
+    /** @var \App\Models\User $user */
+    $user = Auth::user();
 
-        $sessions = AcademicSession::all();
-        $classes = SchoolClass::all();
-        $exams = Exam::all();
+    $sessions = AcademicSession::all();
+    $classes = SchoolClass::all();
+    $exams = Exam::all();
 
-        if ($user->hasRole('Teacher')) {
-            $subjects = Subject::where('teacher_id', $user->id)->get();
-        } else {
-            $subjects = Subject::all();
-        }
-
-        return view('marks.create', compact('sessions', 'classes', 'subjects', 'exams'));
+    if ($user->hasRole('Teacher')) {
+        // Only subjects assigned to this teacher via pivot
+        $subjects = \App\Models\Subject::whereHas('classes', function($q) use ($user) {
+            $q->where('teacher_id', $user->id);
+        })->get();
+    } else {
+        $subjects = Subject::all();
     }
+
+    return view('marks.create', compact('sessions', 'classes', 'subjects', 'exams'));
+}
+
+
 
     /**
      * Store newly created marks.
      */
     public function store(Request $request)
-    {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
+{
+    /** @var \App\Models\User $user */
+    $user = Auth::user();
 
-        $request->validate([
-            'academic_session_id' => 'required|exists:academic_sessions,id',
-            'class_id' => 'required|exists:school_classes,id',
-            'subject_id' => 'required|exists:subjects,id',
-            'exam_id' => 'required|exists:exams,id',
-            'marks' => 'required|array',
-            'marks.*' => 'required|numeric|min:0|max:100',
-        ]);
+    $request->validate([
+        'academic_session_id' => 'required|exists:academic_sessions,id',
+        'class_id' => 'required|exists:school_classes,id',
+        'subject_id' => 'required|exists:subjects,id',
+        'exam_id' => 'required|exists:exams,id',
+        'marks' => 'required|array',
+        'marks.*' => 'required|numeric|min:0|max:100',
+    ]);
 
-        if ($user->hasRole('Teacher')) {
-            Subject::where('id', $request->subject_id)
-                   ->where('teacher_id', $user->id)
-                   ->firstOrFail();
+    if ($user->hasRole('Teacher')) {
+        // Validate that the teacher is assigned to this subject & class via pivot table subject_class
+        $assigned = \App\Models\Subject::where('id', $request->subject_id)
+            ->whereHas('classes', function ($q) use ($request, $user) {
+                $q->where('class_id', $request->class_id) // use pivot column name 'class_id'
+                  ->where('teacher_id', $user->id);
+            })
+            ->exists();
+
+        if (!$assigned) {
+            abort(403, "You are not assigned to this subject for the selected class.");
         }
-
-        foreach ($request->marks as $student_id => $markValue) {
-
-            $enrollment = Enrollment::where('student_id', $student_id)
-                ->where('class_id', $request->class_id)
-                ->where('academic_session_id', $request->academic_session_id)
-                ->where('status', 'active')
-                ->first();
-
-            if (!$enrollment) continue;
-
-            $student = $enrollment->student;
-
-            if ($student->subjects()
-                        ->where('subject_id', $request->subject_id)
-                        ->wherePivot('withdrawn', 1)
-                        ->exists()) {
-                continue;
-            }
-
-            $grade = Grade::where('min_mark', '<=', $markValue)
-                          ->where('max_mark', '>=', $markValue)
-                          ->first();
-
-            Mark::updateOrCreate(
-                [
-                    'student_id' => $student_id,
-                    'subject_id' => $request->subject_id,
-                    'exam_id' => $request->exam_id,
-                    'academic_session_id' => $request->academic_session_id,
-                ],
-                [
-                    'mark' => $markValue,
-                    'grade_id' => $grade?->id,
-                    'class_id' => $request->class_id,
-                ]
-            );
-        }
-
-        return redirect()->route('marks.index')->with('success', 'Marks saved successfully with grades!');
     }
+
+    foreach ($request->marks as $student_id => $markValue) {
+
+        $enrollment = Enrollment::where('student_id', $student_id)
+            ->where('class_id', $request->class_id)
+            ->where('academic_session_id', $request->academic_session_id)
+            ->where('status', 'active')
+            ->first();
+
+        if (!$enrollment) continue;
+
+        $student = $enrollment->student;
+
+        // Check if student has withdrawn from this subject
+        $withdrawn = $student->subjects()
+            ->where('subject_id', $request->subject_id)
+            ->wherePivot('withdrawn', 1)
+            ->exists();
+
+        if ($withdrawn) continue;
+
+        $grade = Grade::where('min_mark', '<=', $markValue)
+            ->where('max_mark', '>=', $markValue)
+            ->first();
+
+        Mark::updateOrCreate(
+            [
+                'student_id' => $student_id,
+                'subject_id' => $request->subject_id,
+                'exam_id' => $request->exam_id,
+                'academic_session_id' => $request->academic_session_id,
+            ],
+            [
+                'mark' => $markValue,
+                'grade_id' => $grade?->id,
+                'class_id' => $request->class_id,
+            ]
+        );
+    }
+
+    return redirect()->route('marks.index')->with('success', 'Marks saved successfully with grades!');
+}
+
+
+
 
     /**
      * AJAX: Get students of a class, session, and subject (enrolled only and not withdrawn)
      */
-    public function getStudents(Request $request)
+      public function getStudents(Request $request)
 {
     $request->validate([
         'class_id' => 'required|exists:school_classes,id',
@@ -210,28 +230,39 @@ class MarkController extends Controller
      * AJAX: Get subjects by department (for dynamic dropdown)
      */
     public function getSubjectsByDepartment(Request $request)
-    {
-        $request->validate([
-            'department_id' => 'nullable|exists:departments,id',
-        ]);
+{
+    $request->validate([
+        'department_id' => 'nullable|exists:departments,id',
+    ]);
 
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
+    /** @var \App\Models\User $user */
+    $user = Auth::user();
 
-        $query = Subject::query();
+    $query = Subject::query()
+        ->with(['classes' => function ($q) use ($user) {
+            if ($user->hasRole('Teacher')) {
+                $q->where('teacher_id', $user->id);
+            }
+        }]);
 
-        if ($request->filled('department_id')) {
-            $query->where('department_id', $request->department_id);
-        }
-
-        if ($user->hasRole('Teacher')) {
-            $query->where('teacher_id', $user->id);
-        }
-
-        $subjects = $query->get(['id', 'name', 'teacher_id']);
-
-        return response()->json($subjects);
+    if ($request->filled('department_id')) {
+        $query->where('department_id', $request->department_id);
     }
+
+    // If teacher, only return subjects assigned to them via pivot
+    if ($user->hasRole('Teacher')) {
+        $query->whereHas('classes', function($q) use ($user) {
+            $q->where('teacher_id', $user->id);
+        });
+    }
+
+    $subjects = $query->get(['id', 'name']);
+
+    return response()->json($subjects);
+}
+
+
+
 
     /**
      * Show the form for editing a mark.

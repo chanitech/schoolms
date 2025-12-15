@@ -20,37 +20,40 @@
                 @endif
 
                 <div class="row mb-3">
+                    {{-- Student --}}
                     <div class="col-md-4">
                         <label for="student_id" class="form-label">Student</label>
-                        <select name="student_id" class="form-control">
+                        <select name="student_id" class="form-control" required>
                             <option value="">Select Student</option>
                             @foreach($students as $student)
                                 <option value="{{ $student->id }}" 
                                     {{ (old('student_id') ?? $enrollment->student_id ?? '') == $student->id ? 'selected' : '' }}>
-                                    {{ $student->first_name }} {{ $student->last_name }}
+                                    {{ $student->first_name }} {{ $student->last_name }} ({{ $student->admission_no }})
                                 </option>
                             @endforeach
                         </select>
                         @error('student_id') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
 
+                    {{-- Class --}}
                     <div class="col-md-4">
                         <label for="class_id" class="form-label">Class</label>
-                        <select name="class_id" class="form-control">
+                        <select name="class_id" class="form-control" required>
                             <option value="">Select Class</option>
                             @foreach($classes as $class)
                                 <option value="{{ $class->id }}" 
                                     {{ (old('class_id') ?? $enrollment->class_id ?? '') == $class->id ? 'selected' : '' }}>
-                                    {{ $class->name }}
+                                    {{ $class->name }} (Level: {{ $class->level }}{{ $class->section ? ' - '.$class->section : '' }})
                                 </option>
                             @endforeach
                         </select>
                         @error('class_id') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
 
+                    {{-- Academic Session --}}
                     <div class="col-md-4">
                         <label for="academic_session_id" class="form-label">Academic Session</label>
-                        <select name="academic_session_id" class="form-control">
+                        <select name="academic_session_id" class="form-control" required>
                             <option value="">Select Session</option>
                             @foreach($sessions as $session)
                                 <option value="{{ $session->id }}" 
@@ -64,16 +67,19 @@
                 </div>
 
                 <div class="row mb-3">
+                    {{-- Roll No (auto-generated) --}}
                     <div class="col-md-3">
                         <label for="roll_no" class="form-label">Roll No</label>
                         <input type="text" name="roll_no" class="form-control" 
-                               value="{{ old('roll_no') ?? $enrollment->roll_no ?? '' }}">
+                               value="{{ old('roll_no') ?? $enrollment->roll_no ?? '' }}"
+                               placeholder="Auto-generated if empty">
                         @error('roll_no') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
 
+                    {{-- Status --}}
                     <div class="col-md-3">
                         <label for="status" class="form-label">Status</label>
-                        <select name="status" class="form-control">
+                        <select name="status" class="form-control" required>
                             <option value="">Select Status</option>
                             <option value="active" {{ (old('status') ?? $enrollment->status ?? '') == 'active' ? 'selected' : '' }}>Active</option>
                             <option value="inactive" {{ (old('status') ?? $enrollment->status ?? '') == 'inactive' ? 'selected' : '' }}>Inactive</option>
@@ -81,10 +87,12 @@
                         @error('status') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
 
+                    {{-- Remarks --}}
                     <div class="col-md-6">
                         <label for="remarks" class="form-label">Remarks</label>
                         <input type="text" name="remarks" class="form-control" 
-                               value="{{ old('remarks') ?? $enrollment->remarks ?? '' }}">
+                               value="{{ old('remarks') ?? $enrollment->remarks ?? '' }}" 
+                               placeholder="Optional">
                         @error('remarks') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
                 </div>

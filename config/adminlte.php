@@ -14,7 +14,7 @@ return [
     |
     */
 
-    'title' => 'MEMA',
+    'title' => 'MEMANexus',
     'title_prefix' => '',
     'title_postfix' => '',
 
@@ -63,7 +63,7 @@ return [
     |
     */
 
-    'logo' => '<b>MEMA</b>SMS',
+    'logo' => '<b>MEMA</b>Nexus',
     'logo_img' => 'vendor/adminlte/dist/img/MEMA.webp',
     'logo_img_class' => 'brand-image img-circle elevation-3',
     'logo_img_xl' => null,
@@ -315,6 +315,7 @@ return [
             ['text' => 'Guardians', 'url' => 'guardians', 'icon' => 'fas fa-users'],
             //['text' => 'Attendance', 'url' => 'attendance', 'icon' => 'fas fa-calendar-check'],
             ['text' => 'Enrollments', 'url' => 'enrollments', 'icon' => 'fas fa-clipboard-list'],
+            ['text' => 'Promotion', 'url' => 'promotion', 'icon' => 'fas fa-level-up-alt'], // <- new
         ],
     ],
 
@@ -520,6 +521,68 @@ return [
         ['text' => 'Evaluation Report', 'url' => 'hr-reports/evaluation', 'icon' => 'fas fa-star'],
     ]
 ],
+
+
+
+
+
+ [
+    'text' => 'Budgets',
+    'icon' => 'fas fa-file-invoice',
+    'submenu' => [
+        [
+            'text' => 'Submit Budget',
+            'route' => 'finance.budgets.create',
+            'icon' => 'fas fa-plus',
+        ],
+        [
+            'text' => 'Pending Approvals',
+            'route' => 'finance.budgets.pending',
+            'icon' => 'fas fa-check-circle',
+            'label' => $pendingBudgetsCount ?? 0, // optional dynamic badge
+            'label_color' => 'warning',
+        ],
+        [
+            'text' => 'All Budgets',
+            'route' => 'finance.budgets.summary',
+            'icon' => 'fas fa-list',
+        ],
+        [
+            'text' => 'All Budgetsindex',
+            'route' => 'finance.budgets.index',
+            'icon' => 'fas fa-list',
+        ],
+        [
+            'text' => 'HOD Dashboard',
+            'route' => 'finance.budgets.hod',
+            'icon' => 'fas fa-user-tie',
+        ],
+    ],
+],
+[
+    'text' => 'Invoices',
+    'icon' => 'fas fa-receipt',
+    'submenu' => [
+        [
+            'text' => 'DO Approvals',
+            'route' => 'finance.invoices.do',
+            'icon' => 'fas fa-check-double',
+            'label' => $pendingInvoicesCount ?? 0,
+            'label_color' => 'warning',
+        ],
+        [
+            'text' => 'Finance Dashboard',
+            'route' => 'finance.invoices.finance',
+            'icon' => 'fas fa-credit-card',
+        ],
+        [
+            'text' => 'All Invoices',
+            'route' => 'finance.invoices.index',
+            'icon' => 'fas fa-list-alt',
+        ],
+    ],
+],
+
 
 
 

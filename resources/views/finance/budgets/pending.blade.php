@@ -28,22 +28,22 @@
             <thead>
                 <tr>
                     <th>#</th>
-                    <th>Title</th>
+                    <th>Note / Title</th>
                     <th>Department</th>
-                    <th>Amount</th>
+                    <th>Total Amount (TZS)</th>
                     <th>Submitted By</th>
                     <th>Submitted At</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach($pendingBudgets as $budget)
+                @forelse($pendingBudgets as $budget)
                 <tr>
                     <td>{{ $loop->iteration }}</td>
-                    <td>{{ $budget->title }}</td>
+                    <td>{{ $budget->note ?? '-' }}</td>
                     <td>{{ $budget->department->name ?? '-' }}</td>
-                    <td>{{ number_format($budget->amount, 2) }}</td>
-                    <td>{{ $budget->submitted_by->name ?? '-' }}</td>
+                    <td>{{ number_format($budget->total_amount, 2) }}</td>
+                    <td>{{ $budget->staff->name ?? '-' }}</td>
                     <td>{{ $budget->created_at->format('d M Y') }}</td>
                     <td>
                         <a href="{{ route('finance.budgets.show', $budget) }}" class="btn btn-sm btn-info">
@@ -52,6 +52,7 @@
                         <a href="{{ route('finance.budgets.approve.form', $budget) }}" class="btn btn-sm btn-success">
                             <i class="fas fa-check"></i> Approve
                         </a>
+                        {{-- Optional: Decline action --}}
                         <form action="{{ route('finance.budgets.approve.item', $budget) }}" method="POST" class="d-inline">
                             @csrf
                             <input type="hidden" name="action" value="decline">
@@ -61,13 +62,11 @@
                         </form>
                     </td>
                 </tr>
-                @endforeach
-
-                @if($pendingBudgets->isEmpty())
+                @empty
                 <tr>
                     <td colspan="7" class="text-center text-muted">No pending budgets found.</td>
                 </tr>
-                @endif
+                @endforelse
             </tbody>
         </table>
     </div>

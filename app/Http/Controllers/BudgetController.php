@@ -4,30 +4,46 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Budget;
+use App\Models\BudgetItem;
+use App\Models\Invoice;
+use App\Models\Department;
 use Illuminate\Support\Facades\Auth;
 
 class BudgetController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth'); // Add permissions if needed
+        $this->middleware('permission:view budgets')->only(['index', 'show']);
+        $this->middleware('permission:create budgets')->only(['create', 'store']);
+        $this->middleware('permission:approve budgets')->only(['approve', 'updateStatus']);
     }
 
     /**
-     * List all budgets (index)
+     * List all budgets
      */
     public function index()
     {
-        $budgets = Budget::with('staff', 'department')->latest()->paginate(20);
+        $user = Auth::user();
+        $staff = $user->staff;
+
+        $budgetsQuery = Budget::with('staff', 'department')->latest();
+
+        // Restrict HOD to only their department
+        if ($staff && strtolower($staff->role) === 'hod') {
+            $budgetsQuery->where('department_id', $staff->department_id);
+        }
+
+        $budgets = $budgetsQuery->paginate(20);
+
         return view('finance.budgets.index', compact('budgets'));
     }
 
     /**
-     * Show form to create a new budget (HoD)
+     * Show form to create a new budget
      */
     public function create()
     {
-        $departments = \App\Models\Department::all();
+        $departments = Department::all();
         return view('finance.budgets.create', compact('departments'));
     }
 
@@ -53,10 +69,16 @@ class BudgetController extends Controller
             'year' => $validated['year'],
             'note' => $validated['note'] ?? null,
             'status' => 'pending',
+            'current_step' => 'do', // pending DO approval
         ]);
 
         foreach ($validated['items'] as $item) {
-            $budget->items()->create($item);
+            $budget->items()->create([
+                'item' => $item['item'],
+                'description' => $item['description'] ?? null,
+                'price' => $item['price'],
+                'status' => 'pending',
+            ]);
         }
 
         $budget->calculateTotal();
@@ -66,39 +88,82 @@ class BudgetController extends Controller
             ->with('success', 'Budget submitted successfully.');
     }
 
-
-
-    
-
-    
-
     /**
-     * Show budget details (show)
+     * Show budget details
      */
     public function show(Budget $budget)
     {
-        $budget->load('staff', 'department', 'items');
+        $user = Auth::user();
+        $staff = $user->staff;
 
-        return view('finance.budgets.show', compact('budget'));
+        // HOD cannot see other departments
+        if ($staff && strtolower($staff->role) === 'hod' && $budget->department_id !== $staff->department_id) {
+            abort(403, 'Unauthorized: You cannot access another department budget.');
+        }
+
+        $budget->load('staff', 'department', 'items.approvedBy', 'items.invoice');
+
+        return view('finance.budgets.show', [
+            'budget' => $budget,
+            'userRole' => $staff->role ?? 'Unknown',
+        ]);
     }
 
     /**
-     * Show approval form
+     * List pending budgets for DO approval
+     */
+    public function pending()
+    {
+        $pendingBudgets = Budget::with('staff', 'department')
+            ->where('status', 'pending')
+            ->where('current_step', 'do')
+            ->latest()
+            ->get();
+
+        return view('finance.budgets.pending', compact('pendingBudgets'));
+    }
+
+    /**
+     * Show DO approval form
      */
     public function approveForm(Budget $budget)
     {
         $budget->load('items', 'staff', 'department');
 
-        if ($budget->status !== 'pending') {
-            return redirect()->back()
-                ->with('error', 'This budget has already been processed.');
+        if ($budget->current_step !== 'do') {
+            return redirect()->back()->with('error', 'This budget is not ready for DO approval.');
         }
 
         return view('finance.budgets.approve', compact('budget'));
     }
 
     /**
-     * Handle budget approval
+     * Approve/reject individual budget item
+     */
+    public function approveItem(Request $request, Budget $budget)
+    {
+        $request->validate([
+            'item_id' => 'required|exists:budget_items,id',
+            'action'  => 'required|in:approved,rejected',
+            'note'    => 'nullable|string',
+        ]);
+
+        $user = Auth::user();
+        $item = $budget->items()->findOrFail($request->input('item_id'));
+
+        $item->update([
+            'status' => $request->input('action'),
+            'note' => $request->input('note'),
+            'approved_by' => $user->id,
+        ]);
+
+        $budget->updateStatusBasedOnItems();
+
+        return redirect()->back()->with('success', 'Item updated and budget status refreshed.');
+    }
+
+    /**
+     * Approve all budget items at once
      */
     public function approve(Request $request, Budget $budget)
     {
@@ -115,77 +180,275 @@ class BudgetController extends Controller
             ]);
         }
 
-        // Update overall budget status
-        if ($budget->items()->where('status', 'rejected')->exists()) {
-            $budget->status = 'partially_approved';
-        } else {
-            $budget->status = 'approved';
-        }
+        $budget->status = $budget->items()->where('status', 'rejected')->exists()
+            ? 'partially_approved'
+            : 'approved';
+
+        $budget->current_step = 'hod'; // back to HOD for withdrawal
         $budget->save();
 
         return redirect()
             ->route('finance.budgets.show', $budget->id)
-            ->with('success', 'Budget processed successfully.');
+            ->with('success', 'Budget items processed successfully.');
     }
 
     /**
-     * Approve/reject individual item via AJAX
+     * HOD withdraw/Use approved items → create invoice
      */
-    public function approveItem(Request $request, Budget $budget)
-    {
-        $request->validate([
-            'item_id' => 'required|exists:budget_items,id',
-            'status' => 'required|in:approved,rejected',
-            'comment' => 'nullable|string|max:500',
-        ]);
+    public function withdrawItem(Request $request, BudgetItem $item)
+{
+    /** @var \App\Models\Staff $staff */
+    $staff = Auth::user()->staff;
 
-        $item = $budget->items()->findOrFail($request->item_id);
-        $item->update([
-            'status' => $request->status,
-            'comment' => $request->comment,
-            'approved_by' => Auth::id(),
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Item status updated.',
-        ]);
+    // Only HOD or Admin can withdraw
+    if (!$staff || !$staff->hasAnyRole(['hod', 'admin'])) {
+        abort(403, 'You are not authorized to withdraw this item.');
     }
 
+    // HOD can only withdraw items from their department
+    if ($staff->hasRole('hod') && $staff->department_id !== $item->budget->department_id) {
+        abort(403, 'You are not authorized to withdraw this item.');
+    }
 
-    public function pending()
-{
-    // Fetch all budgets with 'pending' status, latest first
-    $pendingBudgets = \App\Models\Budget::with(['department', 'submitted_by'])
-                        ->where('status', 'pending')
-                        ->orderBy('created_at', 'desc')
-                        ->get();
+    // Only approved items can be withdrawn
+    if ($item->status !== 'approved') {
+        return redirect()->back()->with('error', 'Item must be approved before withdrawal.');
+    }
 
-    // Pass to the Blade view
-    return view('finance.budgets.pending', compact('pendingBudgets'));
+    // Create Invoice
+    $invoice = Invoice::create([
+        'budget_id'      => $item->budget_id,
+        'budget_item_id' => $item->id,
+        'amount'         => $item->price,
+        'status'         => 'pending', // pending approval by DO/Finance
+    ]);
+
+    // Update item status
+    $item->update(['status' => 'withdrawn']);
+
+    // Optional: update budget totals or workflow step if needed
+    if (method_exists($item->budget, 'updateStatusBasedOnItems')) {
+        $item->budget->updateStatusBasedOnItems();
+    }
+
+    return redirect()->back()->with('success', 'Invoice created and sent to DO successfully.');
 }
 
+
+    public function hodBudgets()
+{
+    /** @var \App\Models\User $user */
+    $user = Auth::user();
+
+    /** @var \App\Models\Staff|null $staff */
+    $staff = $user->staff;
+
+    // Only HOD or Admin can access
+    if (!$user->hasAnyRole(['HOD', 'Admin'])) {
+        abort(403, 'Unauthorized');
+    }
+
+    // Base query: budgets at HOD step
+    $budgetsQuery = Budget::with(['staff', 'department', 'items'])
+        ->where('current_step', 'hod');
+
+    // Restrict to HOD's department if user is HOD
+    if ($staff && $user->hasRole('HOD')) {
+        $budgetsQuery->where('department_id', $staff->department_id);
+    }
+
+    // Optional: filter by month/year
+    if (request()->filled('month')) {
+        $budgetsQuery->where('month', request('month'));
+    }
+    if (request()->filled('year')) {
+        $budgetsQuery->where('year', request('year'));
+    }
+
+    $budgets = $budgetsQuery->latest()->get();
+
+    return view('finance.budgets.hod', compact('budgets'));
+}
     /**
-     * Show budget summary with filters
+     * HOD view budgets waiting for their action
+     
+  public function hodBudgets()
+{
+    $user = Auth::user();
+
+    // Only HOD or Admin can access
+    if (!$user->hasRole(['HOD', 'Admin'])) {
+        abort(403, 'Unauthorized');
+    }
+
+    $staff = $user->staff;
+
+    // Base query: budgets at HOD step
+    $budgetsQuery = Budget::with('staff', 'department', 'items')
+        ->where('current_step', 'hod');
+
+    // Restrict to HOD's department
+    if ($staff && $user->hasRole('HOD')) {
+        $budgetsQuery->where('department_id', $staff->department_id);
+    }
+
+    $budgets = $budgetsQuery->latest()->get();
+
+    return view('finance.budgets.hod', compact('budgets'));
+}
+*/
+
+
+
+
+
+
+
+
+
+
+    /**
+     * DO approve/reject invoice
+     */
+    public function approveInvoice(Request $request, Invoice $invoice)
+    {
+        $staff = Auth::user()->staff;
+
+        if (!$staff || strtolower($staff->role) !== 'do') {
+            abort(403);
+        }
+
+        $request->validate([
+            'status' => 'required|in:approved_by_do,rejected_by_do',
+        ]);
+
+        $invoice->update([
+            'status' => $request->status,
+            'approved_by_do_id' => Auth::id(),
+        ]);
+
+        return redirect()->back()->with('success', 'Invoice processed successfully.');
+    }
+
+    /**
+     * Finance pays invoice
+     */
+    public function payInvoice(Request $request, Invoice $invoice)
+    {
+        $staff = Auth::user()->staff;
+
+        if (!$staff || strtolower($staff->role) !== 'finance') {
+            abort(403);
+        }
+
+        if ($invoice->status !== 'approved_by_do') {
+            return redirect()->back()->with('error', 'Invoice not approved by DO.');
+        }
+
+        $invoice->update([
+            'status' => 'paid',
+            'paid_by_finance_id' => Auth::id(),
+            'payment_date' => now(),
+        ]);
+
+        $invoice->budgetItem->update(['status' => 'used']);
+
+        return redirect()->back()->with('success', 'Invoice paid successfully.');
+    }
+
+    /**
+     * Pay invoice (alternative)
+     */
+    public function pay(Request $request, Invoice $invoice)
+    {
+        if ($invoice->status !== 'approved_by_do') {
+            return redirect()->back()->with('error', 'Invoice not approved by DO yet.');
+        }
+
+        $invoice->update([
+            'status' => 'paid',
+            'paid_by' => Auth::id(),
+            'paid_at' => now(),
+        ]);
+
+        $invoice->budgetItem->update(['status' => 'used']);
+
+        return redirect()->back()->with('success', 'Invoice marked as paid.');
+    }
+
+    /**
+     * Show edit form
+     */
+    public function edit(Budget $budget)
+    {
+        $this->authorize('edit budgets');
+        $departments = Department::all();
+        return view('finance.budgets.edit', compact('budget', 'departments'));
+    }
+
+    /**
+     * Handle update
+     */
+    public function update(Request $request, Budget $budget)
+    {
+        $this->authorize('edit budgets');
+
+        $validated = $request->validate([
+            'department_id' => 'required|exists:departments,id',
+            'month' => 'required|string',
+            'year' => 'required|integer',
+            'note' => 'nullable|string|max:500',
+        ]);
+
+        $budget->update($validated);
+
+        return redirect()->route('finance.budgets.index')
+            ->with('success', 'Budget updated successfully.');
+    }
+
+    /**
+     * Budget summary
      */
     public function summary(Request $request)
-    {
-        $departments = \App\Models\Department::all();
+{
+    $user = Auth::user();
+    $staff = $user->staff;
 
-        $query = Budget::with('staff', 'department', 'items');
+    // Base query
+    $query = Budget::with('staff', 'department', 'items');
 
-        if ($request->filled('department_id')) {
-            $query->where('department_id', $request->department_id);
-        }
-        if ($request->filled('month')) {
-            $query->where('month', $request->month);
-        }
-        if ($request->filled('year')) {
-            $query->where('year', $request->year);
-        }
-
-        $budgets = $query->latest()->paginate(20)->withQueryString();
-
-        return view('finance.budgets.summary', compact('budgets', 'departments'));
+    // Restrict non-admin users to their department
+    if ($staff && strtolower($staff->role) !== 'admin') {
+        $query->where('department_id', $staff->department_id);
     }
+
+    // Apply filters
+    if ($request->filled('department_id')) {
+        $query->where('department_id', $request->department_id);
+    }
+
+    if ($request->filled('month')) {
+        $query->where('month', $request->month); // month stored as string like "January"
+    }
+
+    if ($request->filled('year')) {
+        $query->where('year', $request->year);
+    }
+
+    // Paginate results
+    $budgets = $query->latest()->paginate(10)->withQueryString();
+
+    // Get departments for dropdown
+    $departments = ($staff && strtolower($staff->role) === 'admin')
+        ? Department::all()
+        : Department::where('id', $staff->department_id)->get();
+
+    // Months array for filter dropdown
+    $months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+    return view('finance.budgets.summary', compact('budgets', 'departments', 'months'));
+}
+
+
+
 }

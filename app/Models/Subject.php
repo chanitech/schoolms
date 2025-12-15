@@ -20,9 +20,8 @@ class Subject extends Model
     protected $fillable = [
         'name',
         'code',
-        'type',          // e.g. 'core' or 'elective'
-        'teacher_id',
-        'department_id',
+        'type',             // core / elective
+        'department_id',    // subject belongs to a department
     ];
 
     /* ============================
@@ -35,27 +34,22 @@ class Subject extends Model
         return $this->belongsTo(Department::class);
     }
 
-    // Classes this subject is offered to
     public function classes()
-    {
-        return $this->belongsToMany(
-            SchoolClass::class,
-            'subject_class',
-            'subject_id',
-            'class_id'
-        )->withTimestamps();
-    }
+{
+    return $this->belongsToMany(
+        SchoolClass::class,
+        'subject_class',
+        'subject_id',
+        'class_id'
+    )->withPivot('teacher_id')->withTimestamps();
+}
+
+
 
     // Marks recorded under this subject
     public function marks()
     {
         return $this->hasMany(Mark::class);
-    }
-
-    // Teacher assigned to this subject
-    public function teacher()
-    {
-        return $this->belongsTo(User::class, 'teacher_id');
     }
 
     // Students taking this subject
@@ -66,13 +60,11 @@ class Subject extends Model
                     ->withTimestamps();
     }
 
-    // Active students (not withdrawn)
     public function activeStudents()
     {
         return $this->students()->wherePivot('withdrawn', 0);
     }
 
-    // Withdrawn students
     public function withdrawnStudents()
     {
         return $this->students()->wherePivot('withdrawn', 1);
@@ -82,25 +74,21 @@ class Subject extends Model
      | 🔹 ACCESSORS
      ============================ */
 
-    // Teacher’s full name
+    // Default teacher name (if needed for UI)
     public function getTeacherNameAttribute(): string
     {
-        return $this->teacher
-            ? trim("{$this->teacher->first_name} {$this->teacher->last_name}")
-            : '—';
+        return '—';  // teacher is now class-specific so default is blank
     }
 
     /* ============================
      | 🔹 SCOPES
      ============================ */
 
-    // Filter by department
     public function scopeOfDepartment($query, $departmentId)
     {
         return $query->where('department_id', $departmentId);
     }
 
-    // Filter by type (core/elective)
     public function scopeOfType($query, $type)
     {
         return $query->where('type', $type);
@@ -110,7 +98,6 @@ class Subject extends Model
      | 🔹 HELPERS
      ============================ */
 
-    // Get average GPA or marks across all students in this subject
     public function averageGpa()
     {
         return $this->marks()->avg('gpa');
@@ -119,5 +106,17 @@ class Subject extends Model
     public function averageScore()
     {
         return $this->marks()->avg('score');
+    }
+
+    /**
+     * Get the assigned teacher for a specific class
+     */
+    public function teacherForClass($classId)
+    {
+        $record = $this->classes()
+                       ->where('class_id', $classId)
+                       ->first();
+
+        return $record?->pivot?->teacher_id;  // teacher_id or null
     }
 }

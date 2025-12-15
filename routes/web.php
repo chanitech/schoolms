@@ -46,6 +46,8 @@ use App\Http\Controllers\{
     InterestInventoryController,
     AptitudeTestController,
     AptitudeQuestionController,
+    InvoiceController,
+    PromotionController,
     
     
 };
@@ -143,6 +145,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('{subject}/assign-students', [SubjectController::class, 'assignStudents'])->name('subjects.assign_students');
     Route::put('{subject}/update-assigned-students', [SubjectController::class, 'updateAssignedStudents'])->name('subjects.updateAssignedStudents');
 });
+
+
+Route::get('/promotion/students', [PromotionController::class, 'studentsJson']);
+Route::get('/promotion', [PromotionController::class, 'index'])->name('promotion.index');
+Route::post('/promotion/class', [PromotionController::class, 'promoteClass'])->name('promotion.class');
+Route::post('/promotion/student/{id}', [PromotionController::class, 'promoteSingle'])->name('promotion.student');
 
 
 Route::get('/results/terminal-report', [StudentResultController::class, 'terminalReport'])
@@ -297,31 +305,87 @@ Route::prefix('finance')->name('finance.')->middleware(['auth', 'verified'])->gr
 
 
 
-   Route::prefix('finance/budgets')->name('finance.budgets.')->middleware('auth')->group(function () {
+ 
 
-    // List all budgets
-    Route::get('/', [BudgetController::class, 'index'])->name('index');
 
-    // Create budget
-    Route::get('/create', [BudgetController::class, 'create'])->name('create');
-    Route::post('/', [BudgetController::class, 'store'])->name('store');
 
-    // Pending approvals
-    Route::get('/pending', [BudgetController::class, 'pending'])->name('pending');
 
-    // Summary page (must be **before {budget}**)
-    Route::get('/summary', [BudgetController::class, 'summary'])->name('summary');
+Route::prefix('finance/budgets')
+    ->name('finance.budgets.')
+    ->middleware('auth')
+    ->group(function () {
 
-    // Show budget details
-    Route::get('/{budget}', [BudgetController::class, 'show'])->name('show');
+        // List all budgets
+        Route::get('/', [BudgetController::class, 'index'])->name('index');
 
-    // Approve form and action
-    Route::get('/{budget}/approve', [BudgetController::class, 'approveForm'])->name('approve.form');
-    Route::post('/{budget}/approve', [BudgetController::class, 'approve'])->name('approve');
+        // Create new budget (HOD)
+        Route::get('/create', [BudgetController::class, 'create'])->name('create');
+        Route::post('/', [BudgetController::class, 'store'])->name('store');
 
-    // AJAX approve/reject item
-    Route::post('/{budget}/item/approve', [BudgetController::class, 'approveItem'])->name('approve.item');
-});
+        // Pending budgets for DO approval
+        Route::get('/pending', [BudgetController::class, 'pending'])->name('pending');
+
+        // Budget summary page (optional)
+        Route::get('/summary', [BudgetController::class, 'summary'])->name('summary');
+        // Budget summary page (optional)
+        Route::get('/index', [BudgetController::class, 'index'])->name('index');
+
+
+         // HOD dashboard: budgets waiting for withdrawal/use
+        // ⚠ Must be above {budget} routes to avoid conflicts
+        Route::get('/hod', [BudgetController::class, 'hodBudgets'])->name('hod');
+
+        Route::get('/{budget}/edit', [BudgetController::class, 'edit'])->name('edit');
+        Route::put('/{budget}', [BudgetController::class, 'update'])->name('update');
+
+
+       
+
+        // HOD withdraws approved item → creates invoice
+        Route::post('/items/{item}/withdraw', [BudgetController::class, 'withdrawItem'])->name('withdraw');
+
+        // Show a single budget (details)
+        Route::get('/{budget}', [BudgetController::class, 'show'])->name('show');
+
+        // DO approval form for a budget
+        Route::get('/{budget}/approve', [BudgetController::class, 'approveForm'])->name('approve.form');
+
+        // DO approval submission for all items in a budget
+        Route::post('/{budget}/approve', [BudgetController::class, 'approve'])->name('approve');
+
+        // DO approval/rejection per budget item (AJAX or inline form)
+        Route::post('/{budget}/item/approve', [BudgetController::class, 'approveItem'])->name('approve.item');
+    });
+
+
+
+
+
+    Route::prefix('finance/invoices')
+    ->name('finance.invoices.')
+    ->middleware('auth')
+    ->group(function () {
+
+        // List all invoices (Admin / Finance view)
+        Route::get('/', [InvoiceController::class, 'index'])->name('index');
+
+        // DO dashboard: invoices pending DO approval
+        Route::get('/do', [InvoiceController::class, 'doDashboard'])->name('do');
+
+        // DO approves/rejects invoice
+        Route::post('/{invoice}/approve', [InvoiceController::class, 'approve'])->name('approve');
+
+        // Finance dashboard: invoices pending payment
+        Route::get('/finance', [InvoiceController::class, 'financeDashboard'])->name('finance');
+
+        // Finance pays the invoice
+        Route::post('/{invoice}/pay', [InvoiceController::class, 'pay'])->name('pay');
+
+        // Show invoice details
+        Route::get('/{invoice}', [InvoiceController::class, 'show'])->name('show');
+    });
+
+
 
 
 

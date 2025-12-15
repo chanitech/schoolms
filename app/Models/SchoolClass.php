@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Student;
 use App\Models\Staff;
+use App\Models\Subject;
 
 class SchoolClass extends Model
 {
@@ -20,16 +21,19 @@ class SchoolClass extends Model
         'class_teacher_id',
     ];
 
+    // Relation: Class -> Students
     public function students()
     {
         return $this->hasMany(Student::class, 'class_id');
     }
 
+    // Relation: Class -> Class Teacher
     public function teacher()
     {
         return $this->belongsTo(Staff::class, 'class_teacher_id');
     }
 
+    // Relation: Class -> Subjects (with pivot teacher)
     public function subjects()
 {
     return $this->belongsToMany(
@@ -37,7 +41,7 @@ class SchoolClass extends Model
         'subject_class',
         'class_id',
         'subject_id'
-    )->withTimestamps();
+    )->withPivot('teacher_id')->withTimestamps();
 }
 
 }

@@ -28,6 +28,7 @@
                     <th>Status</th>
                     <th>Approved By</th>
                     <th>Note / Comment</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -39,24 +40,43 @@
                     <td>{{ ucfirst($item->status ?? 'pending') }}</td>
                     <td>{{ $item->approvedBy->name ?? '-' }}</td>
                     <td>{{ $item->note ?? $item->comment ?? '-' }}</td>
+                    <td>
+                        @if(Auth::user()->role == 'hod' && $item->status == 'approved')
+                            <form method="POST" action="{{ route('finance.budgets.withdrawItem', $item->id) }}">
+                                @csrf
+                                <button class="btn btn-success btn-sm">
+                                    <i class="fas fa-hand-holding-usd"></i> Use / Withdraw
+                                </button>
+                            </form>
+                        @elseif($item->invoice)
+                            <a href="{{ route('finance.invoices.show', $item->invoice->id) }}" 
+                               class="btn btn-primary btn-sm">
+                                <i class="fas fa-file-invoice"></i> Invoice ({{ ucfirst($item->invoice->status) }})
+                            </a>
+                        @else
+                            <span class="text-muted">-</span>
+                        @endif
+                    </td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="6" class="text-center">No items added.</td>
+                    <td colspan="7" class="text-center">No items added.</td>
                 </tr>
                 @endforelse
             </tbody>
         </table>
 
-        <a href="{{ route('finance.budgets.index') }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Back
-        </a>
-
-        @if($budget->status == 'pending')
-            <a href="{{ route('finance.budgets.approve.form', $budget->id) }}" class="btn btn-primary">
-                <i class="fas fa-check"></i> Approve / Reject
+        <div class="mt-3">
+            <a href="{{ route('finance.budgets.index') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back
             </a>
-        @endif
+
+            @if(Auth::user()->role == 'do' && $budget->current_step == 'do')
+                <a href="{{ route('finance.budgets.approve.form', $budget->id) }}" class="btn btn-primary">
+                    <i class="fas fa-check"></i> Approve / Reject Items
+                </a>
+            @endif
+        </div>
     </div>
 </div>
 @stop

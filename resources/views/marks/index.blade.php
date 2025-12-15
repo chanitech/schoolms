@@ -16,9 +16,10 @@
 
         {{-- Filters --}}
         <form method="GET" action="{{ route('marks.index') }}" class="mb-3 row">
+            {{-- Academic Session --}}
             <div class="col-md-3">
-                <label for="session">Academic Session</label>
-                <select name="academic_session_id" id="session" class="form-control">
+                <label>Academic Session</label>
+                <select name="academic_session_id" class="form-control">
                     <option value="">All Sessions</option>
                     @foreach($sessions as $session)
                         <option value="{{ $session->id }}" {{ request('academic_session_id') == $session->id ? 'selected' : '' }}>
@@ -28,9 +29,10 @@
                 </select>
             </div>
 
+            {{-- Class --}}
             <div class="col-md-3">
-                <label for="class">Class</label>
-                <select name="class_id" id="class" class="form-control">
+                <label>Class</label>
+                <select name="class_id" class="form-control">
                     <option value="">All Classes</option>
                     @foreach($classes as $class)
                         <option value="{{ $class->id }}" {{ request('class_id') == $class->id ? 'selected' : '' }}>
@@ -40,8 +42,9 @@
                 </select>
             </div>
 
+            {{-- Department --}}
             <div class="col-md-3">
-                <label for="department">Department</label>
+                <label>Department</label>
                 <select name="department_id" id="department" class="form-control">
                     <option value="">All Departments</option>
                     @foreach($departments as $department)
@@ -52,14 +55,12 @@
                 </select>
             </div>
 
+            {{-- Subject --}}
             <div class="col-md-3">
-                <label for="subject">Subject</label>
+                <label>Subject</label>
                 <select name="subject_id" id="subject" class="form-control">
                     <option value="">All Subjects</option>
                     @foreach($subjects as $subject)
-                        @if(auth()->user()->hasRole('Teacher') && auth()->id() != $subject->teacher_id)
-                            @continue
-                        @endif
                         <option value="{{ $subject->id }}" {{ request('subject_id') == $subject->id ? 'selected' : '' }}>
                             {{ $subject->name }}
                         </option>
@@ -71,7 +72,7 @@
             </div>
 
             <div class="col-md-3 mt-4">
-                <button type="submit" class="btn btn-primary">Filter</button>
+                <button class="btn btn-primary">Filter</button>
             </div>
         </form>
 
@@ -124,28 +125,28 @@
 </div>
 @stop
 
-{{-- AJAX for dynamic Subject filtering --}}
 @section('js')
 <script>
 $(document).ready(function() {
+    // Update subjects dynamically when department changes
     $('#department').change(function() {
-        var department_id = $(this).val();
-        var url = "{{ route('marks.subjects.by.department') }}";
+        let department_id = $(this).val();
+        let url = "{{ route('marks.subjects.by.department') }}";
 
         $.ajax({
             url: url,
             type: 'GET',
             data: { department_id: department_id },
             success: function(data) {
-                var subjectSelect = $('#subject');
+                let subjectSelect = $('#subject');
                 subjectSelect.empty();
                 subjectSelect.append('<option value="">All Subjects</option>');
 
-                $.each(data, function(key, subject) {
+                data.forEach(subject => {
                     @if(auth()->user()->hasRole('Teacher'))
-                        if(subject.teacher_id != {{ auth()->id() }}) return true;
+                        if(subject.classes.length === 0) return; // skip subjects not assigned
                     @endif
-                    subjectSelect.append('<option value="'+subject.id+'">'+subject.name+'</option>');
+                    subjectSelect.append(`<option value="${subject.id}">${subject.name}</option>`);
                 });
             },
             error: function() {
