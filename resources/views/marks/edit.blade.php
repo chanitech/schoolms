@@ -69,8 +69,14 @@
 
                 <div class="col-md-4">
                     <label>Mark</label>
-                    <input type="number" name="mark" class="form-control" 
-                        value="{{ $mark->mark }}" min="0" max="100" required>
+                    <input type="number" 
+       name="mark" 
+       class="form-control" 
+       value="{{ $mark->mark }}" 
+       min="0" 
+       max="100" 
+       step="0.01" 
+       required>
                 </div>
             </div>
 

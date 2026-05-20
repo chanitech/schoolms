@@ -9,13 +9,13 @@ use App\Models\Lending;
 
 class BookController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('permission:library.view')->only(['index', 'show']);
-        $this->middleware('permission:library.create')->only(['create', 'store']);
-        $this->middleware('permission:library.edit')->only(['edit', 'update']);
-        $this->middleware('permission:library.delete')->only(['destroy']);
-    }
+   public function __construct()
+{
+    $this->middleware('permission:view books')->only(['index', 'show']);
+    $this->middleware('permission:create books')->only(['create', 'store']);
+    $this->middleware('permission:edit books')->only(['edit', 'update']);
+    $this->middleware('permission:delete books')->only(['destroy']);
+}
 
     public function index()
 {

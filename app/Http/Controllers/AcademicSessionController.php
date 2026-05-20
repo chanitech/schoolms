@@ -8,6 +8,14 @@ use App\Models\AcademicSession;
 
 class AcademicSessionController extends Controller
 {
+
+     public function __construct()
+    {
+        $this->middleware('permission:view sessions')->only(['index']);
+        $this->middleware('permission:create sessions')->only(['create', 'store']);
+        $this->middleware('permission:edit sessions')->only(['edit', 'update']);
+        $this->middleware('permission:delete sessions')->only(['destroy']);
+    }
     /**
      * Display a listing of sessions.
      */

@@ -7,6 +7,11 @@ use Illuminate\Http\Request;
 
 class GradeController extends Controller
 {
+        public function __construct()
+    {
+        $this->middleware('permission:view grading')->only(['index']);
+        $this->middleware('permission:manage grading')->only(['create', 'store', 'edit', 'update', 'destroy']);
+    }
     public function index()
     {
         $grades = Grade::orderBy('min_mark', 'desc')->get();

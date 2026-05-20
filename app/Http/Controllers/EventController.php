@@ -13,6 +13,18 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class EventController extends Controller
 {
+       public function __construct()
+    {
+        // Protect methods with permissions
+        $this->middleware('permission:view events')->only(['index', 'calendar', 'fetchEvents']);
+        $this->middleware('permission:create events')->only(['create', 'store']);
+        $this->middleware('permission:edit events')->only(['edit', 'update']);
+        $this->middleware('permission:delete events')->only('destroy');
+        // If you want separate export permission:
+        // $this->middleware('permission:export events')->only(['exportExcel', 'exportPDF']);
+        // Otherwise, you can rely on 'view events' for exports:
+        $this->middleware('permission:view events')->only(['exportExcel', 'exportPDF']);
+    }
     /**
      * Display a listing of events with summary and filters.
      */

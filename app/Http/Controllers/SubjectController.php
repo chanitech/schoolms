@@ -221,3 +221,7 @@ class SubjectController extends Controller
         return back()->with('success', 'Student assignments updated.');
     }
 }
+
+
+
+

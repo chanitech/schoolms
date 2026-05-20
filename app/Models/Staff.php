@@ -20,6 +20,8 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string|null $position
  * @property string|null $photo
  * @property int $user_id
+ * @property decimal $basic_salary
+ * @property date|null $hire_date
  * @property User $user
  * @property Department $department
  */
@@ -39,6 +41,14 @@ class Staff extends Model
         'position',
         'photo',
         'user_id',
+        // Loan management fields
+        'basic_salary',
+        'hire_date',
+    ];
+
+    protected $casts = [
+        'basic_salary' => 'decimal:2',
+        'hire_date' => 'date',
     ];
 
     /**
@@ -120,5 +130,60 @@ class Staff extends Model
     public function isDirector(): bool
     {
         return $this->hasRole('director');
+    }
+
+    // ========== LOAN MANAGEMENT METHODS ==========
+
+    /**
+     * Get current basic salary (already in basic_salary attribute).
+     */
+    public function getCurrentSalaryAttribute(): float
+{
+    return (float) $this->basic_salary;
+}
+
+    /**
+     * Get years employed (for eligibility calculations).
+     */
+    public function getYearsEmployedAttribute(): int
+    {
+        if (!$this->hire_date) {
+            return 0;
+        }
+        return $this->hire_date->diffInYears(now());
+    }
+
+    /**
+     * Check if staff has any active loan (not closed).
+     */
+    public function hasActiveLoan(): bool
+    {
+        return $this->loans()
+            ->whereIn('status', ['approved', 'active'])
+            ->exists();
+    }
+
+    /**
+     * Relationship: loans taken by this staff.
+     */
+    public function loans()
+    {
+        return $this->hasMany(Loan::class);
+    }
+
+    /**
+     * Relationship: bank statements uploaded for this staff.
+     */
+    public function bankStatements()
+    {
+        return $this->hasMany(BankStatement::class);
+    }
+
+    /**
+     * Relationship: salary history records.
+     */
+    public function salaryHistory()
+    {
+        return $this->hasMany(StaffSalaryHistory::class);
     }
 }

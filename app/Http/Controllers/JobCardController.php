@@ -9,17 +9,21 @@ use Illuminate\Support\Facades\Auth;
 
 class JobCardController extends Controller
 {
-    public function __construct()
+     public function __construct()
     {
         $this->middleware('auth');
 
-        // Permissions
-        $this->middleware('permission:view jobcards')->only(['index', 'myJobCards']);
+        // Define permissions for each action
+        $this->middleware('permission:view any jobcards')->only(['index']);
+        $this->middleware('permission:view own jobcards')->only(['myJobCards']);
         $this->middleware('permission:create jobcards')->only(['create', 'store']);
-        $this->middleware('permission:edit jobcards')->only(['edit', 'update']);
+        $this->middleware('permission:edit any jobcards')->only(['edit', 'update']);
         $this->middleware('permission:delete jobcards')->only(['destroy']);
-        $this->middleware('permission:update job status')->only(['updateStatus']);
         $this->middleware('permission:rate jobcards')->only(['rateTask']);
+
+        // Note: updateStatus() is not protected by a permission middleware
+        // because it relies on ownership check only. If you want to add
+        // a permission, you can define it and combine with a policy.
     }
 
     /**

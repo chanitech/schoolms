@@ -6,7 +6,7 @@
 <div class="d-flex justify-content-between align-items-center">
     <h1 class="m-0">Student Bills</h1>
     <a href="{{ route('finance.student_bills.create') }}" class="btn btn-primary">
-        <i class="fas fa-plus"></i> Assign Bill
+        <i class="fas fa-plus"></i> Assign Custom Bill
     </a>
 </div>
 @stop
@@ -21,10 +21,12 @@
                 <tr>
                     <th>#</th>
                     <th>Student</th>
-                    <th>Bill</th>
-                    <th>Amount</th>
+                    <th>Description</th>
+                    <th>Total Amount (TZS)</th>
+                    <th>Paid (TZS)</th>
+                    <th>Balance (TZS)</th>
                     <th>Status</th>
-                    <th>Paid On</th>
+                    <th>Created On</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -32,15 +34,27 @@
                 @foreach($studentBills as $sb)
                 <tr>
                     <td>{{ $loop->iteration }}</td>
-                    <td>{{ $sb->student->full_name ?? '-' }}</td>
-                    <td>{{ $sb->bill->name ?? '-' }}</td>
-                    <td>{{ number_format($sb->amount, 2) }}</td>
+                    <td>{{ $sb->student->full_name ?? 'N/A' }} ({{ $sb->student->admission_no ?? '' }})</td>
+                    <td>{{ $sb->notes ?? 'Standard Fee' }}</td>
+                    <td>{{ number_format($sb->total_amount, 2) }}</td>
+                    <td>{{ number_format($sb->amount_paid, 2) }}</td>
+                    <td>{{ number_format($sb->balance, 2) }}</td>
                     <td>
-                        <span class="badge {{ $sb->is_paid ? 'bg-success' : 'bg-warning' }}">
-                            {{ $sb->is_paid ? 'Paid' : 'Pending' }}
-                        </span>
+                        @php
+                            $statusClass = match($sb->status) {
+                                'paid' => 'success',
+                                'partial' => 'info',
+                                default => 'warning'
+                            };
+                            $statusLabel = match($sb->status) {
+                                'paid' => 'Paid',
+                                'partial' => 'Partial',
+                                default => 'Unpaid'
+                            };
+                        @endphp
+                        <span class="badge bg-{{ $statusClass }}">{{ $statusLabel }}</span>
                     </td>
-                    <td>{{ $sb->paid_at ? $sb->paid_at->format('d M, Y') : '-' }}</td>
+                    <td>{{ $sb->created_at ? $sb->created_at->format('d M, Y') : '-' }}</td>
                     <td>
                         <a href="{{ route('finance.student_bills.edit', $sb) }}" class="btn btn-sm btn-warning">
                             <i class="fas fa-edit"></i>
@@ -64,6 +78,7 @@
         $('#studentBillsTable').DataTable({
             "responsive": true,
             "autoWidth": false,
+            "order": [[0, 'desc']]
         });
     });
 </script>

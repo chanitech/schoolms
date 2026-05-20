@@ -8,6 +8,14 @@ use Illuminate\Http\Request;
 
 class ExamController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:view exams')->only(['index']);
+        $this->middleware('permission:create exams')->only(['create', 'store']);
+        $this->middleware('permission:edit exams')->only(['edit', 'update']);
+        $this->middleware('permission:delete exams')->only(['destroy']);
+    }
+
     /**
      * Display a listing of exams.
      */
@@ -105,5 +113,21 @@ class ExamController extends Controller
     {
         $exam->delete();
         return redirect()->route('exams.index')->with('success', 'Exam deleted successfully.');
+    }
+
+    /**
+     * AJAX: Get exams for a specific academic session (for dynamic dropdown in marks form)
+     */
+    public function getExamsBySession(Request $request)
+    {
+        $request->validate([
+            'session_id' => 'required|exists:academic_sessions,id',
+        ]);
+
+        $exams = Exam::where('academic_session_id', $request->session_id)
+            ->orderBy('created_at', 'desc')
+            ->get(['id', 'name']);
+
+        return response()->json($exams);
     }
 }

@@ -19,10 +19,10 @@ class StaffController extends Controller
         $this->middleware('permission:delete staff')->only('destroy');
     }
 
-    // List staff with roles & departments
+    // List staff with departments & user (roles will be accessed via user)
     public function index()
     {
-        $staffs = Staff::with('department', 'user', 'roles')->paginate(10);
+        $staffs = Staff::with('department', 'user')->paginate(10);
         return view('staff.index', compact('staffs'));
     }
 
@@ -47,6 +47,8 @@ class StaffController extends Controller
             'photo'         => 'nullable|image|max:2048',
             'roles'         => 'required|array',
             'roles.*'       => 'exists:roles,name',
+            'basic_salary'  => 'required|numeric|min:0',
+            'hire_date'     => 'required|date|before_or_equal:today',
         ]);
 
         // Create user
@@ -55,10 +57,10 @@ class StaffController extends Controller
             'last_name'  => $request->last_name,
             'name'       => $request->first_name . ' ' . $request->last_name,
             'email'      => $request->email,
-            'password'   => Hash::make('password123'), // default password
+            'password'   => Hash::make('password123'),
         ]);
 
-        // Assign multiple roles
+        // Assign roles to user
         $user->syncRoles($request->roles);
 
         // Handle photo
@@ -74,6 +76,8 @@ class StaffController extends Controller
             'position'      => $request->position,
             'photo'         => $photoPath,
             'user_id'       => $user->id,
+            'basic_salary'  => $request->basic_salary,
+            'hire_date'     => $request->hire_date,
         ]);
 
         return redirect()->route('staff.index')
@@ -83,9 +87,16 @@ class StaffController extends Controller
     // Show edit form
     public function edit(Staff $staff)
     {
+        // Eager load user relationship
+        $staff->load('user');
+        
         $departments = Department::all();
         $roles = Role::all();
-        return view('staff.edit', compact('staff', 'departments', 'roles'));
+        
+        // Get the user's current role names as an array (for checkboxes)
+        $userRoles = $staff->user ? $staff->user->roles->pluck('name')->toArray() : [];
+        
+        return view('staff.edit', compact('staff', 'departments', 'roles', 'userRoles'));
     }
 
     // Update staff
@@ -101,6 +112,8 @@ class StaffController extends Controller
             'photo'         => 'nullable|image|max:2048',
             'roles'         => 'required|array',
             'roles.*'       => 'exists:roles,name',
+            'basic_salary'  => 'required|numeric|min:0',
+            'hire_date'     => 'required|date|before_or_equal:today',
         ]);
 
         // Update user info
@@ -112,7 +125,7 @@ class StaffController extends Controller
                 'email'      => $request->email,
             ]);
 
-            // Sync multiple roles
+            // Sync roles
             $staff->user->syncRoles($request->roles);
         }
 
@@ -131,6 +144,8 @@ class StaffController extends Controller
             'department_id' => $request->department_id,
             'position'      => $request->position,
             'photo'         => $photoPath,
+            'basic_salary'  => $request->basic_salary,
+            'hire_date'     => $request->hire_date,
         ]);
 
         return redirect()->route('staff.index')->with('success', 'Staff updated successfully.');

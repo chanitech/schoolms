@@ -257,13 +257,13 @@ return [
     */
 
     'use_route_url' => false,
-    'dashboard_url' => 'home',
+    'dashboard_url' => 'dashboard',
     'logout_url' => 'logout',
     'login_url' => 'login',
     'register_url' => 'register',
     'password_reset_url' => 'password/reset',
     'password_email_url' => 'password/email',
-    'profile_url' => false,
+    'profile_url' => 'profile.edit',
     'disable_darkmode_routes' => false,
 
     /*
@@ -307,17 +307,18 @@ return [
     ],
 
     // Students Management
-    [
-        'text' => 'Students Management',
-        'icon' => 'fas fa-user-graduate',
-        'submenu' => [
-            ['text' => 'Students', 'url' => 'students', 'icon' => 'fas fa-user-graduate'],
-            ['text' => 'Guardians', 'url' => 'guardians', 'icon' => 'fas fa-users'],
-            //['text' => 'Attendance', 'url' => 'attendance', 'icon' => 'fas fa-calendar-check'],
-            ['text' => 'Enrollments', 'url' => 'enrollments', 'icon' => 'fas fa-clipboard-list'],
-            ['text' => 'Promotion', 'url' => 'promotion', 'icon' => 'fas fa-level-up-alt'], // <- new
-        ],
+   [
+    'text' => 'Students Management',
+    'icon' => 'fas fa-user-graduate',
+    // No top-level 'can' – children control visibility
+    'submenu' => [
+        ['text' => 'Students', 'url' => 'students', 'icon' => 'fas fa-user-graduate', 'can' => 'view students'],
+        ['text' => 'Guardians', 'url' => 'guardians', 'icon' => 'fas fa-users', 'can' => 'view guardians'],
+        //['text' => 'Attendance', 'url' => 'attendance', 'icon' => 'fas fa-calendar-check', 'can' => 'view attendance'],
+        ['text' => 'Enrollments', 'url' => 'enrollments', 'icon' => 'fas fa-clipboard-list', 'can' => 'view enrollments'],
+        ['text' => 'Promotion', 'url' => 'promotion', 'icon' => 'fas fa-level-up-alt', 'can' => 'manage promotions'],
     ],
+],
 
 
 
@@ -330,8 +331,7 @@ return [
 [
     'text' => 'Counseling Office',
     'icon' => 'fas fa-user-md',
-    'can'  => 'view counseling intake forms', // <-- Only users with this permission will see it
-    
+    // No top-level 'can' – children control visibility
     'submenu' => [
 
         // ============================
@@ -345,21 +345,25 @@ return [
                     'text' => 'New Intake Form',
                     'route' => 'counseling.intake.create',
                     'icon' => 'far fa-circle',
+                    'can'  => 'create counseling intake forms',
                 ],
                 [
                     'text' => 'All Intake Forms',
                     'route' => 'counseling.intake.index',
                     'icon' => 'far fa-circle',
+                    'can'  => 'view counseling intake forms',
                 ],
                 [
                     'text' => 'New Session Report',
                     'route' => 'counseling.individual.create',
                     'icon' => 'far fa-circle',
+                    'can'  => 'create session reports',   // placeholder
                 ],
                 [
                     'text' => 'All Session Reports',
-                    'route' => 'counseling.individual.index', // update when ready
+                    'route' => 'counseling.individual.index',
                     'icon' => 'far fa-circle',
+                    'can'  => 'view session reports',     // placeholder
                 ],
             ],
         ],
@@ -375,11 +379,13 @@ return [
                     'text' => 'New Group Session',
                     'route' => 'counseling.group.create',
                     'icon' => 'far fa-circle',
+                    'can'  => 'create group sessions',    // placeholder
                 ],
                 [
                     'text' => 'All Group Sessions',
                     'route' => 'counseling.group.index',
                     'icon' => 'far fa-circle',
+                    'can'  => 'view group sessions',      // placeholder
                 ],
             ],
         ],
@@ -391,6 +397,7 @@ return [
             'text' => 'Classroom Guidance',
             'route' => 'classroom-guidances.index',
             'icon' => 'fas fa-chalkboard-teacher',
+            'can'  => 'view classroom guidance',          // placeholder
         ],
 
         // ============================
@@ -404,51 +411,55 @@ return [
                     'text' => 'Interest Inventory',
                     'route' => 'interest-inventories.index',
                     'icon' => 'far fa-circle',
+                    'can'  => 'view interest inventories', // placeholder
                 ],
                 [
                     'text' => 'Aptitude Test',
-                    'icon' => 'far fa-file-alt', // changed from far fa-circle to a more relevant icon
+                    'icon' => 'far fa-file-alt',
                     'route' => 'aptitude.index',
-                    
+                    'can'  => 'view aptitude tests',       // placeholder
                 ],
-                
                 [
-            'text' => 'Aptitude Test Questions',
-            'icon' => 'far fa-circle',
-            'route' => 'aptitude.questions.create',
+                    'text' => 'Aptitude Test Questions',
+                    'icon' => 'far fa-circle',
+                    'route' => 'aptitude.questions.create',
+                    'can'  => 'create aptitude questions', // placeholder
                 ],
-
-
-
                 [
                     'text' => 'Multiple Intelligence',
                     'icon' => 'far fa-circle',
                     'url'  => '#',
+                    'can'  => 'view multiple intelligence', // placeholder
                 ],
                 [
                     'text' => 'Thinking Style (Gregorc)',
                     'icon' => 'far fa-circle',
                     'url'  => '#',
+                    'can'  => 'view thinking style',       // placeholder
                 ],
                 [
                     'text' => 'Learning Preferences & Styles',
                     'icon' => 'far fa-circle',
                     'url'  => '#',
+                    'can'  => 'view learning preferences',  // placeholder
                 ],
                 [
                     'text' => 'Holland Code (RIASEC)',
                     'icon' => 'far fa-circle',
                     'url'  => '#',
+                    'can'  => 'view holland code',         // placeholder
                 ],
                 [
                     'text' => 'MBTI Test',
                     'icon' => 'far fa-circle',
                     'url'  => '#',
+                    'can'  => 'view mbti test',            // placeholder
                 ],
                 [
                     'text' => 'Learning Profile Report',
                     'icon' => 'far fa-circle',
                     'url'  => '#',
+                    'can'  => 'view learning profile reports', // placeholder
                 ],
             ],
         ],
@@ -466,178 +477,23 @@ return [
     'text' => 'Academic',
     'icon' => 'fas fa-book',
     'submenu' => [
-        ['text' => 'Classes', 'url' => 'classes', 'icon' => 'fas fa-chalkboard'],
-        ['text' => 'Dormitories', 'url' => 'dormitories', 'icon' => 'fas fa-building'],
-        ['text' => 'Academic Sessions', 'url' => 'sessions', 'icon' => 'fas fa-calendar-alt'],
-        ['text' => 'Subjects', 'url' => 'subjects', 'icon' => 'fas fa-book-open'],
-        ['text' => 'Exams', 'url' => 'exams', 'icon' => 'fas fa-file-alt'],
-        ['text' => 'Marks', 'url' => 'marks', 'icon' => 'fas fa-pen'],
-        ['text' => 'Divisions', 'url' => 'divisions', 'icon' => 'fas fa-object-group'],
-        ['text' => 'Grading & GPA', 'url' => 'grades', 'icon' => 'fas fa-star'],
-        ['text' => 'Student Results', 'url' => 'results', 'icon' => 'fas fa-chart-bar'],
-        ['text' => 'Class Results', 'url' => 'results/class', 'icon' => 'fas fa-chart-bar'],
-      [
-    'text' => 'Export Student Marksheet',
-    'route' => 'results.export.form', // <- matches route name exactly
-    'icon' => 'fas fa-file-pdf',
-],
-
-
-
-    ],
-],
-
-
-
-    // HR & Staff Management
-    [
-        'text' => 'HR & Staff',
-        'icon' => 'fas fa-user-tie',
-        'submenu' => [
-            ['text' => 'Staff', 'url' => 'staff', 'icon' => 'fas fa-users-cog'],
-            ['text' => 'Departments', 'url' => 'departments', 'icon' => 'fas fa-sitemap'], 
-            ['text' => 'Job Cards', 'url' => 'jobcards', 'icon' => 'fas fa-briefcase'],
-            ['text' => 'my Job Cards', 'url' => 'jobcards/my', 'icon' => 'fas fa-clipboard-list'],
-            ['text' => 'Attendance', 'url' => 'attendance', 'icon' => 'fas fa-calendar-check'],
-            ['text' => 'Leaves', 'url' => 'leaves', 'icon' => 'fas fa-file-signature'],
-            ['text' => 'Received Leaves', 'url' => 'leaves/received', 'icon' => 'fas fa-inbox'],
-            ['text' => 'Events', 'url' => 'events', 'icon' => 'fas fa-calendar-alt'],
-            //['text' => 'HR Reports', 'url' => 'hr-reports', 'icon' => 'fas fa-chart-line'],
-        ],
-    ],
-
-
-
-
-    [
-    'text' => 'HR Reports',
-    'icon' => 'fas fa-chart-line',
-    'submenu' => [
-        //['text' => 'Summary Dashboard', 'url' => 'hr-reports/summary', 'icon' => 'fas fa-tachometer-alt'],
-        ['text' => 'Staff Report', 'url' => 'hr-reports/staff', 'icon' => 'fas fa-users'],
-        ['text' => 'Attendance Report', 'url' => 'hr-reports/attendance', 'icon' => 'fas fa-calendar-check'],
-        ['text' => 'Leave Report', 'url' => 'hr-reports/leaves', 'icon' => 'fas fa-plane-departure'],
-        ['text' => 'Job Cards Report', 'url' => 'hr-reports/jobcards', 'icon' => 'fas fa-briefcase'],
-        ['text' => 'Evaluation Report', 'url' => 'hr-reports/evaluation', 'icon' => 'fas fa-star'],
-    ]
-],
-
-
-
-
-
- [
-    'text' => 'Budgets',
-    'icon' => 'fas fa-file-invoice',
-    'submenu' => [
+        ['text' => 'Classes', 'url' => 'classes', 'icon' => 'fas fa-chalkboard', 'can' => 'view classes'],
+        ['text' => 'Dormitories', 'url' => 'dormitories', 'icon' => 'fas fa-building', 'can' => 'view dormitories'],
+        ['text' => 'Academic Sessions', 'url' => 'sessions', 'icon' => 'fas fa-calendar-alt', 'can' => 'view sessions'],
+        ['text' => 'Subjects Assignment', 'url' => 'subject-assignment', 'icon' => 'fas fa-tasks', 'can' => 'view subject assignments'],
+        ['text' => 'Subjects', 'url' => 'subjects', 'icon' => 'fas fa-book-open', 'can' => 'view subjects'],
+        ['text' => 'Teachers Assignment', 'url' => 'teacher-assignment', 'icon' => 'fas fa-user-tie', 'can' => 'view teacher assignments'],
+        ['text' => 'Exams', 'url' => 'exams', 'icon' => 'fas fa-file-alt', 'can' => 'view exams'],
+        ['text' => 'Marks', 'url' => 'marks', 'icon' => 'fas fa-pen', 'can' => 'view marks'],
+        ['text' => 'Divisions', 'url' => 'divisions', 'icon' => 'fas fa-object-group', 'can' => 'view divisions'],
+        ['text' => 'Grading & GPA', 'url' => 'grades', 'icon' => 'fas fa-star', 'can' => 'view grading'],
+        ['text' => 'Student Results', 'url' => 'results', 'icon' => 'fas fa-chart-bar', 'can' => 'view student results'],
+        ['text' => 'Class Results', 'url' => 'results/class', 'icon' => 'fas fa-chart-bar', 'can' => 'view class results'],
         [
-            'text' => 'Submit Budget',
-            'route' => 'finance.budgets.create',
-            'icon' => 'fas fa-plus',
-        ],
-        [
-            'text' => 'Pending Approvals',
-            'route' => 'finance.budgets.pending',
-            'icon' => 'fas fa-check-circle',
-            'label' => $pendingBudgetsCount ?? 0, // optional dynamic badge
-            'label_color' => 'warning',
-        ],
-        [
-            'text' => 'All Budgets',
-            'route' => 'finance.budgets.summary',
-            'icon' => 'fas fa-list',
-        ],
-        [
-            'text' => 'All Budgetsindex',
-            'route' => 'finance.budgets.index',
-            'icon' => 'fas fa-list',
-        ],
-        [
-            'text' => 'HOD Dashboard',
-            'route' => 'finance.budgets.hod',
-            'icon' => 'fas fa-user-tie',
-        ],
-    ],
-],
-[
-    'text' => 'Invoices',
-    'icon' => 'fas fa-receipt',
-    'submenu' => [
-        [
-            'text' => 'DO Approvals',
-            'route' => 'finance.invoices.do',
-            'icon' => 'fas fa-check-double',
-            'label' => $pendingInvoicesCount ?? 0,
-            'label_color' => 'warning',
-        ],
-        [
-            'text' => 'Finance Dashboard',
-            'route' => 'finance.invoices.finance',
-            'icon' => 'fas fa-credit-card',
-        ],
-        [
-            'text' => 'All Invoices',
-            'route' => 'finance.invoices.index',
-            'icon' => 'fas fa-list-alt',
-        ],
-    ],
-],
-
-
-
-
-
-   // Finance & Fees
-[
-    'text' => 'Finance & Fees',
-    'icon' => 'fas fa-wallet',
-    'submenu' => [
-        [
-            'text' => 'Bills / Invoices',
-            'route' => 'finance.bills.index', 
-            'icon' => 'fas fa-file-invoice-dollar'
-        ],
-        [
-            'text' => 'Student Bills',
-            'route' => 'finance.student_bills.index', 
-            'icon' => 'fas fa-file-alt'
-        ],
-        [
-            'text' => 'Payments',
-            'route' => 'finance.payments.index', 
-            'icon' => 'fas fa-credit-card'
-        ],
-        [
-            'text' => 'Pocket Money',
-            'route' => 'finance.pocket.index', 
-            'icon' => 'fas fa-piggy-bank'
-        ],
-        [
-    'text' => 'Budgets',
-    'icon' => 'fas fa-file-invoice',
-    'submenu' => [
-        [
-            'text' => 'Submit Budget',
-            'route' => 'finance.budgets.create',
-            'icon' => 'fas fa-plus'
-        ],
-        [
-            'text' => 'Pending Approvals',
-            'route' => 'finance.budgets.pending',
-            'icon' => 'fas fa-check-circle'
-        ],
-        [
-            'text' => 'All Budgets',
-            'route' => 'finance.budgets.summary',
-            'icon' => 'fas fa-list'
-        ],
-    ],
-],
-
-        [
-            'text' => 'Fee Reports',
-            //'route' => 'finance.reports.index', // optional if you create reports page later
-            'icon' => 'fas fa-chart-line'
+            'text' => 'Export Student Marksheet',
+            'route' => 'results.export.form',
+            'icon' => 'fas fa-file-pdf',
+            'can' => 'export marksheets',
         ],
     ],
 ],
@@ -646,33 +502,226 @@ return [
 
     
 
-    [
-    'text' => 'Library',
-    'icon' => 'fas fa-book',
-    //'can' => 'library.view',
+
+
+
+    // HR & Staff Management
+ [
+    'text' => 'HR & Staff',
+    'icon' => 'fas fa-user-tie',
+    // No top-level 'can' – the menu will show if any child is visible.
     'submenu' => [
+        // Staff list – requires 'view staff' (used in StaffController@index)
+        ['text' => 'Staff', 'url' => 'staff', 'icon' => 'fas fa-users-cog', 'can' => 'view staff'],
+
+        // Departments – assumes a DepartmentController with similar permissions
+        ['text' => 'Departments', 'url' => 'departments', 'icon' => 'fas fa-sitemap', 'can' => 'view departments'],
+
+        // Job Cards (global list) – requires 'view job cards'
+        ['text' => 'Job Cards', 'url' => 'jobcards', 'icon' => 'fas fa-briefcase', 'can' => 'view job cards'],
+
+        // My Job Cards – user-specific view; we'll use a custom gate (see below)
+        ['text' => 'my Job Cards', 'url' => 'jobcards/my', 'icon' => 'fas fa-clipboard-list', 'can' => 'view own job cards'],
+
+        // Attendance – requires 'view attendance'
+        ['text' => 'Attendance', 'url' => 'attendance', 'icon' => 'fas fa-calendar-check', 'can' => 'view attendance'],
+
+        // Leaves – requires 'view leaves'
+        ['text' => 'Leaves', 'url' => 'leaves', 'icon' => 'fas fa-file-signature', 'can' => 'view leaves'],
+
+        // Received Leaves – for managers/approvers; requires 'view received leaves'
+        ['text' => 'Received Leaves', 'url' => 'leaves/received', 'icon' => 'fas fa-inbox', 'can' => 'view received leaves'],
+
+        // Events – requires 'view events'
+        ['text' => 'Events', 'url' => 'events', 'icon' => 'fas fa-calendar-alt', 'can' => 'view events'],
+
+        // HR Reports parent – will be shown if any sub-report is visible
         [
-            'text' => 'Books',
-            'url' => 'library/books', // ❌ route() removed
-            'icon' => 'fas fa-book',
-            //'can' => 'library.view',
-        ],
-        [
-            'text' => 'Categories',
-            'url' => 'library/categories',
-            'icon' => 'fas fa-tags',
-            //'can' => 'library.view',
-        ],
-        [
-            'text' => 'Lending & Returns',
-            'url' => 'library/lendings',
-            'icon' => 'fas fa-exchange-alt',
-            //'can' => 'library.view',
+            'text' => 'HR Reports',
+            'icon' => 'fas fa-chart-line',
+            'submenu' => [
+                ['text' => 'Staff Report', 'url' => 'hr-reports/staff', 'icon' => 'fas fa-users', 'can' => 'view staff report'],
+                ['text' => 'Attendance Report', 'url' => 'hr-reports/attendance', 'icon' => 'fas fa-calendar-check', 'can' => 'view attendance report'],
+                ['text' => 'Leave Report', 'url' => 'hr-reports/leaves', 'icon' => 'fas fa-plane-departure', 'can' => 'view leave report'],
+                ['text' => 'Job Cards Report', 'url' => 'hr-reports/jobcards', 'icon' => 'fas fa-briefcase', 'can' => 'view job cards report'],
+                ['text' => 'Evaluation Report', 'url' => 'hr-reports/evaluation', 'icon' => 'fas fa-star', 'can' => 'view evaluation report'],
+            ],
         ],
     ],
 ],
 
 
+
+[
+    'text' => 'Treasurer Office',
+    'icon' => 'fas fa-university',
+    'submenu' => [
+
+        // ========== LOAN MANAGEMENT ==========
+        [
+            'text' => 'Loan Management',
+            'icon' => 'fas fa-hand-holding-usd',
+            'submenu' => [
+                [
+                    'text' => 'Apply for Loan',
+                    'route' => 'staff.loans.create',
+                    'icon' => 'fas fa-pen-alt',
+                ],
+                [
+                    'text' => 'My Loans',
+                    'route' => 'staff.loans.index',
+                    'icon' => 'fas fa-list-ul',
+                ],
+                [
+                    'text' => 'Bank Statements (My)',
+                    'route' => 'staff.bank-statements.index',
+                    'icon' => 'fas fa-university',
+                ],
+                // Treasurer‑only actions
+                [
+                    'text' => 'Loan Categories (Setup)',
+                    'route' => 'treasurer.loan-categories.index',
+                    'icon' => 'fas fa-tags',
+                ],
+                [
+                    'text' => 'Pending Loan Approvals',
+                    'route' => 'treasurer.loans.pending',
+                    'icon' => 'fas fa-clock',
+                    'can' => 'approve loans',
+                    'label' => $pendingLoansCount ?? 0,
+                    'label_color' => 'warning',
+                ],
+                [
+                    'text' => 'All Loan Applications',
+                    'route' => 'treasurer.loans.index',
+                    'icon' => 'fas fa-database',
+                ],
+                [
+                    'text' => 'Record Repayments',                     // ✅ NEW
+                    'route' => 'treasurer.loans.active',               // ✅ route defined in web.php
+                    'icon' => 'fas fa-money-bill-wave',
+                ],
+                [
+                    'text' => 'Upload Bank Statements',
+                    'route' => 'treasurer.bank-statements.create',
+                    'icon' => 'fas fa-upload',
+                ],
+            ],
+        ],
+
+        // ========== BUDGETS ==========
+        [
+            'text' => 'Budgets',
+            'icon' => 'fas fa-file-invoice',
+            'submenu' => [
+                [
+                    'text' => 'Submit Budget',
+                    'route' => 'finance.budgets.create',
+                    'icon' => 'fas fa-plus',
+                ],
+                [
+                    'text' => 'Pending Approvals',
+                    'route' => 'finance.budgets.pending',
+                    'icon' => 'fas fa-check-circle',
+                    'can' => 'view pending approvals',
+                    'label' => $pendingBudgetsCount ?? 0,
+                    'label_color' => 'warning',
+                ],
+                [
+                    'text' => 'All Budgets',
+                    'route' => 'finance.budgets.index',
+                    'icon' => 'fas fa-list',
+                ],
+                [
+                    'text' => 'HOD Dashboard',
+                    'route' => 'finance.budgets.hod',
+                    'icon' => 'fas fa-user-tie',
+                ],
+            ],
+        ],
+
+        // ========== INVOICES ==========
+        [
+            'text' => 'Invoices',
+            'icon' => 'fas fa-receipt',
+            'submenu' => [
+                [
+                    'text' => 'DO Approvals',
+                    'route' => 'finance.invoices.do',
+                    'icon' => 'fas fa-check-double',
+                    'can' => 'approve invoices',
+                    'label' => $pendingInvoicesCount ?? 0,
+                    'label_color' => 'warning',
+                ],
+                [
+                    'text' => 'Finance Dashboard',
+                    'route' => 'finance.invoices.finance',
+                    'icon' => 'fas fa-credit-card',
+                ],
+                [
+                    'text' => 'All Invoices',
+                    'route' => 'finance.invoices.index',
+                    'icon' => 'fas fa-list-alt',
+                ],
+            ],
+        ],
+
+        // ========== FEES & PAYMENTS ==========
+        [
+            'text' => 'Fees & Payments',
+            'icon' => 'fas fa-wallet',
+            'submenu' => [
+                [
+                    'text' => 'Bills / Invoices',
+                    'route' => 'finance.bills.index',
+                    'icon' => 'fas fa-file-invoice-dollar',
+                ],
+                [
+                    'text' => 'Student Bills',
+                    'route' => 'finance.student_bills.index',
+                    'icon' => 'fas fa-file-alt',
+                ],
+                [
+                    'text' => 'Payments',
+                    'route' => 'finance.payments.index',
+                    'icon' => 'fas fa-credit-card',
+                ],
+                // ✅ FIXED: Use direct URL instead of route name
+                [
+                    'text' => 'Pocket Money',
+                    'url' => '/finance/pocket',
+                    'icon' => 'fas fa-piggy-bank',
+                ],
+            ],
+        ],
+    ],
+],
+
+    
+[
+    'text' => 'Library',
+    'icon' => 'fas fa-book',
+    'submenu' => [
+        [
+            'text' => 'Books',
+            'url' => 'library/books',
+            'icon' => 'fas fa-book',
+            'can'  => 'view books',
+        ],
+        [
+            'text' => 'Categories',
+            'url' => 'library/categories',
+            'icon' => 'fas fa-tags',
+            'can'  => 'view categories',
+        ],
+        [
+            'text' => 'Lending & Returns',
+            'url' => 'library/lendings',
+            'icon' => 'fas fa-exchange-alt',
+            'can'  => 'view lendings',
+        ],
+    ],
+],
 
     // Reports
     //[
@@ -687,8 +736,7 @@ return [
     //],
 
 
-    // System Settings
-[
+ [
     'text' => 'System Settings',
     'icon' => 'fas fa-cogs',
     'submenu' => [
@@ -696,30 +744,33 @@ return [
             'text' => 'Profile',
             'url'  => '/profile',
             'icon' => 'fas fa-user-cog',
+            // No 'can' – visible to all authenticated users
         ],
         [
             'text' => 'School Info',
             'url'  => '/settings/school-info',
             'icon' => 'fas fa-school',
+            'can'  => 'manage settings',
         ],
-        
         [
             'text' => 'Roles & Permissions',
             'icon' => 'fas fa-user-shield',
+            // No parent 'can' – visibility controlled by children
             'submenu' => [
                 [
                     'text' => 'Roles',
                     'url'  => '/settings/roles',
                     'icon' => 'fas fa-user-shield',
+                    //'can'  => 'view roles',
                 ],
                 [
                     'text' => 'Permissions',
                     'url'  => '/settings/permissions',
                     'icon' => 'fas fa-key',
+                    //'can'  => 'view permissions',
                 ],
             ],
         ],
-       
     ],
 ],
 

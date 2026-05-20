@@ -12,9 +12,13 @@ use Illuminate\Support\Facades\DB;
 class InvoiceController extends Controller
 {
     public function __construct()
-    {
-        $this->middleware('auth');
-    }
+{
+    $this->middleware('auth');
+    $this->middleware('permission:view invoices')->only(['index', 'show']);
+    $this->middleware('permission:approve invoices')->only(['doDashboard', 'approve']);
+    $this->middleware('permission:pay invoices')->only(['financeDashboard', 'pay']);
+}
+    
 
     /**
      * List all invoices (Admin/Finance)

@@ -12,11 +12,18 @@ use Illuminate\Support\Facades\Auth;
 class BudgetController extends Controller
 {
     public function __construct()
-    {
-        $this->middleware('permission:view budgets')->only(['index', 'show']);
-        $this->middleware('permission:create budgets')->only(['create', 'store']);
-        $this->middleware('permission:approve budgets')->only(['approve', 'updateStatus']);
-    }
+{
+    $this->middleware('permission:view budgets')->only(['index', 'show', 'summary']);
+    $this->middleware('permission:create budgets')->only(['create', 'store']);
+    $this->middleware('permission:edit budgets')->only(['edit', 'update']);
+    $this->middleware('permission:delete budgets')->only(['destroy']); // if you have delete
+    $this->middleware('permission:approve budget items')->only(['approveForm', 'approveItem', 'approve']);
+    $this->middleware('permission:view pending approvals')->only(['pending']);
+    $this->middleware('permission:withdraw budget items')->only(['withdrawItem']);
+    $this->middleware('permission:view hod dashboard')->only(['hodBudgets']);
+    $this->middleware('permission:approve invoices')->only(['approveInvoice']);
+    $this->middleware('permission:pay invoices')->only(['payInvoice', 'pay']);
+}
 
     /**
      * List all budgets

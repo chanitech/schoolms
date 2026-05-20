@@ -7,6 +7,13 @@ use Illuminate\Http\Request;
 
 class DivisionController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:view divisions')->only(['index']);
+        $this->middleware('permission:create divisions')->only(['create', 'store']);
+        $this->middleware('permission:edit divisions')->only(['edit', 'update']);
+        $this->middleware('permission:delete divisions')->only(['destroy']);
+    }
     public function index()
     {
         $divisions = Division::paginate(10);
