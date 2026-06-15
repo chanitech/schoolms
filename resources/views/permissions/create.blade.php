@@ -1,25 +1,23 @@
 @extends('adminlte::page')
 
-@section('title', 'Add Permission')
+@section('title', 'Create Permission')
 
 @section('content_header')
-    <h1>Add Permission</h1>
+    <h1>Create Permission</h1>
+    <a href="{{ route('settings.permissions.index') }}" class="btn btn-secondary float-right">Back</a>
 @stop
 
 @section('content')
-<div class="container-fluid">
-    <div class="card">
-        <div class="card-body">
-            <form action="{{ route('permissions.store') }}" method="POST">
-                @csrf
-                <div class="mb-3">
-                    <label for="name" class="form-label">Permission Name</label>
-                    <input type="text" name="name" id="name" class="form-control" required>
-                </div>
-                <button type="submit" class="btn btn-success">Create</button>
-                <a href="{{ route('permissions.index') }}" class="btn btn-secondary">Cancel</a>
-            </form>
-        </div>
+<div class="card">
+    <div class="card-body">
+        <form action="{{ route('settings.permissions.store') }}" method="POST">
+            @csrf
+            <div class="form-group">
+                <label for="name">Permission Name</label>
+                <input type="text" name="name" id="name" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Create Permission</button>
+        </form>
     </div>
 </div>
 @stop

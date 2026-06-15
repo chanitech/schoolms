@@ -374,4 +374,20 @@ class Student extends Model
     {
         return $this->getCurrentEnrollment() !== null;
     }
+
+
+    public function studentBills()
+{
+    return $this->hasMany(\App\Models\StudentBill::class, 'student_id');
+}
+
+public function payments()
+{
+    return $this->hasMany(\App\Models\Payment::class, 'student_id');
+}
+
+public function pocketTransactions()
+{
+    return $this->hasMany(\App\Models\PocketTransaction::class, 'student_id');
+}
 }

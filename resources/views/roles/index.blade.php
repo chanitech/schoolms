@@ -4,7 +4,7 @@
 
 @section('content_header')
     <h1>Roles</h1>
-    <a href="{{ route('roles.create') }}" class="btn btn-primary float-right">Create New Role</a>
+    <a href="{{ route('settings.roles.create') }}" class="btn btn-primary float-right">Create New Role</a>
 @stop
 
 @section('content')
@@ -34,8 +34,8 @@
                             @endforelse
                         </td>
                         <td>
-                            <a href="{{ route('roles.edit', $role->id) }}" class="btn btn-sm btn-warning">Edit</a>
-                            <form action="{{ route('roles.destroy', $role->id) }}" method="POST" style="display:inline-block;">
+                            <a href="{{ route('settings.roles.edit', $role->id) }}" class="btn btn-sm btn-warning">Edit</a>
+                            <form action="{{ route('settings.roles.destroy', $role->id) }}" method="POST" style="display:inline-block;">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-sm btn-danger"

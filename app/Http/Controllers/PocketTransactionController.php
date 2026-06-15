@@ -7,6 +7,7 @@ use App\Models\PocketTransaction;
 use App\Models\Student;
 use App\Models\SchoolClass;
 use Illuminate\Support\Facades\Auth;
+use App\Models\SchoolInfo; // add at the top if not already present
 
 class PocketTransactionController extends Controller
 {
@@ -50,62 +51,63 @@ class PocketTransactionController extends Controller
         return view('finance.pocket.create', compact('classes'));
     }
 
-    /**
-     * Store a newly created pocket money transaction
-     */
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'student_id' => 'required|exists:students,id',
-            'type' => 'required|in:deposit,withdrawal',
-            'amount' => 'required|numeric|min:0.01',
-            'note' => 'nullable|string|max:500',
-        ]);
+   /**
+ * Store a newly created pocket money transaction
+ */
+public function store(Request $request)
+{
+    $validated = $request->validate([
+        'student_id' => 'required|exists:students,id',
+        'type' => 'required|in:deposit,withdrawal',
+        'amount' => 'required|numeric|min:0.01',
+        'note' => 'nullable|string|max:500',
+    ]);
 
-        $student = Student::findOrFail($validated['student_id']);
+    $student = Student::findOrFail($validated['student_id']);
 
-        // Get last balance
-        $lastTransaction = PocketTransaction::where('student_id', $student->id)
-            ->latest()
-            ->first();
+    // Get last balance
+    $lastTransaction = PocketTransaction::where('student_id', $student->id)
+        ->latest()
+        ->first();
 
-        $currentBalance = $lastTransaction?->balance_after ?? 0;
+    $currentBalance = $lastTransaction?->balance_after ?? 0;
 
-        // Calculate new balance
-        $newBalance = $validated['type'] === 'deposit'
-            ? $currentBalance + $validated['amount']
-            : $currentBalance - $validated['amount'];
+    // Calculate new balance
+    $newBalance = $validated['type'] === 'deposit'
+        ? $currentBalance + $validated['amount']
+        : $currentBalance - $validated['amount'];
 
-        if ($newBalance < 0) {
-            return back()->withErrors(['amount' => 'Withdrawal exceeds current balance.'])
-                         ->withInput();
-        }
-
-        // Record transaction
-        $transaction = PocketTransaction::create([
-            'student_id' => $student->id,
-            'type' => $validated['type'],
-            'amount' => $validated['amount'],
-            'balance_after' => $newBalance,
-            'performed_by' => Auth::id(),
-            'note' => $validated['note'] ?? null,
-        ]);
-
-        return redirect()
-            ->route('finance.pocket.show', $transaction->id)
-            ->with('success', 'Transaction recorded successfully.');
+    if ($newBalance < 0) {
+        return back()->withErrors(['amount' => 'Withdrawal exceeds current balance.'])
+                     ->withInput();
     }
 
+    // Record transaction
+    $transaction = PocketTransaction::create([
+        'student_id' => $student->id,
+        'type' => $validated['type'],
+        'amount' => $validated['amount'],
+        'balance_after' => $newBalance,
+        'performed_by' => Auth::id(),
+        'note' => $validated['note'] ?? null,
+    ]);
+
+    // ✅ Corrected route name
+    return redirect()
+        ->route('finance.pocket.transactions.show', $transaction->id)
+        ->with('success', 'Transaction recorded successfully.');
+}
+
     /**
-     * Display the specified transaction (receipt)
-     */
-    public function show(PocketTransaction $transaction)
-    {
-        $transaction->load('student.schoolClass', 'performedBy');
+ * Display the specified transaction (receipt)
+ */
+public function show(PocketTransaction $transaction)
+{
+    $transaction->load('student.schoolClass', 'performedBy');
+    $school = SchoolInfo::first();        // fetch school info for the receipt header
 
-        return view('finance.pocket.show', compact('transaction'));
-    }
-
+    return view('finance.pocket.show', compact('transaction', 'school'));
+}
     /**
      * AJAX: Get students for selected class
      */

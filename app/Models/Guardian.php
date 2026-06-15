@@ -11,6 +11,7 @@ class Guardian extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',             // <-- add this
         'first_name',
         'last_name',
         'gender',
@@ -27,4 +28,10 @@ class Guardian extends Model
     {
         return $this->hasMany(Student::class);
     }
+
+    // app/Models/Guardian.php
+public function user()
+{
+    return $this->belongsTo(User::class);
+}
 }

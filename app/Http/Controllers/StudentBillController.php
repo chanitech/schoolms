@@ -26,6 +26,29 @@ class StudentBillController extends Controller
         return view('finance.student_bills.create', compact('students'));
     }
 
+    public function edit(StudentBill $studentBill)  // or your model name
+{
+    $students = \App\Models\Student::orderBy('first_name')->get();
+    return view('finance.student_bills.edit', compact('studentBill', 'students'));
+}
+
+public function update(Request $request, StudentBill $studentBill)
+{
+    $validated = $request->validate([
+        'student_id'  => 'required|exists:students,id',
+        'bill_number' => 'nullable|string|max:255',
+        'amount'      => 'required|numeric|min:0',
+        'description' => 'nullable|string',
+        'due_date'    => 'nullable|date',
+        'status'      => 'required|in:pending,paid,overdue',
+    ]);
+
+    $studentBill->update($validated);
+
+    return redirect()->route('finance.student-bills.show', $studentBill)
+                     ->with('success', 'Bill updated successfully.');
+}
+
     public function store(Request $request)
     {
         $validated = $request->validate([

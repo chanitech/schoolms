@@ -1,49 +1,89 @@
-@extends('layouts.app')
+@extends('adminlte::page')
+
+@section('title', 'Bank Statements')
+
+@section('content_header')
+    <div class="d-flex justify-content-between align-items-center">
+        <h1 class="m-0 text-dark"><i class="fas fa-university"></i> Bank Statements</h1>
+        <a href="{{ route('treasurer.bank-statements.create') }}" class="btn btn-primary">
+            <i class="fas fa-upload"></i> Upload Statement
+        </a>
+    </div>
+@stop
 
 @section('content')
-<div class="py-12">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <div class="bg-white shadow sm:rounded-lg p-6">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold">Bank Statements</h2>
-                <a href="{{ route('treasurer.bank-statements.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded">+ Upload Statement</a>
-            </div>
+<div class="container-fluid">
+    <div class="card card-outline card-primary shadow">
+        <div class="card-body">
 
+            {{-- Flash messages --}}
             @if(session('success'))
-                <div class="bg-green-100 border-l-4 border-green-500 p-4 mb-4">{{ session('success') }}</div>
+                <div class="alert alert-success alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                    {{ session('success') }}
+                </div>
+            @endif
+            @if(session('error'))
+                <div class="alert alert-danger alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                    {{ session('error') }}
+                </div>
             @endif
 
-            <div class="overflow-x-auto">
-                <table class="min-w-full border">
-                    <thead class="bg-gray-100">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" id="bank-statements-table">
+                    <thead class="thead-light">
                         <tr>
-                            <th class="px-4 py-2">Staff</th>
-                            <th class="px-4 py-2">Month</th>
-                            <th class="px-4 py-2">File Name</th>
-                            <th class="px-4 py-2">Uploaded By</th>
-                            <th class="px-4 py-2">Actions</th>
+                            <th>#</th>
+                            <th>Staff</th>
+                            <th>Month</th>
+                            <th>File Name</th>
+                            <th>Uploaded By</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($statements as $stmt)
-                        <tr class="border-b">
-                            <td class="px-4 py-2">{{ $stmt->staff->name }}</td>
-                            <td class="px-4 py-2">{{ $stmt->statement_month->format('M Y') }}</td>
-                            <td class="px-4 py-2">{{ $stmt->original_name }}</td>
-                            <td class="px-4 py-2">{{ $stmt->uploader->name }}</td>
-                            <td class="px-4 py-2">
-                                <a href="{{ Storage::url($stmt->file_path) }}" target="_blank" class="text-blue-600 hover:underline mr-2">View</a>
-                                <form action="{{ route('treasurer.bank-statements.destroy', $stmt) }}" method="POST" class="inline" onsubmit="return confirm('Delete this statement?')">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="text-red-600 hover:underline">Delete</button>
-                                </form>
-                            </td>
-                        </tr>
-                        @endforeach
+                        @forelse($statements as $stmt)
+                            <tr>
+                                <td>{{ $loop->iteration }}</td>
+                                <td>{{ optional($stmt->staff)->name ?? 'N/A' }}</td>
+                                <td>{{ optional($stmt->statement_month)->format('M Y') ?? 'N/A' }}</td>
+                                <td>{{ $stmt->original_name }}</td>
+                                <td>{{ optional($stmt->uploader)->name ?? 'System' }}</td>
+                                <td>
+                                    <a href="{{ Storage::url($stmt->file_path) }}" class="btn btn-sm btn-info" target="_blank">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
+                                    <form action="{{ route('treasurer.bank-statements.destroy', $stmt) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this statement?')">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-danger">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">No bank statements found.</td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 </div>
-@endsection
+@stop
+
+@section('js')
+<script>
+    $(document).ready(function() {
+        $('#bank-statements-table').DataTable({
+            responsive: true,
+            lengthChange: true,
+            autoWidth: false,
+            pageLength: 25,
+        });
+    });
+</script>
+@stop

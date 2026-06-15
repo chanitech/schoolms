@@ -9,11 +9,12 @@ class PermissionController extends Controller
 {
     public function __construct()
     {
-       $this->middleware('permission:view permissions')->only(['index']);
-       $this->middleware('permission:create permissions')->only(['create', 'store']);
-       $this->middleware('permission:edit permissions')->only(['edit', 'update']);
-       $this->middleware('permission:delete permissions')->only(['destroy']);
+        $this->middleware('permission:view permissions')->only(['index']);
+        $this->middleware('permission:create permissions')->only(['create', 'store']);
+        $this->middleware('permission:edit permissions')->only(['edit', 'update']);
+        $this->middleware('permission:delete permissions')->only(['destroy']);
     }
+
     public function index()
     {
         $permissions = Permission::all();
@@ -33,7 +34,8 @@ class PermissionController extends Controller
 
         Permission::create(['name' => $request->name]);
 
-        return redirect()->route('permissions.index')->with('success', 'Permission created successfully!');
+        return redirect()->route('settings.permissions.index')
+                         ->with('success', 'Permission created successfully!');
     }
 
     public function edit(Permission $permission)
@@ -49,13 +51,15 @@ class PermissionController extends Controller
 
         $permission->update(['name' => $request->name]);
 
-        return redirect()->route('permissions.index')->with('success', 'Permission updated successfully!');
+        return redirect()->route('settings.permissions.index')
+                         ->with('success', 'Permission updated successfully!');
     }
 
     public function destroy(Permission $permission)
     {
         $permission->delete();
 
-        return redirect()->route('permissions.index')->with('success', 'Permission deleted successfully!');
+        return redirect()->route('settings.permissions.index')
+                         ->with('success', 'Permission deleted successfully!');
     }
 }

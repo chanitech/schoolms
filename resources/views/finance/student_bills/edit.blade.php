@@ -1,12 +1,12 @@
 @extends('adminlte::page')
 
-@section('title', 'Create Student Bill')
+@section('title', 'Edit Bill #' . $studentBill->id)
 
 @section('content_header')
     <div class="d-flex justify-content-between align-items-center">
-        <h1 class="m-0 text-dark"><i class="fas fa-file-invoice-dollar"></i> Create Student Bill</h1>
-        <a href="{{ route('finance.student-bills.index') }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Back to Bills
+        <h1 class="m-0 text-dark"><i class="fas fa-file-invoice-dollar"></i> Edit Bill</h1>
+        <a href="{{ route('finance.student-bills.show', $studentBill) }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Bill
         </a>
     </div>
 @stop
@@ -17,11 +17,10 @@
         <div class="col-md-8">
             <div class="card card-outline card-primary shadow">
                 <div class="card-header">
-                    <h3 class="card-title">Bill Details</h3>
+                    <h3 class="card-title">Bill #{{ $studentBill->id }}</h3>
                 </div>
                 <div class="card-body">
 
-                    {{-- Validation errors --}}
                     @if($errors->any())
                         <div class="alert alert-danger alert-dismissible">
                             <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
@@ -34,8 +33,9 @@
                         </div>
                     @endif
 
-                    <form action="{{ route('finance.student-bills.store') }}" method="POST">
+                    <form action="{{ route('finance.student-bills.update', $studentBill) }}" method="POST">
                         @csrf
+                        @method('PUT')
 
                         <div class="form-group">
                             <label for="student_id">
@@ -45,7 +45,7 @@
                             <select name="student_id" id="student_id" class="form-control select2" style="width: 100%;" required>
                                 <option value="">-- Select Student --</option>
                                 @foreach($students as $student)
-                                    <option value="{{ $student->id }}" {{ old('student_id') == $student->id ? 'selected' : '' }}>
+                                    <option value="{{ $student->id }}" {{ (old('student_id', $studentBill->student_id) == $student->id) ? 'selected' : '' }}>
                                         {{ $student->first_name }} {{ $student->last_name }} ({{ $student->admission_no ?? 'N/A' }})
                                     </option>
                                 @endforeach
@@ -63,7 +63,7 @@
                                     </label>
                                     <input type="text" name="bill_number" id="bill_number"
                                            class="form-control @error('bill_number') is-invalid @enderror"
-                                           value="{{ old('bill_number') }}" placeholder="Auto-generated if empty">
+                                           value="{{ old('bill_number', $studentBill->bill_number) }}">
                                     @error('bill_number')
                                         <span class="invalid-feedback">{{ $message }}</span>
                                     @enderror
@@ -81,7 +81,7 @@
                                         </div>
                                         <input type="number" step="0.01" name="amount" id="amount"
                                                class="form-control @error('amount') is-invalid @enderror"
-                                               value="{{ old('amount') }}" placeholder="0.00" required>
+                                               value="{{ old('amount', $studentBill->total_amount ?? $studentBill->amount) }}" required>
                                     </div>
                                     @error('amount')
                                         <span class="invalid-feedback">{{ $message }}</span>
@@ -96,7 +96,7 @@
                             </label>
                             <textarea name="description" id="description" rows="3"
                                       class="form-control @error('description') is-invalid @enderror"
-                                      placeholder="e.g., Tuition fee, Library charges">{{ old('description') }}</textarea>
+                                      placeholder="e.g., Tuition fee, Library charges">{{ old('description', $studentBill->description) }}</textarea>
                             @error('description')
                                 <span class="invalid-feedback">{{ $message }}</span>
                             @enderror
@@ -108,7 +108,7 @@
                             </label>
                             <input type="date" name="due_date" id="due_date"
                                    class="form-control @error('due_date') is-invalid @enderror"
-                                   value="{{ old('due_date') }}">
+                                   value="{{ old('due_date', optional($studentBill->due_date)->format('Y-m-d')) }}">
                             @error('due_date')
                                 <span class="invalid-feedback">{{ $message }}</span>
                             @enderror
@@ -119,17 +119,17 @@
                                 <i class="fas fa-info-circle text-secondary mr-1"></i> Status
                             </label>
                             <select name="status" id="status" class="form-control">
-                                <option value="pending" {{ old('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                                <option value="paid" {{ old('status') == 'paid' ? 'selected' : '' }}>Paid</option>
-                                <option value="overdue" {{ old('status') == 'overdue' ? 'selected' : '' }}>Overdue</option>
+                                <option value="pending" {{ old('status', $studentBill->status) == 'pending' ? 'selected' : '' }}>Pending</option>
+                                <option value="paid" {{ old('status', $studentBill->status) == 'paid' ? 'selected' : '' }}>Paid</option>
+                                <option value="overdue" {{ old('status', $studentBill->status) == 'overdue' ? 'selected' : '' }}>Overdue</option>
                             </select>
                         </div>
 
                         <div class="mt-4">
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save mr-1"></i> Create Bill
+                                <i class="fas fa-save mr-1"></i> Update Bill
                             </button>
-                            <a href="{{ route('finance.student-bills.index') }}" class="btn btn-default ml-2">
+                            <a href="{{ route('finance.student-bills.show', $studentBill) }}" class="btn btn-default ml-2">
                                 Cancel
                             </a>
                         </div>

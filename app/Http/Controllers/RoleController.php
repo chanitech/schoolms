@@ -8,18 +8,20 @@ use Spatie\Permission\Models\Permission;
 
 class RoleController extends Controller
 {
-  public function __construct()
+    public function __construct()
     {
-       // $this->middleware('permission:view roles')->only(['index']);
-       // $this->middleware('permission:create roles')->only(['create', 'store']);
-       // $this->middleware('permission:edit roles')->only(['edit', 'update']);
-        //$this->middleware('permission:delete roles')->only(['destroy']);
+        // Uncomment permission middleware if needed
+        // $this->middleware('permission:view roles')->only(['index']);
+        // $this->middleware('permission:create roles')->only(['create', 'store']);
+        // $this->middleware('permission:edit roles')->only(['edit', 'update']);
+        // $this->middleware('permission:delete roles')->only(['destroy']);
     }
+
     public function index()
     {
         $roles = Role::with('permissions')->get();
         $permissions = Permission::all(); // all permissions for assignment
-        return view('roles.index', compact('roles'));
+        return view('roles.index', compact('roles', 'permissions'));
     }
 
     public function create()
@@ -28,7 +30,21 @@ class RoleController extends Controller
         return view('roles.create', compact('permissions'));
     }
 
-   
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'name' => 'required|unique:roles,name',
+            'permissions' => 'array'
+        ]);
+
+        $role = Role::create(['name' => $data['name']]);
+        if (!empty($data['permissions'])) {
+            $role->syncPermissions($data['permissions']);
+        }
+
+        return redirect()->route('settings.roles.index')
+            ->with('success', 'Role created successfully');
+    }
 
     public function edit(Role $role)
     {
@@ -37,40 +53,24 @@ class RoleController extends Controller
         return view('roles.edit', compact('role', 'permissions', 'rolePermissions'));
     }
 
-
-
     public function update(Request $request, Role $role)
-{
-    $data = $request->validate([
-        'name' => 'required|unique:roles,name,' . $role->id,
-        'permissions' => 'array'
-    ]);
+    {
+        $data = $request->validate([
+            'name' => 'required|unique:roles,name,' . $role->id,
+            'permissions' => 'array'
+        ]);
 
-    $role->update(['name' => $data['name']]);
-    $role->syncPermissions($data['permissions'] ?? []);
+        $role->update(['name' => $data['name']]);
+        $role->syncPermissions($data['permissions'] ?? []);
 
-    return redirect()->route('roles.index')->with('success', 'Role updated successfully');
-}
-
+        return redirect()->route('settings.roles.index')
+            ->with('success', 'Role updated successfully');
+    }
 
     public function destroy(Role $role)
     {
         $role->delete();
-        return redirect()->route('roles.index')->with('success', 'Role deleted successfully');
+        return redirect()->route('settings.roles.index')
+            ->with('success', 'Role deleted successfully');
     }
-
-    public function store(Request $request)
-{
-    $data = $request->validate([
-        'name' => 'required|unique:roles,name',
-        'permissions' => 'array'
-    ]);
-
-    $role = Role::create(['name' => $data['name']]);
-    if (!empty($data['permissions'])) {
-        $role->syncPermissions($data['permissions']);
-    }
-
-    return redirect()->route('roles.index')->with('success', 'Role created successfully');
-}
 }

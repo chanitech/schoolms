@@ -302,6 +302,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/dashboard', [GuardianController::class, 'dashboard'])->name('dashboard');
         Route::get('/fees', [GuardianController::class, 'fees'])->name('fees');
         Route::get('/result/{student}', [GuardianController::class, 'showResult'])->name('result.show');
+        // NEW: receipt route
+    Route::get('/payment/{payment}/receipt', [GuardianController::class, 'paymentReceipt'])->name('payment.receipt');
     });
 
     // ==================== STAFF ATTENDANCE ====================
@@ -435,4 +437,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/{question}/update', [AptitudeQuestionController::class, 'update'])->name('update');
         Route::delete('/{question}/delete', [AptitudeQuestionController::class, 'destroy'])->name('destroy');
     });
+
+
+   
 });

@@ -119,5 +119,12 @@ public function adminlte_profile_url()
         ];
     }
 
+
+    // app/Models/User.php
+public function guardian()
+{
+    return $this->hasOne(Guardian::class);
+}
+
     
 }

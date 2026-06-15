@@ -15,7 +15,7 @@
         @endif
 
         <!-- Filter Form -->
-        <form method="GET" action="{{ route('finance.pocket.index') }}" class="mb-4 row g-2">
+        <form method="GET" action="{{ route('finance.pocket.transactions.index') }}" class="mb-4 row g-2">
             <div class="col-md-4">
                 <select name="student_id" class="form-control">
                     <option value="">-- Filter by Student --</option>
@@ -30,7 +30,7 @@
                 <button type="submit" class="btn btn-primary w-100"><i class="fas fa-filter"></i> Filter</button>
             </div>
             <div class="col-md-2">
-                <a href="{{ route('finance.pocket.create') }}" class="btn btn-success w-100"><i class="fas fa-plus"></i> New Transaction</a>
+                <a href="{{ route('finance.pocket.transactions.create') }}" class="btn btn-success w-100"><i class="fas fa-plus"></i> New Transaction</a>
             </div>
         </form>
 
@@ -54,7 +54,13 @@
                     @forelse($transactions as $tx)
                     <tr>
                         <td>{{ $loop->iteration + ($transactions->currentPage() - 1) * $transactions->perPage() }}</td>
-                        <td>{{ $tx->student->first_name }} {{ $tx->student->last_name }}</td>
+                        <td>
+                            @if($tx->student)
+                                {{ $tx->student->first_name }} {{ $tx->student->last_name }}
+                            @else
+                                <span class="text-muted">Deleted Student</span>
+                            @endif
+                        </td>
                         <td>
                             <span class="badge {{ $tx->type == 'deposit' ? 'bg-success' : 'bg-danger' }}">
                                 {{ ucfirst($tx->type) }}
@@ -62,11 +68,13 @@
                         </td>
                         <td>{{ number_format($tx->amount, 2) }}</td>
                         <td>{{ number_format($tx->balance_after, 2) }}</td>
-                        <td>{{ $tx->performedBy->name ?? 'System' }}</td>
+                        <td>
+                            {{ optional($tx->performedBy)->name ?? 'System' }}
+                        </td>
                         <td>{{ $tx->created_at->format('d M, Y H:i') }}</td>
                         <td>{{ $tx->note ?? '-' }}</td>
                         <td>
-                            <a href="{{ route('finance.pocket.show', $tx->id) }}" class="btn btn-sm btn-info">
+                            <a href="{{ route('finance.pocket.transactions.show', $tx->id) }}" class="btn btn-sm btn-info">
                                 <i class="fas fa-eye"></i> View
                             </a>
                         </td>

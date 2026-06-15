@@ -136,28 +136,40 @@
                     @enderror
                 </div>
 
-                <div class="form-group">
-                    <label>Eligibility Criteria (JSON)</label>
-                    <textarea name="eligibility_criteria" rows="2" class="form-control font-monospace @error('eligibility_criteria') is-invalid @enderror" 
-                              placeholder='{"min_salary":500000, "min_years_employed":2}'>{{ old('eligibility_criteria') }}</textarea>
-                    <small class="form-text text-muted">
-                        Example: <code>{"min_salary": 500000, "min_years_employed": 2}</code>
-                    </small>
-                    @error('eligibility_criteria')
-                        <span class="invalid-feedback">{{ $message }}</span>
-                    @enderror
+                {{-- ===================== ELIGIBILITY CRITERIA (key‑value builder) ===================== --}}
+                <div class="card card-outline card-secondary mb-3">
+                    <div class="card-header">
+                        <h5 class="card-title"><i class="fas fa-check-circle mr-2"></i>Eligibility Criteria</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted small">Define requirements a staff must meet to qualify for this loan category. <strong>Leave empty if none.</strong></p>
+                        <div id="eligibility-container">
+                            {{-- Existing rows will be injected by JS if old data exists --}}
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="addCriteriaRow('eligibility')">
+                            <i class="fas fa-plus"></i> Add Criterion
+                        </button>
+                        <input type="hidden" name="eligibility_criteria" id="eligibility_json" value="{{ old('eligibility_criteria') }}">
+                        <small class="form-text text-muted">Example: <strong>min_salary = 500000</strong> | <strong>min_years_employed = 2</strong></small>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label>Restrictions (JSON)</label>
-                    <textarea name="restrictions" rows="2" class="form-control font-monospace @error('restrictions') is-invalid @enderror" 
-                              placeholder='{"allow_multiple_active_loans": false, "requires_guarantor": true}'>{{ old('restrictions') }}</textarea>
-                    <small class="form-text text-muted">
-                        Example: <code>{"allow_multiple_active_loans": false, "requires_guarantor": true}</code>
-                    </small>
-                    @error('restrictions')
-                        <span class="invalid-feedback">{{ $message }}</span>
-                    @enderror
+                {{-- ===================== RESTRICTIONS (key‑value builder) ===================== --}}
+                <div class="card card-outline card-secondary mb-3">
+                    <div class="card-header">
+                        <h5 class="card-title"><i class="fas fa-ban mr-2"></i>Restrictions</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted small">Specify limitations for this loan category. <strong>Leave empty if none.</strong></p>
+                        <div id="restrictions-container">
+                            {{-- Existing rows will be injected by JS if old data exists --}}
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="addCriteriaRow('restrictions')">
+                            <i class="fas fa-plus"></i> Add Restriction
+                        </button>
+                        <input type="hidden" name="restrictions" id="restrictions_json" value="{{ old('restrictions') }}">
+                        <small class="form-text text-muted">Example: <strong>allow_multiple_active_loans = false</strong> | <strong>requires_guarantor = true</strong></small>
+                    </div>
                 </div>
 
                 <div class="form-group text-right">
@@ -174,13 +186,104 @@
 </div>
 @stop
 
+@push('js')
+<script>
+    // ==========================
+    // Key-Value Builder Logic
+    // ==========================
+
+    /**
+     * Adds a new row (key + value) to the specified container.
+     * @param {string} type - 'eligibility' or 'restrictions'
+     * @param {string} key - optional pre‑filled key (for old values)
+     * @param {string} val - optional pre‑filled value
+     */
+    function addCriteriaRow(type, key = '', val = '') {
+        const container = document.getElementById(type + '-container');
+        const row = document.createElement('div');
+        row.className = 'input-group mb-2';
+        row.innerHTML = `
+            <input type="text" class="form-control" placeholder="Key (e.g., min_salary)" value="${escapeHtml(key)}" onchange="updateJson('${type}')">
+            <input type="text" class="form-control" placeholder="Value (e.g., 500000)" value="${escapeHtml(val)}" onchange="updateJson('${type}')">
+            <div class="input-group-append">
+                <button type="button" class="btn btn-outline-danger" onclick="this.closest('.input-group').remove(); updateJson('${type}')">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        `;
+        container.appendChild(row);
+        updateJson(type);
+    }
+
+    /**
+     * Collects all key-value pairs from a container and updates the hidden JSON input.
+     */
+    function updateJson(type) {
+        const container = document.getElementById(type + '-container');
+        const rows = container.querySelectorAll('.input-group');
+        const obj = {};
+
+        rows.forEach(row => {
+            const inputs = row.querySelectorAll('input');
+            const key = inputs[0].value.trim();
+            const val = inputs[1].value.trim();
+            if (key) {
+                // Try to keep numbers as numbers, but string is fine
+                obj[key] = isNaN(val) || val === '' ? val : parseFloat(val);
+            }
+        });
+
+        document.getElementById(type + '_json').value = Object.keys(obj).length ? JSON.stringify(obj) : '';
+    }
+
+    /**
+     * Escape HTML to prevent XSS in injected values.
+     */
+    function escapeHtml(text) {
+        return String(text)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    /**
+     * On page load, populate existing data (old input) into the builder.
+     */
+    document.addEventListener('DOMContentLoaded', function () {
+        // Eligibility criteria
+        const eligibilityJson = document.getElementById('eligibility_json').value;
+        if (eligibilityJson) {
+            try {
+                const criteria = JSON.parse(eligibilityJson);
+                for (const [key, value] of Object.entries(criteria)) {
+                    addCriteriaRow('eligibility', key, String(value));
+                }
+            } catch (e) {
+                console.error('Invalid eligibility_criteria JSON');
+            }
+        }
+
+        // Restrictions
+        const restrictionsJson = document.getElementById('restrictions_json').value;
+        if (restrictionsJson) {
+            try {
+                const restrictions = JSON.parse(restrictionsJson);
+                for (const [key, value] of Object.entries(restrictions)) {
+                    addCriteriaRow('restrictions', key, String(value));
+                }
+            } catch (e) {
+                console.error('Invalid restrictions JSON');
+            }
+        }
+    });
+</script>
+@endpush
+
 @section('css')
     <style>
-        .font-monospace {
-            font-family: monospace;
-        }
-        .custom-switch {
-            padding-left: 2.25rem;
-        }
+        .font-monospace { font-family: monospace; }
+        .custom-switch { padding-left: 2.25rem; }
     </style>
 @stop

@@ -14,7 +14,7 @@ return [
     |
     */
 
-    'title' => 'MEMANexus',
+    'title' => 'MEMASmart',
     'title_prefix' => '',
     'title_postfix' => '',
 
@@ -63,7 +63,7 @@ return [
     |
     */
 
-    'logo' => '<b>MEMA</b>Nexus',
+    'logo' => '<b>MEMA</b>Smart',
     'logo_img' => 'vendor/adminlte/dist/img/MEMA.webp',
     'logo_img_class' => 'brand-image img-circle elevation-3',
     'logo_img_xl' => null,
@@ -689,7 +689,7 @@ return [
                 // ✅ FIXED: Use direct URL instead of route name
                 [
                     'text' => 'Pocket Money',
-                    'url' => '/finance/pocket',
+                     'url' => '/finance/pocket/transactions',   // ✅ correct
                     'icon' => 'fas fa-piggy-bank',
                 ],
             ],
@@ -750,7 +750,7 @@ return [
             'text' => 'School Info',
             'url'  => '/settings/school-info',
             'icon' => 'fas fa-school',
-            'can'  => 'manage settings',
+            //'can'  => 'manage settings',
         ],
         [
             'text' => 'Roles & Permissions',

@@ -4,13 +4,13 @@
 
 @section('content_header')
     <h1>Create Role</h1>
-    <a href="{{ route('roles.index') }}" class="btn btn-secondary float-right">Back</a>
+    <a href="{{ route('settings.roles.index') }}" class="btn btn-secondary float-right">Back</a>
 @stop
 
 @section('content')
 <div class="card">
     <div class="card-body">
-        <form action="{{ route('roles.store') }}" method="POST">
+        <form action="{{ route('settings.roles.store') }}" method="POST">
             @csrf
             <div class="form-group">
                 <label for="name">Role Name</label>
