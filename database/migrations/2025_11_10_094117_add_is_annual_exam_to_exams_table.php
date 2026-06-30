@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('exams', function (Blueprint $table) {
-        $table->boolean('is_annual_exam')->default(0)->after('is_terminal_exam');
+        $table->boolean('is_annual_exam')->default(0);
     });
     }
 
