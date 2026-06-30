@@ -199,7 +199,7 @@
         'address' => 'Kisarawe, Pwani',
         'phone' => '+255', 'email' => 'info@mema.or.tz', 'website' => 'www.mema.ac.tz',
         'logo_left' => 'vendor/adminlte/dist/img/MEMA.png',
-        'logo_right' => 'vendor/adminlte/dist/img/MEMA.webp',
+        'logo_right' => 'vendor/adminlte/dist/img/schoolms-icon.png',
     ];
     $grades = $grades ?? collect([
         (object)['name'=>'A','min_mark'=>75,'max_mark'=>100],
@@ -210,7 +210,7 @@
     ]);
 
     $logoLeftPath  = public_path($school->logo_left  ?? 'vendor/adminlte/dist/img/MEMA.png');
-    $logoRightPath = public_path($school->logo_right ?? 'vendor/adminlte/dist/img/MEMA.webp');
+    $logoRightPath = public_path($school->logo_right ?? 'vendor/adminlte/dist/img/schoolms-icon.png');
     $logoLeft  = file_exists($logoLeftPath)  ? base64_encode(file_get_contents($logoLeftPath))  : '';
     $logoRight = file_exists($logoRightPath) ? base64_encode(file_get_contents($logoRightPath)) : '';
 
@@ -301,7 +301,7 @@
         </td>
         <td class="logo" style="background:rgba(255,255,255,.08);border-left:1px solid rgba(255,255,255,.2)">
             @if($logoRight)
-            <img src="data:image/webp;base64,{{ $logoRight }}" alt="Logo">
+            <img src="data:image/png;base64,{{ $logoRight }}" alt="Logo">
             @endif
         </td>
     </tr>

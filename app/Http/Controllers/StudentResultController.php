@@ -602,13 +602,13 @@ class StudentResultController extends Controller
     $logoLeftPath  = $schoolInfo && $schoolInfo->logo
                         ? public_path($schoolInfo->logo)
                         : public_path('vendor/adminlte/dist/img/MEMA.png');
-    $logoRightPath = public_path('vendor/adminlte/dist/img/MEMA.webp');  // can also be stored in SchoolInfo
+    $logoRightPath = public_path('vendor/adminlte/dist/img/schoolms-icon.png');  // can also be stored in SchoolInfo
     $watermarkPath = $schoolInfo && $schoolInfo->logo
                         ? public_path($schoolInfo->logo)
                         : public_path('vendor/adminlte/dist/img/MEMA.png');
 
     $logoLeft  = file_exists($logoLeftPath)  ? 'data:image/png;base64,'  . base64_encode(file_get_contents($logoLeftPath))  : null;
-    $logoRight = file_exists($logoRightPath) ? 'data:image/webp;base64,' . base64_encode(file_get_contents($logoRightPath)) : null;
+    $logoRight = file_exists($logoRightPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoRightPath)) : null;
     $watermark = file_exists($watermarkPath) ? 'data:image/png;base64,'  . base64_encode(file_get_contents($watermarkPath)) : null;
 
     $subjects   = $department

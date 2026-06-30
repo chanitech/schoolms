@@ -6,7 +6,7 @@ return [
     | App domain (without leading dot)
     |--------------------------------------------------------------------------
     | Used for subdomain-based tenant resolution.
-    | e.g. "memanexus.com"  →  kitungwa.memanexus.com resolves to slug "kitungwa"
+    | e.g. "chanitech.co.tz"  →  kitungwa.chanitech.co.tz resolves to slug "kitungwa"
     | Leave empty in local dev — the middleware falls back to default_school_id.
     */
     'domain' => env('TENANT_DOMAIN', ''),

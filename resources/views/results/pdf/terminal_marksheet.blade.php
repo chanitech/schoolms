@@ -48,7 +48,7 @@
 
     {{-- Watermark --}}
     <div class="watermark">
-        <img src="{{ public_path($school->logo ?? 'vendor/adminlte/dist/img/MEMA.webp') }}" alt="School Logo">
+        <img src="{{ public_path($school->logo ?? 'vendor/adminlte/dist/img/schoolms-icon.png') }}" alt="School Logo">
     </div>
 
     {{-- Header --}}
@@ -154,7 +154,7 @@
         </tr>
         <tr>
             <td colspan="2" class="stamp">
-                <img src="{{ public_path($school->logo ?? 'vendor/adminlte/dist/img/MEMA.webp') }}" alt="School Stamp">
+                <img src="{{ public_path($school->logo ?? 'vendor/adminlte/dist/img/schoolms-icon.png') }}" alt="School Stamp">
             </td>
         </tr>
     </table>

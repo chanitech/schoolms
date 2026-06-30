@@ -14,7 +14,7 @@ return [
     |
     */
 
-    'title' => 'MEMASmart',
+    'title' => 'SchoolMS',
     'title_prefix' => '',
     'title_postfix' => '',
 
@@ -31,7 +31,7 @@ return [
     */
 
     'use_ico_only' => false,
-    'use_full_favicon' => false,
+    'use_full_favicon' => true,
 
     /*
     |--------------------------------------------------------------------------
@@ -63,12 +63,12 @@ return [
     |
     */
 
-    'logo' => '<b>MEMA</b>Smart',
-    'logo_img' => 'vendor/adminlte/dist/img/MEMA.webp',
+    'logo' => '<b>School</b>MS',
+    'logo_img' => 'vendor/adminlte/dist/img/schoolms-icon.png',
     'logo_img_class' => 'brand-image img-circle elevation-3',
     'logo_img_xl' => null,
     'logo_img_xl_class' => 'brand-image-xs',
-    'logo_img_alt' => 'Admin Logo',
+    'logo_img_alt' => 'SchoolMS Logo',
 
     /*
     |--------------------------------------------------------------------------
@@ -84,10 +84,10 @@ return [
     */
 
     'auth_logo' => [
-        'enabled' => false,
+        'enabled' => true,
         'img' => [
-            'path' => 'vendor/adminlte/dist/img/MEMA.webp',
-            'alt' => 'Auth Logo',
+            'path' => 'vendor/adminlte/dist/img/schoolms-icon.png',
+            'alt' => 'SchoolMS Logo',
             'class' => '',
             'width' => 50,
             'height' => 50,
@@ -113,8 +113,8 @@ return [
         'enabled' => true,
         'mode' => 'fullscreen',
         'img' => [
-            'path' => 'vendor/adminlte/dist/img/MEMA.webp',
-            'alt' => 'AdminLTE Preloader Image',
+            'path' => 'vendor/adminlte/dist/img/schoolms-icon.png',
+            'alt' => 'SchoolMS Preloader Image',
             'effect' => 'animation__shake',
             'width' => 50,
             'height' => 50,

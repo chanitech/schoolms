@@ -6,7 +6,7 @@
 <div class="card shadow-lg p-3" style="position: relative;">
 
     {{-- Watermark --}}
-    <img src="{{ asset('vendor/adminlte/dist/img/MEMA.webp') }}" 
+    <img src="{{ asset('vendor/adminlte/dist/img/schoolms-icon.png') }}" 
          style="position:absolute; top:30%; left:25%; width:50%; opacity:0.05; z-index:0;" 
          alt="Watermark">
 
@@ -14,7 +14,7 @@
         {{-- Header --}}
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div class="d-flex align-items-center">
-                <img src="{{ asset('vendor/adminlte/dist/img/MEMA.webp') }}" 
+                <img src="{{ asset('vendor/adminlte/dist/img/schoolms-icon.png') }}" 
                      alt="School Logo" style="height:80px; margin-right:15px;">
                 <div>
                     <h3 class="mb-0">{{ config('app.name', 'School Management System') }}</h3>
