@@ -4,8 +4,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\BelongsToSchool;
 
 class AptitudeAttempt extends Model {
+    use BelongsToSchool;
+
     protected $guarded = [];
 
     public function student() {

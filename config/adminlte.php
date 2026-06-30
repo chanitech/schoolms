@@ -305,20 +305,60 @@ return [
         'url'  => 'dashboard',
         'icon' => 'fas fa-tachometer-alt',
     ],
+    // Super Admin Panel — only visible to super admins
+    [
+        'text'    => 'Super Admin',
+        'icon'    => 'fas fa-crown',
+        'topnav'  => false,
+        'active'  => ['super/*'],
+        'can'     => 'is-super-admin',
+        'submenu' => [
+            [
+                'text'  => 'All Schools',
+                'route' => 'super.schools.index',
+                'icon'  => 'fas fa-building',
+                'can'   => 'is-super-admin',
+            ],
+            [
+                'text'  => 'Add School',
+                'route' => 'super.schools.create',
+                'icon'  => 'fas fa-plus-circle',
+                'can'   => 'is-super-admin',
+            ],
+        ],
+    ],
+    // AI Tools
+    [
+        'text' => 'AI Tools',
+        'icon' => 'fas fa-robot',
+        'can'  => 'view ai insights',
+        'submenu' => [
+            [
+                'text'  => 'AI Insights',
+                'route' => 'ai.dashboard',
+                'icon'  => 'fas fa-chart-pie',
+                'can'   => 'view ai insights',
+            ],
+            [
+                'text'  => 'AI Assistant',
+                'route' => 'ai.assistant.index',
+                'icon'  => 'fas fa-comments',
+                'can'   => 'view ai insights',
+            ],
+        ],
+    ],
 
     // Students Management
-   [
-    'text' => 'Students Management',
-    'icon' => 'fas fa-user-graduate',
-    // No top-level 'can' – children control visibility
-    'submenu' => [
-        ['text' => 'Students', 'url' => 'students', 'icon' => 'fas fa-user-graduate', 'can' => 'view students'],
-        ['text' => 'Guardians', 'url' => 'guardians', 'icon' => 'fas fa-users', 'can' => 'view guardians'],
-        //['text' => 'Attendance', 'url' => 'attendance', 'icon' => 'fas fa-calendar-check', 'can' => 'view attendance'],
-        ['text' => 'Enrollments', 'url' => 'enrollments', 'icon' => 'fas fa-clipboard-list', 'can' => 'view enrollments'],
-        ['text' => 'Promotion', 'url' => 'promotion', 'icon' => 'fas fa-level-up-alt', 'can' => 'manage promotions'],
+    [
+        'text' => 'Students Management',
+        'icon' => 'fas fa-user-graduate',
+        'submenu' => [
+            ['text' => 'Students',   'url' => 'students',    'icon' => 'fas fa-user-graduate',  'can' => 'view students'],
+            ['text' => 'Guardians',  'url' => 'guardians',   'icon' => 'fas fa-users',          'can' => 'view guardians'],
+            ['text' => 'Enrollments','url' => 'enrollments', 'icon' => 'fas fa-clipboard-list', 'can' => 'view enrollments'],
+            ['text' => 'Promotion',  'url' => 'promotion',   'icon' => 'fas fa-level-up-alt',   'can' => 'manage promotions'],
+        ],
     ],
-],
 
 
 
@@ -472,31 +512,98 @@ return [
     
 
     // Academic Management
-    // Academic Management
-[
-    'text' => 'Academic',
-    'icon' => 'fas fa-book',
-    'submenu' => [
-        ['text' => 'Classes', 'url' => 'classes', 'icon' => 'fas fa-chalkboard', 'can' => 'view classes'],
-        ['text' => 'Dormitories', 'url' => 'dormitories', 'icon' => 'fas fa-building', 'can' => 'view dormitories'],
-        ['text' => 'Academic Sessions', 'url' => 'sessions', 'icon' => 'fas fa-calendar-alt', 'can' => 'view sessions'],
-        ['text' => 'Subjects Assignment', 'url' => 'subject-assignment', 'icon' => 'fas fa-tasks', 'can' => 'view subject assignments'],
-        ['text' => 'Subjects', 'url' => 'subjects', 'icon' => 'fas fa-book-open', 'can' => 'view subjects'],
-        ['text' => 'Teachers Assignment', 'url' => 'teacher-assignment', 'icon' => 'fas fa-user-tie', 'can' => 'view teacher assignments'],
-        ['text' => 'Exams', 'url' => 'exams', 'icon' => 'fas fa-file-alt', 'can' => 'view exams'],
-        ['text' => 'Marks', 'url' => 'marks', 'icon' => 'fas fa-pen', 'can' => 'view marks'],
-        ['text' => 'Divisions', 'url' => 'divisions', 'icon' => 'fas fa-object-group', 'can' => 'view divisions'],
-        ['text' => 'Grading & GPA', 'url' => 'grades', 'icon' => 'fas fa-star', 'can' => 'view grading'],
-        ['text' => 'Student Results', 'url' => 'results', 'icon' => 'fas fa-chart-bar', 'can' => 'view student results'],
-        ['text' => 'Class Results', 'url' => 'results/class', 'icon' => 'fas fa-chart-bar', 'can' => 'view class results'],
-        [
-            'text' => 'Export Student Marksheet',
-            'route' => 'results.export.form',
-            'icon' => 'fas fa-file-pdf',
-            'can' => 'export marksheets',
+    [
+        'text' => 'Academic',
+        'icon' => 'fas fa-book',
+        'submenu' => [
+
+            // ── School Setup ──────────────────────────────────────────
+            [
+                'text'    => 'School Setup',
+                'icon'    => 'fas fa-school',
+                'submenu' => [
+                    ['text' => 'Academic Sessions', 'url' => 'sessions',    'icon' => 'fas fa-calendar-alt',   'can' => 'view sessions'],
+                    ['text' => 'Classes',           'url' => 'classes',     'icon' => 'fas fa-chalkboard',     'can' => 'view classes'],
+                    ['text' => 'Divisions',         'url' => 'divisions',   'icon' => 'fas fa-object-group',   'can' => 'view divisions'],
+                    ['text' => 'Dormitories',       'url' => 'dormitories', 'icon' => 'fas fa-building',       'can' => 'view dormitories'],
+                ],
+            ],
+
+            // ── Subjects & Staff ──────────────────────────────────────
+            [
+                'text'    => 'Subjects & Staff',
+                'icon'    => 'fas fa-chalkboard-teacher',
+                'submenu' => [
+                    ['text' => 'Subjects',            'url' => 'subjects',           'icon' => 'fas fa-book-open', 'can' => 'view subjects'],
+                    ['text' => 'Subjects Assignment', 'url' => 'subject-assignment', 'icon' => 'fas fa-tasks',     'can' => 'view subject assignments'],
+                    ['text' => 'Teachers Assignment', 'url' => 'teacher-assignment', 'icon' => 'fas fa-user-tie',  'can' => 'view teacher assignments'],
+                ],
+            ],
+
+            // ── Timetable & Teaching ──────────────────────────────────
+            [
+                'text'    => 'Timetable & Teaching',
+                'icon'    => 'fas fa-calendar-week',
+                'can'     => 'view timetable',
+                'submenu' => [
+                    [
+                        'text'        => 'Timetable',
+                        'url'         => 'timetables',
+                        'icon'        => 'fas fa-calendar-week',
+                        'can'         => 'view timetable',
+                        'label'       => 'New',
+                        'label_color' => 'info',
+                    ],
+                    [
+                        'text'  => 'My Sessions',
+                        'route' => 'timetables.my-sessions',
+                        'icon'  => 'fas fa-desktop',
+                        'can'   => 'view timetable',
+                    ],
+                    [
+                        'text'  => 'Daily Reports',
+                        'route' => 'daily-reports.index',
+                        'icon'  => 'fas fa-clipboard-list',
+                        'can'   => 'view daily reports',
+                    ],
+                    [
+                        'text'    => 'Lesson Plans',
+                        'icon'    => 'fas fa-tasks',
+                        'can'     => 'view lesson plans',
+                        'submenu' => [
+                            ['text' => 'All Lesson Plans',     'url' => 'topic-coverage',            'icon' => 'fas fa-list',       'can' => 'view lesson plans'],
+                            ['text' => 'Evaluation & Progress','url' => 'topic-coverage/evaluation', 'icon' => 'fas fa-chart-line', 'can' => 'view lesson plans'],
+                        ],
+                    ],
+                ],
+            ],
+
+            // ── Assessment ────────────────────────────────────────────
+            [
+                'text'    => 'Assessment',
+                'icon'    => 'fas fa-file-alt',
+                'submenu' => [
+                    ['text' => 'Exams',              'url' => 'exams',                    'icon' => 'fas fa-file-alt',  'can' => 'view exams'],
+                    ['text' => 'Marks',              'url' => 'marks',                    'icon' => 'fas fa-pen',       'can' => 'view marks'],
+                    ['text' => 'Exam Questions',     'url' => 'exam-questions/manage',    'icon' => 'fas fa-list-ol',   'can' => 'enter marks'],
+                    ['text' => 'Question Evaluation','url' => 'marks/question-evaluation','icon' => 'fas fa-chart-bar', 'can' => 'enter marks'],
+                    ['text' => 'Grading & GPA',      'url' => 'grades',                  'icon' => 'fas fa-star',      'can' => 'view grading'],
+                ],
+            ],
+
+            // ── Results & Reports ─────────────────────────────────────
+            [
+                'text'    => 'Results & Reports',
+                'icon'    => 'fas fa-chart-bar',
+                'submenu' => [
+                    ['text' => 'Student Results', 'url'   => 'results',       'icon' => 'fas fa-chart-bar', 'can' => 'view student results'],
+                    ['text' => 'Class Results',   'url'   => 'results/class', 'icon' => 'fas fa-chart-bar', 'can' => 'view class results'],
+                    ['text' => 'Export Marksheet','route' => 'results.export.form', 'icon' => 'fas fa-file-pdf', 'can' => 'export marksheets'],
+                ],
+            ],
+
         ],
     ],
-],
 
 
 
@@ -506,11 +613,25 @@ return [
 
 
     // HR & Staff Management
- [
+    [
     'text' => 'HR & Staff',
     'icon' => 'fas fa-user-tie',
     // No top-level 'can' – the menu will show if any child is visible.
     'submenu' => [
+        // HOD Department Dashboard
+        [
+            'text'  => 'My Department',
+            'route' => 'hod.dashboard',
+            'icon'  => 'fas fa-chalkboard-teacher',
+            'can'   => 'view department dashboard',
+        ],
+        [
+            'text'  => 'Staff Reports',
+            'route' => 'daily-reports.hod',
+            'icon'  => 'fas fa-clipboard-check',
+            'can'   => 'view department dashboard',
+        ],
+
         // Staff list – requires 'view staff' (used in StaffController@index)
         ['text' => 'Staff', 'url' => 'staff', 'icon' => 'fas fa-users-cog', 'can' => 'view staff'],
 
@@ -723,6 +844,47 @@ return [
     ],
 ],
 
+    // Document Library
+    [
+        'text'  => 'Document Library',
+        'url'   => 'documents',
+        'icon'  => 'fas fa-folder-open',
+        'can'   => 'view documents',
+    ],
+
+    // Inventory Management
+    [
+        'text' => 'Inventory',
+        'icon' => 'fas fa-boxes',
+        'can'  => 'manage settings',
+        'submenu' => [
+            [
+                'text'  => 'Dashboard',
+                'url'   => 'inventory',
+                'icon'  => 'fas fa-tachometer-alt',
+                'can'   => 'manage settings',
+            ],
+            [
+                'text'  => 'Items',
+                'url'   => 'inventory/items',
+                'icon'  => 'fas fa-box',
+                'can'   => 'manage settings',
+            ],
+            [
+                'text'  => 'Categories',
+                'url'   => 'inventory/categories',
+                'icon'  => 'fas fa-tags',
+                'can'   => 'manage settings',
+            ],
+            [
+                'text'  => 'Transactions',
+                'url'   => 'inventory/transactions',
+                'icon'  => 'fas fa-exchange-alt',
+                'can'   => 'manage settings',
+            ],
+        ],
+    ],
+
     // Reports
     //[
         //'text' => 'Reports',
@@ -750,24 +912,24 @@ return [
             'text' => 'School Info',
             'url'  => '/settings/school-info',
             'icon' => 'fas fa-school',
-            //'can'  => 'manage settings',
+            'can'  => 'manage settings',
         ],
         [
             'text' => 'Roles & Permissions',
             'icon' => 'fas fa-user-shield',
-            // No parent 'can' – visibility controlled by children
+            'can'  => 'view roles',
             'submenu' => [
                 [
                     'text' => 'Roles',
                     'url'  => '/settings/roles',
                     'icon' => 'fas fa-user-shield',
-                    //'can'  => 'view roles',
+                    'can'  => 'view roles',
                 ],
                 [
                     'text' => 'Permissions',
                     'url'  => '/settings/permissions',
                     'icon' => 'fas fa-key',
-                    //'can'  => 'view permissions',
+                    'can'  => 'view permissions',
                 ],
             ],
         ],

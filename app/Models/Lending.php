@@ -5,12 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Concerns\BelongsToSchool;
 
 class Lending extends Model
 {
+    use BelongsToSchool;
+
     use HasFactory;
 
     protected $fillable = [
+        'school_id',
         'book_id',
         'user_id',       // polymorphic borrower id
         'borrower_type', // polymorphic borrower type (Student or Staff)

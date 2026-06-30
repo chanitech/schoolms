@@ -37,7 +37,7 @@
             <div class="col-lg-3 col-6">
                 <div class="small-box bg-{{ $statusColors[$status] }}">
                     <div class="inner">
-                        <h3>{{ \App\Models\Invoice::where('status', $status)->count() }}</h3>
+                        <h3>{{ $statusCounts[$status] ?? 0 }}</h3>
                         <p>{{ ucfirst(str_replace('_',' ',$status)) }}</p>
                     </div>
                     <div class="icon"><i class="fas fa-receipt"></i></div>

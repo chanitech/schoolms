@@ -6,6 +6,7 @@ use App\Models\Leave;
 use App\Models\Staff;
 use App\Models\Department;
 use App\Models\User;
+use App\Notifications\LeaveRequestNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
@@ -84,7 +85,7 @@ class LeaveController extends Controller
             'requested_to' => 'required|exists:staff,id',
         ]);
 
-        Leave::create([
+        $leave = Leave::create([
             'staff_id'     => $staff->id,
             'requested_to' => $request->requested_to,
             'start_date'   => $request->start_date,
@@ -93,6 +94,14 @@ class LeaveController extends Controller
             'status'       => 'pending',
             'reason'       => $request->reason,
         ]);
+
+        // Notify HR and the requested-to staff member
+        $notify = new LeaveRequestNotification($leave, 'submitted', $user->name);
+        User::role(['HR', 'Admin'])->where('id', '!=', Auth::id())->each(fn($u) => $u->notify($notify));
+        $targetStaff = Staff::find($request->requested_to);
+        if ($targetStaff?->user_id && $targetStaff->user_id !== Auth::id()) {
+            User::find($targetStaff->user_id)?->notify($notify);
+        }
 
         return redirect()->route('leaves.index')
                          ->with('success', 'Leave request submitted successfully.');
@@ -220,6 +229,10 @@ class LeaveController extends Controller
 
         $leave->update(['status' => 'approved']);
 
+        // Notify the applicant
+        $applicantUser = User::whereHas('staff', fn($q) => $q->where('id', $leave->staff_id))->first();
+        $applicantUser?->notify(new LeaveRequestNotification($leave, 'approved', $user->name));
+
         return redirect()->route('leaves.received')->with('success', 'Leave approved successfully.');
     }
 
@@ -234,6 +247,10 @@ class LeaveController extends Controller
         }
 
         $leave->update(['status' => 'rejected']);
+
+        // Notify the applicant
+        $applicantUser = User::whereHas('staff', fn($q) => $q->where('id', $leave->staff_id))->first();
+        $applicantUser?->notify(new LeaveRequestNotification($leave, 'rejected', $user->name));
 
         return redirect()->route('leaves.received')->with('success', 'Leave rejected successfully.');
     }

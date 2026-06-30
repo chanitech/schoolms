@@ -12,12 +12,16 @@ use App\Models\{
     Student,
     Department
 };
+use App\Models\Concerns\BelongsToSchool;
 
 class Subject extends Model
 {
+    use BelongsToSchool;
+
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
+        'school_id',
         'name',
         'code',
         'type',             // core / elective

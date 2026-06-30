@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Guardian;
+use App\Models\Staff;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
@@ -10,35 +13,61 @@ use Illuminate\View\View;
 
 class PasswordResetLinkController extends Controller
 {
-    /**
-     * Display the password reset link request view.
-     */
     public function create(): View
     {
         return view('auth.forgot-password');
     }
 
-    /**
-     * Handle an incoming password reset link request.
-     *
-     * @throws \Illuminate\Validation\ValidationException
-     */
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'email' => ['required', 'email'],
+            'login' => ['required', 'string'],
+        ], [
+            'login.required' => 'Please enter your email address or phone number.',
         ]);
 
-        // We will send the password reset link to this user. Once we have attempted
-        // to send the link, we will examine the response then see the message we
-        // need to show to the user. Finally, we'll send out a proper response.
-        $status = Password::sendResetLink(
-            $request->only('email')
-        );
+        $login = trim($request->input('login'));
+        $email = str_contains($login, '@') ? $login : $this->resolveEmailFromPhone($login);
+
+        if (! $email) {
+            return back()->withInput()->withErrors([
+                'login' => 'No account found with that phone number. Please contact the administrator.',
+            ]);
+        }
+
+        // Temporarily remove the school scope so the password broker can find
+        // users from any school — this is an unauthenticated route.
+        $boundSchool = app()->bound('currentSchool') ? app('currentSchool') : null;
+        app()->forgetInstance('currentSchool');
+
+        $status = Password::sendResetLink(['email' => $email]);
+
+        if ($boundSchool) app()->instance('currentSchool', $boundSchool);
 
         return $status == Password::RESET_LINK_SENT
-                    ? back()->with('status', __($status))
-                    : back()->withInput($request->only('email'))
-                        ->withErrors(['email' => __($status)]);
+            ? back()->with('status', 'Password reset link has been sent to your email address.')
+            : back()->withInput()->withErrors(['login' => __($status)]);
+    }
+
+    private function resolveEmailFromPhone(string $raw): ?string
+    {
+        $phone = preg_replace('/[\s\-\(\)]+/', '', $raw);
+
+        $user = User::withoutSchoolScope()->where('phone', $phone)->whereNotNull('email')->first();
+        if ($user) return $user->email;
+
+        $staff = Staff::withoutSchoolScope()->where('phone', $phone)->whereNotNull('user_id')->first();
+        if ($staff) {
+            $user = User::withoutSchoolScope()->where('id', $staff->user_id)->whereNotNull('email')->first();
+            if ($user) return $user->email;
+        }
+
+        $guardian = Guardian::withoutSchoolScope()->where('phone', $phone)->whereNotNull('user_id')->first();
+        if ($guardian) {
+            $user = User::withoutSchoolScope()->where('id', $guardian->user_id)->whereNotNull('email')->first();
+            if ($user) return $user->email;
+        }
+
+        return null;
     }
 }

@@ -48,12 +48,21 @@ use App\Http\Controllers\{
     AptitudeQuestionController,
     InvoiceController,
     PromotionController,
+    AIAnalysisController,
+    AIAssistantController,
+    ExamQuestionController,
+    TopicCoverageController,
+    TimetableController,
+    GuardianLoginController,
+    NotificationController,
+    DocumentController,
 };
 use App\Http\Controllers\Staff\LoanApplicationController;
 use App\Http\Controllers\Staff\BankStatementController as StaffBankStatementController;
 use App\Http\Controllers\Treasurer\LoanApprovalController;
 use App\Http\Controllers\Treasurer\LoanCategoryController;
 use App\Http\Controllers\Treasurer\BankStatementController;
+use App\Http\Controllers\SuperAdmin\SchoolController as SuperSchoolController;
 
 /*
 |--------------------------------------------------------------------------
@@ -65,11 +74,26 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+// Subscription expired — shown when school's subscription is inactive
+Route::get('/subscription/expired', function () {
+    return view('subscription.expired');
+})->name('subscription.expired');
+
 // Authentication routes
 require __DIR__.'/auth.php';
 
 // Authenticated routes
 Route::middleware(['auth', 'verified'])->group(function () {
+
+    // ==================== NOTIFICATIONS ====================
+    Route::prefix('notifications')->name('notifications.')->group(function () {
+        Route::get('/',              [NotificationController::class, 'index'])->name('index');
+        Route::get('/recent',        [NotificationController::class, 'recent'])->name('recent');
+        Route::get('/count',         [NotificationController::class, 'count'])->name('count');
+        Route::post('/mark-all-read',[NotificationController::class, 'markAllRead'])->name('mark-all-read');
+        Route::post('/{id}/read',    [NotificationController::class, 'markRead'])->name('read');
+        Route::delete('/{id}',       [NotificationController::class, 'destroy'])->name('destroy');
+    });
 
     // ==================== DASHBOARD & PROFILE ====================
     Route::get('/dashboard', [HomeController::class, 'index'])->name('dashboard');
@@ -183,10 +207,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ==================== MARKS & RESULTS AJAX ====================
     Route::get('/marks/subjects-by-department', [MarkController::class, 'getSubjectsByDepartment'])->name('marks.subjects.by.department');
     Route::get('/exams/by-session', [ExamController::class, 'getExamsBySession'])->name('exams.by.session');
+    Route::post('/exams/{exam}/review',        [ExamController::class, 'review'])->name('exams.review');
+    Route::post('/exams/{exam}/publish',       [ExamController::class, 'publish'])->name('exams.publish');
+    Route::post('/exams/{exam}/unpublish',     [ExamController::class, 'unpublish'])->name('exams.unpublish');
+    Route::post('/exams/{exam}/reject-review', [ExamController::class, 'rejectReview'])->name('exams.reject-review');
     Route::get('/marks/exams-by-session', [MarkController::class, 'getExamsBySession'])->name('marks.exams.by.session');
     Route::post('/marks/import', [StudentResultController::class, 'importExcel'])->name('marks.import');
     Route::get('/marks/template', [StudentResultController::class, 'downloadTemplate'])->name('marks.download-template');
     Route::get('/marks/download-template/filtered', [StudentResultController::class, 'downloadFilteredTemplate'])->name('marks.download-filtered-template');
+    Route::get('/marks/download-question-template', [MarkController::class, 'downloadQuestionMarksTemplate'])->name('marks.download.question.template');
+    Route::post('/marks/import-question-marks', [MarkController::class, 'importQuestionMarks'])->name('marks.import.question.marks');
     Route::get('/results/classes-by-department', [StudentResultController::class, 'getClassesByDepartment'])->name('results.classes.by.department');
 
     // ==================== SUBJECTS (Assign Students) ====================
@@ -209,12 +239,68 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ==================== MARKS CRUD ====================
     Route::prefix('marks')->name('marks.')->group(function () {
         Route::get('students', [MarkController::class, 'getStudents'])->name('students');
+        Route::get('students-with-questions', [MarkController::class, 'getStudentsWithQuestions'])->name('students.with.questions');
         Route::get('/', [MarkController::class, 'index'])->name('index');
         Route::get('/create', [MarkController::class, 'create'])->name('create');
         Route::post('/', [MarkController::class, 'store'])->name('store');
+        Route::post('/store-by-questions', [MarkController::class, 'storeByQuestions'])->name('store.by.questions');
+        Route::get('/question-evaluation', [MarkController::class, 'questionEvaluation'])->name('question.evaluation');
         Route::get('/{mark}/edit', [MarkController::class, 'edit'])->name('edit');
         Route::put('/{mark}', [MarkController::class, 'update'])->name('update');
         Route::delete('/{mark}', [MarkController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('exam-questions')->name('exam.questions.')->group(function () {
+        Route::get('/manage', [ExamQuestionController::class, 'manage'])->name('manage');
+        Route::get('/get', [ExamQuestionController::class, 'getQuestions'])->name('get');
+        Route::post('/save', [ExamQuestionController::class, 'save'])->name('save');
+    });
+
+    // ==================== TOPIC COVERAGE ====================
+    Route::prefix('topic-coverage')->name('topic-coverage.')->group(function () {
+        Route::get('/',              [TopicCoverageController::class, 'index'])->name('index');
+        Route::get('/create',        [TopicCoverageController::class, 'create'])->name('create');
+        Route::post('/',             [TopicCoverageController::class, 'store'])->name('store');
+        Route::get('/evaluation',    [TopicCoverageController::class, 'evaluation'])->name('evaluation');
+        Route::get('/{lessonPlan}',  [TopicCoverageController::class, 'show'])->name('show');
+        Route::put('/{lessonPlan}',  [TopicCoverageController::class, 'update'])->name('update');
+        Route::delete('/{lessonPlan}', [TopicCoverageController::class, 'destroy'])->name('destroy');
+        // Topic AJAX
+        Route::post('/{lessonPlan}/topics', [TopicCoverageController::class, 'storeTopic'])->name('topics.store');
+    });
+    Route::prefix('lesson-topics')->name('lesson-topics.')->group(function () {
+        Route::put('/{topic}',            [TopicCoverageController::class, 'updateTopic'])->name('update');
+        Route::delete('/{topic}',         [TopicCoverageController::class, 'destroyTopic'])->name('destroy');
+        Route::post('/{topic}/subtopics', [TopicCoverageController::class, 'storeSubtopic'])->name('subtopics.store');
+    });
+    Route::prefix('lesson-subtopics')->name('lesson-subtopics.')->group(function () {
+        Route::put('/{subtopic}',                    [TopicCoverageController::class, 'updateSubtopic'])->name('update');
+        Route::delete('/{subtopic}',                 [TopicCoverageController::class, 'destroySubtopic'])->name('destroy');
+        Route::patch('/{subtopic}/toggle',           [TopicCoverageController::class, 'toggleSubtopic'])->name('toggle');
+        Route::post('/{subtopic}/generate-plan',     [TopicCoverageController::class, 'generateSubtopicPlan'])->name('generate-plan');
+        Route::get('/{subtopic}/plan',               [TopicCoverageController::class, 'getSubtopicPlan'])->name('plan');
+    });
+
+    // ==================== TIMETABLE ====================
+    Route::prefix('timetables')->name('timetables.')->group(function () {
+        Route::get('/today-schedule',      [TimetableController::class, 'todaySchedule'])->name('today-schedule');
+        Route::get('/subjects-by-classes', [TimetableController::class, 'subjectsByClasses'])->name('subjects-by-classes');
+        Route::get('/my-sessions',         [TimetableController::class, 'mySessionsDashboard'])->name('my-sessions');
+        Route::post('/entries/{entry}/log',         [TimetableController::class, 'logSession'])->name('log-session');
+        Route::post('/entries/{entry}/log-ajax',    [TimetableController::class, 'logSessionAjax'])->name('log-session-ajax');
+        Route::get('/entries/{entry}/topics',       [TimetableController::class, 'topicsForEntry'])->name('entry-topics');
+        Route::get('/',                    [TimetableController::class, 'index'])->name('index');
+        Route::get('/create',              [TimetableController::class, 'create'])->name('create');
+        Route::post('/',                   [TimetableController::class, 'store'])->name('store');
+        Route::get('/{timetable}',         [TimetableController::class, 'show'])->name('show');
+        Route::get('/{timetable}/edit',    [TimetableController::class, 'edit'])->name('edit');
+        Route::put('/{timetable}',         [TimetableController::class, 'update'])->name('update');
+        Route::delete('/{timetable}',      [TimetableController::class, 'destroy'])->name('destroy');
+        Route::post('/{timetable}/regenerate', [TimetableController::class, 'regenerate'])->name('regenerate');
+        Route::post('/{timetable}/submit',     [TimetableController::class, 'submitForReview'])->name('submit');
+        Route::post('/{timetable}/review',     [TimetableController::class, 'review'])->name('review');
+        Route::post('/{timetable}/publish',    [TimetableController::class, 'publish'])->name('publish');
+        Route::post('/{timetable}/unpublish',  [TimetableController::class, 'unpublish'])->name('unpublish');
     });
 
     // ==================== RESULTS GROUP ====================
@@ -295,6 +381,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('/{invoice}/pay', [InvoiceController::class, 'pay'])->name('pay');
             Route::get('/{invoice}', [InvoiceController::class, 'show'])->name('show');
         });
+    });
+
+    // ==================== GUARDIAN AUTH (phone-based) ====================
+    Route::prefix('guardian')->name('guardian.')->group(function () {
+        Route::get('/login',  [GuardianLoginController::class, 'showLogin'])->name('login')->middleware('guest');
+        Route::post('/login', [GuardianLoginController::class, 'login'])->name('login.post')->middleware('guest');
+        Route::post('/logout', [GuardianLoginController::class, 'logout'])->name('logout');
     });
 
     // ==================== GUARDIAN PORTAL ====================
@@ -439,5 +532,93 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
 
-   
+    Route::prefix('ai')->name('ai.')->group(function () {
+        Route::get('/dashboard', [AIAnalysisController::class, 'index'])->name('dashboard');
+        Route::post('/analyze-student', [AIAnalysisController::class, 'analyzeStudent'])->name('analyze.student');
+        Route::post('/analyze-class', [AIAnalysisController::class, 'analyzeClass'])->name('analyze.class');
+        Route::post('/suggest-interventions', [AIAnalysisController::class, 'suggestInterventions'])->name('suggest.interventions');
+        Route::post('/finance-insights', [AIAnalysisController::class, 'financeInsights'])->name('finance.insights');
+        Route::post('/clear-cache', [AIAnalysisController::class, 'clearCache'])->name('clear.cache');
+    });
+
+    Route::prefix('ai-assistant')->name('ai.assistant.')->group(function () {
+        Route::get('/', [AIAssistantController::class, 'index'])->name('index');
+        Route::post('/send', [AIAssistantController::class, 'sendMessage'])->name('send');
+        Route::get('/conversation/{id}', [AIAssistantController::class, 'getConversation'])->name('conversation');
+        Route::delete('/conversation/{id}', [AIAssistantController::class, 'deleteConversation'])->name('conversation.delete');
+    });
+
+    // ── Daily Reports ─────────────────────────────────────────────────────────
+    Route::prefix('daily-reports')->name('daily-reports.')->group(function () {
+        Route::get('/',                [\App\Http\Controllers\DailyReportController::class, 'index'])->name('index');
+        Route::get('/create',          [\App\Http\Controllers\DailyReportController::class, 'create'])->name('create');
+        Route::post('/',               [\App\Http\Controllers\DailyReportController::class, 'store'])->name('store');
+        Route::get('/hod',             [\App\Http\Controllers\DailyReportController::class, 'hodIndex'])->name('hod');
+        Route::get('/{dailyReport}',   [\App\Http\Controllers\DailyReportController::class, 'show'])->name('show');
+        Route::get('/{dailyReport}/edit', [\App\Http\Controllers\DailyReportController::class, 'edit'])->name('edit');
+    });
+
+    // ── HOD Dashboard ────────────────────────────────────────────────────────
+    Route::get('/hod/dashboard', [\App\Http\Controllers\HODDashboardController::class, 'index'])
+        ->name('hod.dashboard');
+
+    // ── Inventory Management ──────────────────────────────────────────────────
+    Route::prefix('inventory')->name('inventory.')->group(function () {
+        Route::get('/',                                    [\App\Http\Controllers\InventoryController::class, 'index'])->name('index');
+
+        // Categories
+        Route::get('/categories',                          [\App\Http\Controllers\InventoryController::class, 'categories'])->name('categories');
+        Route::post('/categories',                         [\App\Http\Controllers\InventoryController::class, 'storeCategory'])->name('categories.store');
+        Route::put('/categories/{category}',               [\App\Http\Controllers\InventoryController::class, 'updateCategory'])->name('categories.update');
+        Route::delete('/categories/{category}',            [\App\Http\Controllers\InventoryController::class, 'destroyCategory'])->name('categories.destroy');
+
+        // Items
+        Route::get('/items',                               [\App\Http\Controllers\InventoryController::class, 'items'])->name('items');
+        Route::get('/items/create',                        [\App\Http\Controllers\InventoryController::class, 'createItem'])->name('items.create');
+        Route::post('/items',                              [\App\Http\Controllers\InventoryController::class, 'storeItem'])->name('items.store');
+        Route::get('/items/{item}',                        [\App\Http\Controllers\InventoryController::class, 'showItem'])->name('items.show');
+        Route::get('/items/{item}/edit',                   [\App\Http\Controllers\InventoryController::class, 'editItem'])->name('items.edit');
+        Route::put('/items/{item}',                        [\App\Http\Controllers\InventoryController::class, 'updateItem'])->name('items.update');
+        Route::delete('/items/{item}',                     [\App\Http\Controllers\InventoryController::class, 'destroyItem'])->name('items.destroy');
+
+        // Transactions
+        Route::get('/transactions',                        [\App\Http\Controllers\InventoryController::class, 'transactions'])->name('transactions');
+        Route::get('/transactions/create',                 [\App\Http\Controllers\InventoryController::class, 'createTransaction'])->name('transactions.create');
+        Route::post('/transactions',                       [\App\Http\Controllers\InventoryController::class, 'storeTransaction'])->name('transactions.store');
+    });
+
+    // Document Library
+    Route::get('documents/{document}/download',         [DocumentController::class, 'download'])->name('documents.download');
+    Route::post('documents/{document}/toggle-featured', [DocumentController::class, 'toggleFeatured'])->name('documents.toggle-featured');
+    Route::post('documents/{document}/toggle-restricted',[DocumentController::class, 'toggleRestricted'])->name('documents.toggle-restricted');
+    Route::resource('documents', DocumentController::class)->except(['edit', 'update']);
+
+    // ==================== SUPER ADMIN ====================
+    Route::middleware(['super_admin'])->prefix('super')->name('super.')->group(function () {
+        Route::get('/', fn() => redirect()->route('super.schools.index'));
+
+        Route::resource('schools', SuperSchoolController::class)
+            ->names([
+                'index'   => 'schools.index',
+                'create'  => 'schools.create',
+                'store'   => 'schools.store',
+                'show'    => 'schools.show',
+                'edit'    => 'schools.edit',
+                'update'  => 'schools.update',
+                'destroy' => 'schools.destroy',
+            ]);
+
+        Route::post('schools/{school}/add-user', [SuperSchoolController::class, 'addUser'])
+            ->name('schools.add-user');
+
+        Route::post('schools/{school}/renew', [SuperSchoolController::class, 'renewSubscription'])
+            ->name('schools.renew');
+
+        Route::post('schools/{school}/status', [SuperSchoolController::class, 'setSubscriptionStatus'])
+            ->name('schools.set-status');
+
+        Route::post('schools/{school}/users/{user}/reset-password', [SuperSchoolController::class, 'resetUserPassword'])
+            ->name('schools.reset-password');
+    });
+
 });

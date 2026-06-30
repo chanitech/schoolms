@@ -7,10 +7,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
+use App\Models\Concerns\BelongsToSchool;
 
 
+/**
+ * @mixin \Spatie\Permission\Traits\HasRoles
+ */
 class User extends Authenticatable
 {
+    use BelongsToSchool;
+
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasRoles, HasFactory, Notifiable;
 
@@ -19,18 +25,12 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
-   protected $fillable = [
-    'name',
-    'email',
-    'password',
-    'first_name',
-    'last_name',
-    'phone',
-    'department_id',
-    'position',
-    'photo',
-    'role',
-];
+    protected $fillable = [
+        'school_id', 'is_super_admin',
+        'name', 'email', 'password',
+        'first_name', 'last_name', 'phone',
+        'department_id', 'position', 'photo', 'role',
+    ];
 
 // Optional: helper for full name
 public function getFullNameAttribute(): string
@@ -115,8 +115,14 @@ public function adminlte_profile_url()
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'password'          => 'hashed',
+            'is_super_admin'    => 'boolean',
         ];
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return (bool) $this->is_super_admin;
     }
 
 

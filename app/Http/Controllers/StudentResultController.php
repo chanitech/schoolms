@@ -9,6 +9,7 @@ use App\Models\Grade;
 use App\Models\Subject;
 use App\Models\Mark;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use App\Services\StudentResultService;
 use Maatwebsite\Excel\Facades\Excel;
@@ -84,6 +85,18 @@ class StudentResultController extends Controller
         $selectedDepartmentId      = $request->input('department_id');
         $selectedAcademicSessionId = $request->input('academic_session_id') ?? $request->input('session_id');
 
+        // Gate: only show results for published exams to non-staff
+        $selectedExamObj = $selectedExamId ? Exam::find($selectedExamId) : null;
+        /** @var \App\Models\User $authUser */
+        $authUser = Auth::user();
+        $isStaff = $authUser->hasAnyRole(['Admin','Academic','HOD','Teacher','HR','Principal']);
+        if ($selectedExamObj && !$selectedExamObj->isPublished() && !$isStaff) {
+            return view('results.class_results', compact(
+                'classes', 'exams', 'departments', 'academicSessions',
+                'selectedClassId', 'selectedExamId', 'selectedDepartmentId', 'selectedAcademicSessionId'
+            ))->with('resultNotPublished', true)->with('studentsData', collect());
+        }
+
         $studentsData = $this->getClassResultsDataWithSubjects($request);
 
         $topPerformer   = null;
@@ -116,11 +129,14 @@ class StudentResultController extends Controller
             ? Subject::where('department_id', $selectedDepartmentId)->get()
             : Subject::all();
 
+        $examIsPublished = $selectedExamObj ? $selectedExamObj->isPublished() : true;
+
         return view('results.class_results', compact(
             'classes', 'exams', 'departments', 'academicSessions',
             'studentsData', 'subjects',
             'selectedClassId', 'selectedExamId', 'selectedDepartmentId', 'selectedAcademicSessionId',
-            'subjectGradeCounts', 'topPerformer', 'topAverage', 'topStudentData'
+            'subjectGradeCounts', 'topPerformer', 'topAverage', 'topStudentData',
+            'examIsPublished', 'selectedExamObj'
         ));
     }
 
@@ -169,6 +185,25 @@ class StudentResultController extends Controller
             $gpaTrend            = collect();
             $subjectTrend        = [];
             $bestSubjectsOverall = [];
+
+            // Gate: non-admin users can only view published results
+            if ($selectedExam && !$selectedExam->isPublished()) {
+                /** @var \App\Models\User $authUser */
+                $authUser = Auth::user();
+                $isStaff = $authUser->hasAnyRole(['Admin', 'Academic', 'HOD', 'Teacher', 'HR', 'Principal']);
+                if (!$isStaff) {
+                    $exam = $selectedExam;
+                    return view('results.show', compact(
+                        'student', 'grades', 'departments', 'sessions', 'exams',
+                        'exam', 'selectedSessionId', 'selectedDepartmentId',
+                        'subjectsData', 'result', 'totalPoints', 'rank', 'isIncomplete',
+                        'attemptedCount', 'requiredCount', 'gpaTrend', 'subjectTrend', 'bestSubjectsOverall'
+                    ))->with('resultNotPublished', true)
+                      ->with('selected_exam_id', $selectedExam->id ?? null)
+                      ->with('selected_session_id', $selectedSessionId)
+                      ->with('selected_department_id', $selectedDepartmentId);
+                }
+            }
 
             if ($selectedExam) {
                 $subjectIds = $deptSubjectsQuery->pluck('id')->toArray();
@@ -506,6 +541,8 @@ class StudentResultController extends Controller
                 'class'           => $class,
                 'exam'            => $exam,
                 'academicSession' => $academicSession,
+                'school'          => SchoolInfo::first(),
+                'grades'          => Grade::orderByDesc('min_mark')->get(),
             ])->render();
 
             $pdf = Pdf::loadHTML($html)

@@ -4,12 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\BelongsToSchool;
 
 class LoanCategory extends Model
 {
+    use BelongsToSchool;
+
     use HasFactory;
 
     protected $fillable = [
+        'school_id',
         'name', 'description', 'min_amount', 'max_amount', 'max_installments',
         'interest_rate', 'eligibility_criteria', 'restrictions',
         'created_by_treasurer_id', 'is_active',

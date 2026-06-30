@@ -17,12 +17,16 @@ use App\Models\{
     Subject,
     Department
 };
+use App\Models\Concerns\BelongsToSchool;
 
 class Student extends Model
 {
+    use BelongsToSchool;
+
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
+        'school_id',
         'admission_no',
         'first_name',
         'middle_name',

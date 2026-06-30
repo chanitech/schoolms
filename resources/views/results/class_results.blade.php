@@ -10,6 +10,38 @@
 <div class="card">
     <div class="card-body">
 
+        @if(session('error'))
+        <div class="alert alert-danger d-flex align-items-center" style="border-radius:8px;gap:.6rem">
+            <i class="fas fa-exclamation-circle"></i> {{ session('error') }}
+        </div>
+        @endif
+
+        @if(isset($resultNotPublished) && $resultNotPublished)
+        <div class="alert d-flex align-items-center mb-3" style="background:linear-gradient(135deg,#fef3c7,#fde68a);border:none;border-left:4px solid #f59e0b;color:#92400e;border-radius:8px;gap:.8rem">
+            <i class="fas fa-lock fa-lg" style="flex-shrink:0"></i>
+            <div>
+                <strong>Results Not Yet Published</strong><br>
+                <span style="font-size:.82rem">These exam results are pending review and publication. They will be visible to parents once published.</span>
+            </div>
+        </div>
+        @endif
+
+        @if(isset($examIsPublished) && !$examIsPublished && isset($selectedExamObj) && $selectedExamObj)
+        <div class="alert d-flex align-items-center mb-3" style="background:linear-gradient(135deg,#dbeafe,#bfdbfe);border:none;border-left:4px solid #3b82f6;color:#1e3a5f;border-radius:8px;gap:.8rem">
+            <i class="fas fa-eye-slash fa-lg" style="flex-shrink:0"></i>
+            <div style="flex:1">
+                <strong>Not Published Yet</strong> &mdash; This exam is in
+                <strong>{{ ucfirst($selectedExamObj->status ?? 'draft') }}</strong> status.
+                Parents and guardians <em>cannot</em> view these results until published.
+            </div>
+            @can('edit exams')
+            <a href="{{ route('exams.index') }}" class="btn btn-sm btn-primary ml-2" style="white-space:nowrap">
+                <i class="fas fa-share-square mr-1"></i>Go to Publish
+            </a>
+            @endcan
+        </div>
+        @endif
+
         {{-- ================= Filter Form ================= --}}
         <form method="GET" action="{{ route('results.class') }}" id="filterForm" class="mb-3 row g-2">
             <div class="col-md-3">

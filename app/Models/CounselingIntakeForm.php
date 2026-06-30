@@ -3,12 +3,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\BelongsToSchool;
 
 class CounselingIntakeForm extends Model
 {
+    use BelongsToSchool;
+
     use HasFactory;
 
     protected $fillable = [
+        'school_id',
         'student_id','gender','age','stream','education_program','g_performance','living_situation',
         'father_name','father_address','father_occupation','father_age','father_phone',
         'guardian_name','guardian_relationship',

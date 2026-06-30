@@ -6,12 +6,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Student;
+use App\Models\Concerns\BelongsToSchool;
 
 class AcademicSession extends Model
 {
+    use BelongsToSchool;
+
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
+        'school_id',
         'name',
         'start_date',
         'end_date',

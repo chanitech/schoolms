@@ -4,12 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\BelongsToSchool;
 
 class Leave extends Model
 {
+    use BelongsToSchool;
+
     use HasFactory;
 
     protected $fillable = [
+        'school_id',
         'staff_id',       // The staff member who requested the leave
         'requested_to',   // The staff member (HOD/Director) who receives the request
         'start_date',

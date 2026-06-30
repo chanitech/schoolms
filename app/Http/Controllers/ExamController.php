@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Exam;
 use App\Models\AcademicSession;
+use App\Models\User;
+use App\Notifications\ExamStatusChanged;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ExamController extends Controller
 {
@@ -113,6 +116,98 @@ class ExamController extends Controller
     {
         $exam->delete();
         return redirect()->route('exams.index')->with('success', 'Exam deleted successfully.');
+    }
+
+    // ── Step 1 → 2: Academic/HOD marks results as reviewed ────────────────
+    public function review(Exam $exam)
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        abort_unless($user->hasAnyRole(['Admin', 'Academic', 'HOD']), 403);
+        abort_unless($exam->isDraft(), 403, 'Only draft exams can be submitted for review.');
+
+        $exam->update([
+            'status'      => 'reviewed',
+            'reviewed_by' => Auth::id(),
+            'reviewed_at' => now(),
+        ]);
+
+        // Notify Principal and Admin that exam is ready to publish
+        $notify = new ExamStatusChanged($exam, 'submitted_for_review', $user->name);
+        User::role(['Admin', 'Principal'])->where('id', '!=', Auth::id())->each(
+            fn($u) => $u->notify($notify)
+        );
+
+        return back()->with('success', "Results for \"{$exam->name}\" submitted for principal approval.");
+    }
+
+    // ── Step 2 → 3: Principal/Admin publishes results ─────────────────────
+    public function publish(Exam $exam)
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        abort_unless($user->hasAnyRole(['Admin', 'Principal']), 403);
+        abort_unless($exam->isReviewed(), 403, 'Only reviewed exams can be published.');
+
+        $exam->update([
+            'status'       => 'published',
+            'published_by' => Auth::id(),
+            'published_at' => now(),
+        ]);
+
+        // Notify all staff that results are live (including the publisher as confirmation)
+        $notify = new ExamStatusChanged($exam, 'published', $user->name);
+        User::role(['Admin', 'Principal', 'Academic', 'HOD', 'Teacher'])->each(
+            fn($u) => $u->notify($notify)
+        );
+
+        return back()->with('success', "Results for \"{$exam->name}\" are now published and visible to parents.");
+    }
+
+    // ── Unpublish (Admin only — sends back to reviewed) ───────────────────
+    public function unpublish(Exam $exam)
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        abort_unless($user->hasAnyRole(['Admin']), 403);
+        abort_unless($exam->isPublished(), 403, 'Only published exams can be unpublished.');
+
+        $exam->update([
+            'status'       => 'reviewed',
+            'published_by' => null,
+            'published_at' => null,
+        ]);
+
+        // Notify Academic and HOD
+        $notify = new ExamStatusChanged($exam, 'unpublished', $user->name);
+        User::role(['Academic', 'HOD'])->where('id', '!=', Auth::id())->each(
+            fn($u) => $u->notify($notify)
+        );
+
+        return back()->with('success', "Results for \"{$exam->name}\" have been unpublished.");
+    }
+
+    // ── Reject review (Admin/Academic — sends back to draft) ──────────────
+    public function rejectReview(Exam $exam)
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        abort_unless($user->hasAnyRole(['Admin', 'Academic']), 403);
+        abort_unless($exam->isReviewed(), 403, 'Only reviewed exams can be rejected back to draft.');
+
+        // Notify the reviewer (person who submitted) before clearing reviewed_by
+        if ($exam->reviewed_by && $exam->reviewed_by !== Auth::id()) {
+            $reviewer = User::find($exam->reviewed_by);
+            $reviewer?->notify(new ExamStatusChanged($exam, 'rejected', $user->name));
+        }
+
+        $exam->update([
+            'status'      => 'draft',
+            'reviewed_by' => null,
+            'reviewed_at' => null,
+        ]);
+
+        return back()->with('success', "Results for \"{$exam->name}\" sent back to draft for corrections.");
     }
 
     /**

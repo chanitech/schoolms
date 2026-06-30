@@ -11,8 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasColumn('subject_class', 'teacher_id')) return;
+
         Schema::table('subject_class', function (Blueprint $table) {
-            // Add teacher_id column
             $table->unsignedBigInteger('teacher_id')->nullable()->after('class_id');
 
             // Add foreign key to teachers/staff table (assuming staff table)

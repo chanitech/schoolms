@@ -1,25 +1,60 @@
-<x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.') }}
+@extends('adminlte::auth.auth-page', ['authType' => 'login'])
+
+@section('adminlte_css_pre')
+    <link rel="stylesheet" href="{{ asset('vendor/icheck-bootstrap/icheck-bootstrap.min.css') }}">
+@endsection
+
+@section('auth_header', 'Reset Your Password')
+
+@section('auth_body')
+<p class="text-muted text-center mb-3" style="font-size:.85rem">
+    Enter your email address or phone number and we'll send a reset link to your email.
+</p>
+
+@if(session('status'))
+<div class="alert alert-success alert-dismissible">
+    <button type="button" class="close" data-dismiss="alert">&times;</button>
+    <i class="fas fa-check-circle mr-1"></i>{{ session('status') }}
+</div>
+@endif
+
+<form method="POST" action="{{ route('password.email') }}">
+    @csrf
+
+    <div class="input-group mb-3">
+        <input
+            type="text"
+            name="login"
+            class="form-control @error('login') is-invalid @enderror"
+            value="{{ old('login') }}"
+            placeholder="Email address or phone number"
+            autocomplete="username"
+            autofocus
+        >
+        <div class="input-group-append">
+            <div class="input-group-text">
+                <span class="fas fa-user"></span>
+            </div>
+        </div>
+        @error('login')
+            <span class="invalid-feedback" role="alert">
+                <strong>{{ $message }}</strong>
+            </span>
+        @enderror
     </div>
 
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
-
-    <form method="POST" action="{{ route('password.email') }}">
-        @csrf
-
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+    <div class="row">
+        <div class="col-12">
+            <button type="submit" class="btn btn-block btn-flat btn-primary">
+                <i class="fas fa-paper-plane mr-1"></i> Send Reset Link
+            </button>
         </div>
+    </div>
+</form>
+@endsection
 
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Email Password Reset Link') }}
-            </x-primary-button>
-        </div>
-    </form>
-</x-guest-layout>
+@section('auth_footer')
+<p class="my-0">
+    <a href="{{ route('login') }}"><i class="fas fa-arrow-left mr-1"></i> Back to login</a>
+</p>
+@endsection

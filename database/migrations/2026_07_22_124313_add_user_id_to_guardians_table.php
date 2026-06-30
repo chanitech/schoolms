@@ -11,12 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasColumn('guardians', 'user_id')) {
+            return;
+        }
         Schema::table('guardians', function (Blueprint $table) {
-        $table->foreignId('user_id')
-              ->nullable()
-              ->constrained('users')
-              ->nullOnDelete();
-    });
+            $table->foreignId('user_id')
+                  ->nullable()
+                  ->constrained('users')
+                  ->nullOnDelete();
+        });
     }
 
     /**

@@ -8,6 +8,7 @@ use App\Models\Attendance;
 use App\Models\Leave;
 use App\Models\JobCard;
 use App\Models\Event;
+use App\Models\TimetableSessionLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
@@ -283,11 +284,6 @@ public function evaluationReport()
         ->groupBy('staff_id')
         ->pluck('total_days', 'staff_id');
 
-    // 2️⃣ Aggregate Leaves per staff
-    $leaveData = Leave::selectRaw('staff_id, COUNT(*) as leaves_taken')
-        ->groupBy('staff_id')
-        ->pluck('leaves_taken', 'staff_id');
-
     // 3️⃣ Aggregate JobCard completion per staff
     $jobCardData = JobCard::selectRaw('assigned_to, 
         SUM(CASE WHEN status="completed" THEN 1 ELSE 0 END) as completed, 
@@ -299,8 +295,31 @@ public function evaluationReport()
         ->groupBy('assigned_to')
         ->pluck('total', 'assigned_to');
 
-    // 4️⃣ Map staff to evaluations
-    $evaluations = $staffList->map(function($staff) use ($attendanceData, $attendanceTotal, $jobCardData, $jobCardTotal) {
+    // 4️⃣ Lesson plan completion per teacher (by user_id on staff)
+    $lessonData = DB::table('lesson_plans')
+        ->join('lesson_topics', 'lesson_topics.lesson_plan_id', '=', 'lesson_plans.id')
+        ->join('lesson_subtopics', 'lesson_subtopics.lesson_topic_id', '=', 'lesson_topics.id')
+        ->whereNull('lesson_plans.deleted_at')
+        ->selectRaw('lesson_plans.teacher_id,
+            COUNT(lesson_subtopics.id) as total_subtopics,
+            SUM(CASE WHEN lesson_subtopics.status = "covered" THEN 1 ELSE 0 END) as covered_subtopics')
+        ->groupBy('lesson_plans.teacher_id')
+        ->get()
+        ->keyBy('teacher_id');  // keyed by users.id
+
+    // 5️⃣ Session attendance per teacher (timetable_session_logs)
+    // "present" = attended or late; absent/other count against attendance rate
+    $sessionData = TimetableSessionLog::selectRaw(
+            'teacher_id,
+             COUNT(*) as total_sessions,
+             SUM(CASE WHEN status IN ("attended","late") THEN 1 ELSE 0 END) as sessions_taught'
+        )
+        ->groupBy('teacher_id')
+        ->get()
+        ->keyBy('teacher_id');  // keyed by users.id
+
+    // 6️⃣ Map staff to evaluations
+    $evaluations = $staffList->map(function($staff) use ($attendanceData, $attendanceTotal, $jobCardData, $jobCardTotal, $lessonData, $sessionData) {
 
     $present = $attendanceData[$staff->id] ?? 0;
     $totalAttendance = $attendanceTotal[$staff->id] ?? 0;
@@ -310,16 +329,46 @@ public function evaluationReport()
     $totalJobCards = $jobCardTotal[$staff->id] ?? 0;
     $jobCardRate = $totalJobCards > 0 ? ($completed / $totalJobCards) * 100 : 0;
 
-    // 50% attendance + 50% job card
-    $score = ($attendanceRate * 0.5) + ($jobCardRate * 0.5);
+    // Lesson completion (teacher_id on lesson_plans = users.id = staff.user_id)
+    $lessonRow        = $lessonData[$staff->user_id] ?? null;
+    $totalSubtopics   = $lessonRow?->total_subtopics ?? 0;
+    $coveredSubtopics = $lessonRow?->covered_subtopics ?? 0;
+    $lessonRate       = $totalSubtopics > 0 ? ($coveredSubtopics / $totalSubtopics) * 100 : null;
+
+    // Session attendance (timetable sessions taught rate)
+    $sessionRow      = $sessionData[$staff->user_id] ?? null;
+    $totalSessions   = $sessionRow?->total_sessions ?? 0;
+    $sessionsTaught  = $sessionRow?->sessions_taught ?? 0;
+    $sessionRate     = $totalSessions > 0 ? ($sessionsTaught / $totalSessions) * 100 : null;
+
+    // Weights: 30% attendance + 20% job card + 20% lesson plan + 30% session attendance
+    // Fall back gracefully when data is missing
+    $weights = [];
+    $score   = 0;
+
+    $weights[] = ['rate' => $attendanceRate, 'w' => 30];
+    $weights[] = ['rate' => $jobCardRate,    'w' => 20];
+    if ($lessonRate !== null)  $weights[] = ['rate' => $lessonRate,  'w' => 20];
+    if ($sessionRate !== null) $weights[] = ['rate' => $sessionRate, 'w' => 30];
+
+    $totalWeight = array_sum(array_column($weights, 'w'));
+    foreach ($weights as $wt) {
+        $score += ($wt['rate'] / 100) * ($wt['w'] / $totalWeight) * 100;
+    }
 
     return (object)[
-        'staff_id' => $staff->id,
-        'staff_name' => $staff->name,
-        'department' => $staff->department->name ?? 'N/A',
-        'attendance' => round($attendanceRate, 1),
-        'job_card_rate' => round($jobCardRate, 1),
-        'score' => round($score, 2),
+        'staff_id'         => $staff->id,
+        'staff_name'       => $staff->name,
+        'department'       => $staff->department->name ?? 'N/A',
+        'attendance'       => round($attendanceRate, 1),
+        'job_card_rate'    => round($jobCardRate, 1),
+        'lesson_rate'      => $lessonRate !== null ? round($lessonRate, 1) : null,
+        'lesson_total'     => $totalSubtopics,
+        'lesson_covered'   => $coveredSubtopics,
+        'session_rate'     => $sessionRate !== null ? round($sessionRate, 1) : null,
+        'sessions_total'   => $totalSessions,
+        'sessions_taught'  => $sessionsTaught,
+        'score'            => round($score, 2),
     ];
 });
 
@@ -330,8 +379,9 @@ public function evaluationReport()
     $departmentScores = $evaluations->groupBy('department')
         ->map(function ($rows, $dept) {
             return (object)[
-                'department' => $dept,
+                'department'    => $dept,
                 'average_score' => round($rows->avg(fn($r) => $r->score), 2),
+                'staff_count'   => $rows->count(),
             ];
         })
         ->sortByDesc('average_score')

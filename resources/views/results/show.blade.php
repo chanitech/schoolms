@@ -185,6 +185,16 @@ body{font-family:'DM Sans',sans-serif;background:#f0f4f8;color:var(--sl-700);}
         </div>
     @endif
 
+    @if(isset($resultNotPublished) && $resultNotPublished)
+    <div class="alert mb-3 d-flex align-items-center gap-3" style="border-radius:var(--r);border:none;background:linear-gradient(135deg,#fef3c7,#fde68a);color:#92400e;border-left:4px solid #f59e0b;">
+        <i class="fas fa-lock fa-lg" style="flex-shrink:0"></i>
+        <div>
+            <strong>Results Not Yet Published</strong><br>
+            <span style="font-size:.82rem">These exam results are pending review and publication. They will be visible to parents once the Academic team publishes them.</span>
+        </div>
+    </div>
+    @endif
+
     {{-- Hero --}}
     <div class="hero">
         <div class="hero-eye"><i class="fas fa-graduation-cap"></i> Academic Results</div>

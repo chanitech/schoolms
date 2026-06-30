@@ -47,7 +47,9 @@ class InvoiceController extends Controller
             ->paginate(20);
     }
 
-    return view('finance.invoices.index', compact('invoices'));
+    $statusCounts = Invoice::selectRaw("status, COUNT(*) as cnt")->groupBy('status')->pluck('cnt', 'status');
+
+    return view('finance.invoices.index', compact('invoices', 'statusCounts'));
 }
 
 

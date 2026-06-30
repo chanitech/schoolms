@@ -3,12 +3,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\BelongsToSchool;
 
 class Budget extends Model
 {
+    use BelongsToSchool;
+
     use HasFactory;
 
     protected $fillable = [
+        'school_id',
     'staff_id',         // HOD who created the budget
     'department_id',
     'month',

@@ -9,12 +9,16 @@ use App\Models\Student;
 use App\Models\Subject;
 use App\Models\Exam;
 use App\Models\Grade;
+use App\Models\Concerns\BelongsToSchool;
 
 class Mark extends Model
 {
+    use BelongsToSchool;
+
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
+        'school_id',
         'student_id',
         'subject_id',
         'exam_id',
@@ -43,6 +47,11 @@ class Mark extends Model
     public function grade()
     {
         return $this->belongsTo(Grade::class, 'grade_id');
+    }
+
+    public function questionScores()
+    {
+        return $this->hasMany(MarkQuestionScore::class);
     }
 
     /**

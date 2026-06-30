@@ -329,8 +329,13 @@ public function paymentReceipt(Payment $payment)
 
         $requires7 = $department ? ($department->rank_requires_7_subjects ?? true) : true;
 
-        // Exams scoped to session
-        $examsQuery = Exam::query();
+        // Guardians can only select published exams
+        if ($selectedExam && !$selectedExam->isPublished()) {
+            $selectedExam = null;
+        }
+
+        // Exams scoped to session — guardians only see published ones
+        $examsQuery = Exam::where('status', 'published');
         if ($selectedSessionId) {
             $examsQuery->where('academic_session_id', $selectedSessionId);
         }

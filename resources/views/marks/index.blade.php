@@ -290,16 +290,7 @@
                                     {{ $mark->mark }}
                                 </span>
                             </td>
-                            <td>
-                                @php
-                                    // Fallback to calculate grade from mark if relationship is not loaded
-                                    $gradeName = $mark->grade->name ?? 
-                                        \App\Models\Grade::where('min_mark', '<=', $mark->mark)
-                                            ->where('max_mark', '>=', $mark->mark)
-                                            ->value('name');
-                                @endphp
-                                {{ $gradeName ?? '-' }}
-                            </td>
+                            <td>{{ $mark->grade->name ?? '-' }}</td>
                             <td>
                                 <a href="{{ route('marks.edit', $mark->id) }}" class="btn btn-sm btn-warning">
                                     <i class="fas fa-edit"></i> Edit

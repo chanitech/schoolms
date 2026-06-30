@@ -3,8 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use App\Models\Mark;
+use App\Models\MarkQuestionScore;
+use App\Models\ExamQuestion;
 use App\Models\Student;
 use App\Models\Enrollment;
 use App\Models\SchoolClass;
@@ -13,6 +17,9 @@ use App\Models\Exam;
 use App\Models\AcademicSession;
 use App\Models\Grade;
 use Illuminate\Support\Facades\Log;
+use App\Exports\QuestionMarksTemplateExport;
+use App\Imports\QuestionMarksImport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class MarkController extends Controller
 {
@@ -523,5 +530,351 @@ public function getExamsBySession(Request $request)
     {
         $mark->delete();
         return redirect()->route('marks.index')->with('success', 'Mark deleted successfully!');
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Question-based mark entry
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * AJAX: Return enrolled students with their existing question scores for
+     * the selected class / session / subject / exam combination.
+     */
+    public function getStudentsWithQuestions(Request $request): JsonResponse
+    {
+        $request->validate([
+            'class_id'   => 'required|exists:school_classes,id',
+            'session_id' => 'required|exists:academic_sessions,id',
+            'subject_id' => 'required|exists:subjects,id',
+            'exam_id'    => 'required|exists:exams,id',
+        ]);
+
+        $questions = ExamQuestion::where('exam_id', $request->exam_id)
+            ->where('subject_id', $request->subject_id)
+            ->orderBy('question_no')
+            ->get();
+
+        if ($questions->isEmpty()) {
+            return response()->json(['has_questions' => false, 'students' => [], 'questions' => []]);
+        }
+
+        $enrollments = Enrollment::with('student')
+            ->where('class_id', $request->class_id)
+            ->where('academic_session_id', $request->session_id)
+            ->where('status', 'active')
+            ->get();
+
+        $students = [];
+        foreach ($enrollments as $enrollment) {
+            $student = $enrollment->student;
+            $isWithdrawn = $student->subjects()
+                ->where('subject_id', $request->subject_id)
+                ->wherePivot('withdrawn', 1)
+                ->exists();
+            if ($isWithdrawn) continue;
+
+            // Existing mark → existing question scores
+            $mark = Mark::where('student_id', $student->id)
+                ->where('subject_id', $request->subject_id)
+                ->where('academic_session_id', $request->session_id)
+                ->where('exam_id', $request->exam_id)
+                ->with('questionScores')
+                ->first();
+
+            $scores = [];
+            if ($mark) {
+                foreach ($mark->questionScores as $qs) {
+                    $scores[$qs->exam_question_id] = (float) $qs->score;
+                }
+            }
+
+            $students[] = [
+                'id'         => $student->id,
+                'first_name' => $student->first_name,
+                'last_name'  => $student->last_name,
+                'scores'     => $scores, // keyed by exam_question_id
+            ];
+        }
+
+        usort($students, fn($a, $b) => strcasecmp("{$a['first_name']} {$a['last_name']}", "{$b['first_name']} {$b['last_name']}"));
+
+        return response()->json([
+            'has_questions' => true,
+            'questions'     => $questions->map(fn($q) => [
+                'id'          => $q->id,
+                'question_no' => $q->question_no,
+                'description' => $q->description,
+                'max_marks'   => (float) $q->max_marks,
+            ]),
+            'students'      => $students,
+        ]);
+    }
+
+    /**
+     * Store marks recorded question-by-question.
+     * Computes percentage total and saves it to marks.mark (keeps grading intact).
+     */
+    public function storeByQuestions(Request $request): \Illuminate\Http\RedirectResponse
+    {
+        $request->validate([
+            'academic_session_id' => 'required|exists:academic_sessions,id',
+            'class_id'            => 'required|exists:school_classes,id',
+            'subject_id'          => 'required|exists:subjects,id',
+            'exam_id'             => 'required|exists:exams,id',
+            'scores'              => 'required|array',
+        ]);
+
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        if ($user->hasRole('Teacher')) {
+            $assigned = Subject::where('id', $request->subject_id)
+                ->whereHas('classes', fn($q) => $q->where('class_id', $request->class_id)->where('teacher_id', $user->id))
+                ->exists();
+            if (!$assigned) {
+                abort(403, 'You are not assigned to this subject for the selected class.');
+            }
+        }
+
+        $questions = ExamQuestion::where('exam_id', $request->exam_id)
+            ->where('subject_id', $request->subject_id)
+            ->orderBy('question_no')
+            ->get()
+            ->keyBy('id');
+
+        if ($questions->isEmpty()) {
+            return redirect()->back()->with('error', 'No questions defined for this exam and subject.');
+        }
+
+        $totalMax = $questions->sum('max_marks');
+
+        DB::transaction(function () use ($request, $questions, $totalMax, $user) {
+            foreach ($request->scores as $studentId => $questionScores) {
+                if (!is_array($questionScores) || empty(array_filter($questionScores, fn($v) => $v !== null && $v !== ''))) {
+                    // No scores entered — remove existing mark
+                    Mark::where([
+                        'student_id'          => $studentId,
+                        'subject_id'          => $request->subject_id,
+                        'exam_id'             => $request->exam_id,
+                        'academic_session_id' => $request->academic_session_id,
+                    ])->delete();
+                    continue;
+                }
+
+                $enrollment = Enrollment::where('student_id', $studentId)
+                    ->where('class_id', $request->class_id)
+                    ->where('academic_session_id', $request->academic_session_id)
+                    ->where('status', 'active')
+                    ->first();
+                if (!$enrollment) continue;
+
+                // Sum raw scores; cap each at the question's max
+                $rawTotal = 0;
+                $scoresToSave = [];
+                foreach ($questions as $qId => $question) {
+                    $val = $questionScores[$qId] ?? null;
+                    if ($val === null || $val === '') {
+                        $val = 0;
+                    }
+                    $val = min((float) $val, (float) $question->max_marks);
+                    $rawTotal += $val;
+                    $scoresToSave[$qId] = $val;
+                }
+
+                // Convert to percentage (0-100) for the mark column
+                $percentage = $totalMax > 0 ? round(($rawTotal / $totalMax) * 100, 2) : 0;
+
+                $grade = Grade::where('min_mark', '<=', $percentage)
+                    ->where('max_mark', '>=', $percentage)
+                    ->first();
+
+                $mark = Mark::updateOrCreate(
+                    [
+                        'student_id'          => $studentId,
+                        'subject_id'          => $request->subject_id,
+                        'exam_id'             => $request->exam_id,
+                        'academic_session_id' => $request->academic_session_id,
+                    ],
+                    [
+                        'mark'     => $percentage,
+                        'grade_id' => $grade?->id,
+                        'class_id' => $request->class_id,
+                    ]
+                );
+
+                // Save per-question scores
+                foreach ($scoresToSave as $qId => $score) {
+                    MarkQuestionScore::updateOrCreate(
+                        ['mark_id' => $mark->id, 'exam_question_id' => $qId],
+                        ['score'   => $score]
+                    );
+                }
+            }
+        });
+
+        return redirect()->route('marks.index')
+            ->with('success', 'Marks saved by questions successfully!')
+            ->withInput($request->only(['academic_session_id', 'class_id', 'department_id', 'subject_id', 'exam_id']));
+    }
+
+    /**
+     * Download a pre-filled Excel template for By Questions mark entry.
+     */
+    public function downloadQuestionMarksTemplate(Request $request)
+    {
+        $request->validate([
+            'class_id'            => 'required|exists:school_classes,id',
+            'academic_session_id' => 'required|exists:academic_sessions,id',
+            'exam_id'             => 'required|exists:exams,id',
+            'subject_id'          => 'required|exists:subjects,id',
+        ]);
+
+        $exam    = Exam::find($request->exam_id);
+        $subject = Subject::find($request->subject_id);
+        $filename = 'question_marks_' . str($exam->name)->slug() . '_' . str($subject->name)->slug() . '.xlsx';
+
+        return Excel::download(
+            new QuestionMarksTemplateExport(
+                (int) $request->class_id,
+                (int) $request->academic_session_id,
+                (int) $request->exam_id,
+                (int) $request->subject_id,
+            ),
+            $filename
+        );
+    }
+
+    /**
+     * Import By Questions marks from an uploaded Excel file.
+     */
+    public function importQuestionMarks(Request $request)
+    {
+        $request->validate([
+            'question_excel_file' => 'required|file|mimes:xlsx,xls',
+            'class_id'            => 'required|exists:school_classes,id',
+            'session_id'          => 'required|exists:academic_sessions,id',
+            'subject_id'          => 'required|exists:subjects,id',
+            'exam_id'             => 'required|exists:exams,id',
+        ]);
+
+        try {
+            $import = new QuestionMarksImport(
+                (int) $request->class_id,
+                (int) $request->session_id,
+                (int) $request->exam_id,
+                (int) $request->subject_id,
+            );
+            Excel::import($import, $request->file('question_excel_file'));
+
+            $count  = $import->getSuccessCount();
+            $errors = $import->getErrors();
+
+            if ($count === 0 && count($errors) > 0) {
+                return back()->with('error', 'Import failed: ' . implode(', ', array_slice($errors, 0, 3)));
+            }
+            if (count($errors) > 0) {
+                return back()->with('warning', "Imported $count student(s). Issues: " . implode(', ', array_slice($errors, 0, 3)));
+            }
+            return back()->with('success', "Successfully imported question marks for $count student(s).");
+        } catch (\Exception $e) {
+            Log::error('[Question Marks Import] ' . $e->getMessage());
+            return back()->with('error', 'System error during import: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Question evaluation report — shows per-question class performance.
+     */
+    public function questionEvaluation(Request $request)
+    {
+        $sessions    = AcademicSession::orderBy('name')->get();
+        $classes     = SchoolClass::orderBy('name')->get();
+        $departments = \App\Models\Department::orderBy('name')->get();
+        $subjects    = Subject::orderBy('name')->get();
+
+        // Exams filtered by selected session (or all if none selected)
+        $examsQuery = Exam::orderBy('name');
+        if ($request->filled('session_id')) {
+            $examsQuery->where('academic_session_id', $request->session_id);
+        }
+        $exams = $examsQuery->get();
+
+        $report     = null;
+        $questions  = collect();
+        $studentRows = collect();
+
+        if ($request->filled('exam_id') && $request->filled('subject_id')) {
+            $questions = ExamQuestion::where('exam_id', $request->exam_id)
+                ->where('subject_id', $request->subject_id)
+                ->orderBy('question_no')
+                ->get();
+
+            if ($questions->isNotEmpty()) {
+                // Fetch all marks for this exam+subject (+optional class filter)
+                $marksQuery = Mark::where('exam_id', $request->exam_id)
+                    ->where('subject_id', $request->subject_id)
+                    ->with(['student.schoolClass', 'questionScores.examQuestion']);
+
+                if ($request->filled('class_id')) {
+                    $marksQuery->whereHas('student', fn($q) => $q->where('class_id', $request->class_id));
+                }
+                if ($request->filled('session_id')) {
+                    $marksQuery->where('academic_session_id', $request->session_id);
+                }
+
+                $marks = $marksQuery->get();
+
+                // Build per-student rows
+                $studentRows = $marks->map(function ($mark) use ($questions) {
+                    $scores = $mark->questionScores->keyBy('exam_question_id');
+                    $row = [
+                        'student'    => $mark->student,
+                        'mark'       => (float) $mark->mark,
+                        'grade'      => $mark->grade,
+                        'q_scores'   => [],
+                        'raw_total'  => 0,
+                    ];
+                    foreach ($questions as $q) {
+                        $score = $scores[$q->id]->score ?? null;
+                        $row['q_scores'][$q->id] = $score !== null ? (float) $score : null;
+                        $row['raw_total'] += (float) ($score ?? 0);
+                    }
+                    return $row;
+                })->sortBy(fn($r) => $r['student']->first_name . ' ' . $r['student']->last_name)->values();
+
+                // Per-question stats
+                $totalMax = $questions->sum('max_marks');
+                $questionStats = $questions->map(function ($q) use ($studentRows) {
+                    $scores = $studentRows->pluck("q_scores.{$q->id}")->filter(fn($s) => $s !== null);
+                    $count  = $scores->count();
+                    $avg    = $count ? round($scores->avg(), 2) : null;
+                    $pct    = ($avg !== null && $q->max_marks > 0) ? round(($avg / $q->max_marks) * 100, 1) : null;
+                    return [
+                        'question'  => $q,
+                        'avg_score' => $avg,
+                        'avg_pct'   => $pct,
+                        'count'     => $count,
+                        'mastered'  => $scores->filter(fn($s) => $q->max_marks > 0 && ($s / $q->max_marks) >= 0.7)->count(),
+                        'struggling'=> $scores->filter(fn($s) => $q->max_marks > 0 && ($s / $q->max_marks) < 0.5)->count(),
+                        'max_marks' => (float) $q->max_marks,
+                    ];
+                });
+
+                $report = [
+                    'exam'          => Exam::find($request->exam_id),
+                    'subject'       => Subject::find($request->subject_id),
+                    'class'         => $request->filled('class_id') ? SchoolClass::find($request->class_id) : null,
+                    'total_max'     => $totalMax,
+                    'student_count' => $studentRows->count(),
+                    'question_stats'=> $questionStats,
+                    'class_avg_pct' => $studentRows->isNotEmpty() ? round($studentRows->avg('mark'), 1) : null,
+                ];
+            }
+        }
+
+        return view('marks.question_evaluation', compact(
+            'sessions', 'classes', 'departments', 'exams', 'subjects',
+            'questions', 'studentRows', 'report'
+        ));
     }
 }

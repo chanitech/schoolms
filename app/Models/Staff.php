@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\Department;
 use App\Models\JobCard;
 use Spatie\Permission\Traits\HasRoles;
+use App\Models\Concerns\BelongsToSchool;
 
 /**
  * @property int $id
@@ -27,12 +28,15 @@ use Spatie\Permission\Traits\HasRoles;
  */
 class Staff extends Model
 {
+    use BelongsToSchool;
+
     use HasFactory, SoftDeletes, HasRoles;
 
     // Make sure Spatie knows the guard
     protected $guard_name = 'web';
 
     protected $fillable = [
+        'school_id',
         'first_name',
         'last_name',
         'email',

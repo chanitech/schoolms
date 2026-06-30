@@ -23,31 +23,44 @@ class AuthenticatedSessionController extends Controller
      * Handle an incoming authentication request.
      */
     public function store(LoginRequest $request): RedirectResponse
-{
-    $request->authenticate();
+    {
+        $request->authenticate();
 
-    $request->session()->regenerate();
+        $request->session()->regenerate();
 
-    $user = $request->user();
+        $user = Auth::user();
 
-    if ($user->hasRole('guardian')) {
-        return redirect()->intended(route('guardian.dashboard', absolute: false));
+        // Store the user's school in session so ResolveTenant uses it on every
+        // subsequent request — no subdomain needed.
+        if ($user->school_id) {
+            $request->session()->put('tenant_school_id', $user->school_id);
+        }
+
+        if ($user->hasRole('guardian')) {
+            return redirect()->intended(route('guardian.dashboard', absolute: false));
+        }
+
+        return redirect()->intended(route('dashboard', absolute: false));
     }
-
-    return redirect()->intended(route('dashboard', absolute: false));
-}
 
     /**
      * Destroy an authenticated session.
      */
     public function destroy(Request $request): RedirectResponse
     {
+        /** @var \App\Models\User|null $currentUser */
+        $currentUser = Auth::user();
+        $isGuardian = $currentUser?->hasRole('guardian');
+
         Auth::guard('web')->logout();
 
+        $request->session()->forget('tenant_school_id');
         $request->session()->invalidate();
 
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return $isGuardian
+            ? redirect()->route('guardian.login')
+            : redirect()->route('login');
     }
 }

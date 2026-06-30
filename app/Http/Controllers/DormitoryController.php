@@ -370,7 +370,11 @@ class DormitoryController extends Controller
             ->limit(10)
             ->get();
 
-        $dormitories = Dormitory::withCount(['rooms', 'beds'])
+        $dormitories = Dormitory::withCount([
+                'rooms',
+                'beds',
+                'beds as occupied_beds_count' => fn($q) => $q->where('status', 'occupied'),
+            ])
             ->with(['rooms' => function ($q) {
                 $q->withCount('beds');
             }])

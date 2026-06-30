@@ -5,12 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
+use App\Models\Concerns\BelongsToSchool;
 
 class Loan extends Model
 {
+    use BelongsToSchool;
+
     use HasFactory;
 
     protected $fillable = [
+        'school_id',
         'staff_id', 'loan_category_id', 'amount_applied', 'amount_approved',
         'interest_rate_applied', 'installments', 'salary_at_application',
         'application_date', 'approval_date', 'disbursement_date', 'expected_end_date',

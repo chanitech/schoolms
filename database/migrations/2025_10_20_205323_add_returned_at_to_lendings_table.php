@@ -7,6 +7,8 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (!Schema::hasTable('lendings') || Schema::hasColumn('lendings', 'returned_at')) return;
+
         Schema::table('lendings', function (Blueprint $table) {
             $table->timestamp('returned_at')->nullable()->after('return_date');
         });

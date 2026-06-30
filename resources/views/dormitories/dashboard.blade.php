@@ -275,7 +275,7 @@
                         @foreach($dormitories as $dorm)
                         @php
                             $totalBedsInDorm = $dorm->beds_count ?? 0;
-                            $occupiedBedsInDorm = $dorm->beds()->where('status', 'occupied')->count();
+                            $occupiedBedsInDorm = $dorm->occupied_beds_count ?? 0;
                             $availableBedsInDorm = $totalBedsInDorm - $occupiedBedsInDorm;
                             $occRate = $totalBedsInDorm > 0 ? round(($occupiedBedsInDorm / $totalBedsInDorm) * 100, 1) : 0;
                             $progressColor = $occRate >= 80 ? 'danger' : ($occRate >= 50 ? 'warning' : 'success');

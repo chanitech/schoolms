@@ -13,13 +13,12 @@ return new class extends Migration
         Schema::create('lendings', function (Blueprint $table) {
             $table->id();
             $table->foreignId('book_id')->constrained('books')->onDelete('cascade');
-
-            // Polymorphic borrower (student or staff)
+            $table->unsignedInteger('quantity')->default(1);
             $table->unsignedBigInteger('user_id');
-            $table->string('borrower_type'); // 'student' or 'staff'
-
+            $table->string('borrower_type');
             $table->date('lend_date');
             $table->date('return_date')->nullable();
+            $table->timestamp('returned_at')->nullable();
             $table->boolean('returned')->default(false);
             $table->timestamps();
         });

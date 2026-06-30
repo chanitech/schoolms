@@ -4,14 +4,18 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Concerns\BelongsToSchool;
 
 class DormitoryBed extends Model
 {
+    use BelongsToSchool;
+
     use SoftDeletes;
 
     protected $table = 'dormitory_beds';
 
     protected $fillable = [
+        'school_id',
         'room_id', 'bed_number', 'bed_type', 'status', 'current_student_id', 'features'
     ];
 
