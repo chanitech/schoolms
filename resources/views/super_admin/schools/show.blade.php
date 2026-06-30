@@ -11,7 +11,7 @@
             @endif
             <div>
                 <h1 class="m-0">{{ $school->name }}</h1>
-                <small class="text-muted"><code>{{ $school->slug }}.schoolms.tz</code></small>
+                <small class="text-muted"><code>{{ $school->slug }}.{{ config('tenancy.domain', 'schoolms.ac.tz') }}</code></small>
             </div>
         </div>
         <div>

@@ -31,7 +31,7 @@
                                    class="form-control @error('slug') is-invalid @enderror"
                                    value="{{ old('slug') }}" placeholder="mema" required>
                             <div class="input-group-append">
-                                <span class="input-group-text">.schoolms.tz</span>
+                                <span class="input-group-text">.{{ config('tenancy.domain', 'schoolms.ac.tz') }}</span>
                             </div>
                         </div>
                         <small class="text-muted">Lowercase letters, numbers, hyphens only.</small>

@@ -36,7 +36,7 @@
                             <input type="text" name="slug" class="form-control @error('slug') is-invalid @enderror"
                                    value="{{ old('slug', $school->slug) }}" required>
                             <div class="input-group-append">
-                                <span class="input-group-text">.schoolms.tz</span>
+                                <span class="input-group-text">.{{ config('tenancy.domain', 'schoolms.ac.tz') }}</span>
                             </div>
                         </div>
                         <small class="text-muted">Changing this will break existing subdomain links.</small>
