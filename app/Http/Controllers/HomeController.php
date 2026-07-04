@@ -29,6 +29,12 @@ class HomeController extends Controller
         $today = Carbon::today();
         $month = Carbon::now()->startOfMonth();
 
+        // Guardians must never see the school-wide dashboard (finance, staff
+        // counts, etc.) — send them to their own portal instead.
+        if ($user->hasRole('guardian')) {
+            return redirect()->route('guardian.dashboard');
+        }
+
         // Staff-only users get a personal performance dashboard
         if ($user->hasAnyRole(['Teacher', 'HOD']) && !$user->hasAnyRole(['Admin', 'Academic', 'HR'])) {
             return $this->staffDashboard($user, $today, $month);

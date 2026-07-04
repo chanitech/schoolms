@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // is loaded before we read/write tenant_school_id) but before
         // SubstituteBindings (so route model binding is school-scoped).
         $middleware->appendToGroup('web', \App\Http\Middleware\ResolveTenant::class);
+        $middleware->appendToGroup('web', \App\Http\Middleware\RestrictGuardianMenu::class);
         $middleware->appendToPriorityList(
             \Illuminate\Session\Middleware\StartSession::class,
             \App\Http\Middleware\ResolveTenant::class,
