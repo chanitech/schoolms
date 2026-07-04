@@ -64,7 +64,7 @@ return [
     */
 
     'logo' => '<b>School</b>MS',
-    'logo_img' => 'vendor/adminlte/dist/img/schoolms-icon.png',
+    'logo_img' => 'images/schoolms-icon.svg',
     'logo_img_class' => 'brand-image img-circle elevation-3',
     'logo_img_xl' => null,
     'logo_img_xl_class' => 'brand-image-xs',
@@ -86,7 +86,7 @@ return [
     'auth_logo' => [
         'enabled' => true,
         'img' => [
-            'path' => 'vendor/adminlte/dist/img/schoolms-icon.png',
+            'path' => 'images/schoolms-icon.svg',
             'alt' => 'SchoolMS Logo',
             'class' => '',
             'width' => 50,
@@ -113,7 +113,7 @@ return [
         'enabled' => true,
         'mode' => 'fullscreen',
         'img' => [
-            'path' => 'vendor/adminlte/dist/img/schoolms-icon.png',
+            'path' => 'images/schoolms-icon.svg',
             'alt' => 'SchoolMS Preloader Image',
             'effect' => 'animation__shake',
             'width' => 50,
