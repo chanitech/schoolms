@@ -1,0 +1,35 @@
+<svg width="900" height="260" viewBox="0 0 900 260" xmlns="http://www.w3.org/2000/svg">
+  <!-- Icon mark: rounded badge -->
+  <rect x="20" y="20" width="200" height="200" rx="36" fill="#0f2942"/>
+
+  <!-- Graduation cap, simplified -->
+  <g transform="translate(120, 95)">
+    <!-- Cap top (diamond) -->
+    <polygon points="0,-38 62,-8 0,22 -62,-8" fill="#c9a24b"/>
+    <!-- Cap base band -->
+    <path d="M-34,4 L34,4 L34,30 C34,46 -34,46 -34,30 Z" fill="#fdfaf3"/>
+    <!-- Tassel -->
+    <line x1="58" y1="-6" x2="58" y2="34" stroke="#c9a24b" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="58" cy="40" r="7" fill="#c9a24b"/>
+  </g>
+
+  <!-- Ascending bars beneath the cap: management / growth -->
+  <g>
+    <rect x="70" y="188" width="20" height="22" rx="3" fill="#1f5c3f"/>
+    <rect x="100" y="176" width="20" height="34" rx="3" fill="#1f5c3f"/>
+    <rect x="130" y="160" width="20" height="50" rx="3" fill="#fdfaf3"/>
+    <rect x="160" y="168" width="20" height="42" rx="3" fill="#1f5c3f"/>
+  </g>
+
+  <!-- Wordmark -->
+  <text x="255" y="130" font-family="'Segoe UI','Helvetica Neue',Arial,sans-serif" fill="#0f2942" font-size="70" font-weight="700">School<tspan fill="#c9a24b">MS</tspan></text>
+
+  <!-- Tagline -->
+  <text x="257" y="168" font-family="'Segoe UI','Helvetica Neue',Arial,sans-serif" font-size="23" font-weight="400" fill="#5c6b7a" letter-spacing="0.4">Smart school management, simplified.</text>
+
+  <!-- Accent underline -->
+  <rect x="257" y="182" width="410" height="3" fill="#c9a24b" opacity="0.6"/>
+
+  <!-- Contact line -->
+  <text x="257" y="215" font-family="'Segoe UI','Helvetica Neue',Arial,sans-serif" font-size="18" font-weight="400" fill="#5c6b7a">+255 713 209 535  &#8226;  info@chanitech.co.tz</text>
+</svg>

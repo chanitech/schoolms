@@ -10,7 +10,7 @@
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     min-height: 100vh;
-    background: linear-gradient(145deg, #0f2044 0%, #1a3c6e 50%, #1565c0 100%);
+    background: linear-gradient(145deg, #0f2942 0%, #16324f 55%, #1f5c3f 100%);
     display: flex; align-items: center; justify-content: center;
     padding: 1rem;
 }
@@ -24,18 +24,17 @@ body {
 }
 
 .card-top {
-    background: linear-gradient(135deg, #1a3c6e, #2e74c0);
+    background: linear-gradient(135deg, #0f2942, #16324f);
     padding: 2.2rem 2rem 1.8rem;
     text-align: center; color: #fff;
 }
 .school-logo {
-    width: 64px; height: 64px; border-radius: 50%;
-    background: rgba(255,255,255,.15);
-    display: inline-flex; align-items: center; justify-content: center;
-    font-size: 2rem; margin-bottom: .8rem;
-    border: 3px solid rgba(255,255,255,.3);
+    width: 72px; height: 72px; border-radius: 22px;
+    margin: 0 auto .9rem;
+    display: block;
 }
 .card-top h2 { font-size: 1.25rem; font-weight: 800; }
+.card-top h2 .accent { color: #c9a24b; }
 .card-top p  { font-size: .82rem; opacity: .8; margin-top: .3rem; }
 
 .card-body { padding: 2rem; }
@@ -59,8 +58,8 @@ input[type="text"], input[type="tel"], input[type="password"] {
     outline: none;
 }
 input:focus {
-    border-color: #2e74c0;
-    box-shadow: 0 0 0 3px rgba(46,116,192,.15);
+    border-color: #c9a24b;
+    box-shadow: 0 0 0 3px rgba(201,162,75,.18);
 }
 input.is-invalid { border-color: #ef4444; }
 
@@ -81,12 +80,12 @@ input.is-invalid { border-color: #ef4444; }
     display: flex; align-items: center; gap: .5rem;
     margin-bottom: 1.4rem;
 }
-.remember-row input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: #2e74c0; }
+.remember-row input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: #1f5c3f; }
 .remember-row label { font-size: .82rem; color: #64748b; text-transform: none; letter-spacing: 0; font-weight: 500; margin: 0; cursor: pointer; }
 
 .btn-login {
     width: 100%; padding: .85rem;
-    background: linear-gradient(135deg, #1a3c6e, #2e74c0);
+    background: linear-gradient(135deg, #0f2942, #1f5c3f);
     color: #fff; border: none; border-radius: 10px;
     font-size: 1rem; font-weight: 700; cursor: pointer;
     letter-spacing: .03em;
@@ -101,7 +100,7 @@ input.is-invalid { border-color: #ef4444; }
 .staff-link {
     text-align: center; font-size: .8rem; color: #94a3b8;
 }
-.staff-link a { color: #2e74c0; font-weight: 600; text-decoration: none; }
+.staff-link a { color: #1f5c3f; font-weight: 600; text-decoration: none; }
 .staff-link a:hover { text-decoration: underline; }
 
 .hint {
@@ -113,9 +112,8 @@ input.is-invalid { border-color: #ef4444; }
 
 <div class="card">
     <div class="card-top">
-        <div class="school-logo">&#127979;</div>
-        @php $school = \App\Models\SchoolInfo::first(); @endphp
-        <h2>{{ $school->name ?? 'School Management System' }}</h2>
+        <img src="{{ asset('images/schoolms-icon.svg') }}" alt="SchoolMS" class="school-logo">
+        <h2>School<span class="accent">MS</span></h2>
         <p>Parent &amp; Guardian Portal</p>
     </div>
 
