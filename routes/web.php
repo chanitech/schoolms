@@ -82,6 +82,16 @@ Route::get('/subscription/expired', function () {
 // Authentication routes
 require __DIR__.'/auth.php';
 
+// ==================== GUARDIAN AUTH (phone-based) ====================
+// Must live outside the ['auth','verified'] group below — otherwise the
+// `auth` middleware runs before `guest` and blocks unauthenticated visitors
+// from ever reaching the login form.
+Route::prefix('guardian')->name('guardian.')->group(function () {
+    Route::get('/login',  [GuardianLoginController::class, 'showLogin'])->name('login')->middleware('guest');
+    Route::post('/login', [GuardianLoginController::class, 'login'])->name('login.post')->middleware('guest');
+    Route::post('/logout', [GuardianLoginController::class, 'logout'])->name('logout');
+});
+
 // Authenticated routes
 Route::middleware(['auth', 'verified'])->group(function () {
 
@@ -381,13 +391,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('/{invoice}/pay', [InvoiceController::class, 'pay'])->name('pay');
             Route::get('/{invoice}', [InvoiceController::class, 'show'])->name('show');
         });
-    });
-
-    // ==================== GUARDIAN AUTH (phone-based) ====================
-    Route::prefix('guardian')->name('guardian.')->group(function () {
-        Route::get('/login',  [GuardianLoginController::class, 'showLogin'])->name('login')->middleware('guest');
-        Route::post('/login', [GuardianLoginController::class, 'login'])->name('login.post')->middleware('guest');
-        Route::post('/logout', [GuardianLoginController::class, 'logout'])->name('logout');
     });
 
     // ==================== GUARDIAN PORTAL ====================
