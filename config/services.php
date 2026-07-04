@@ -45,4 +45,8 @@ return [
         'model' => env('DEEPSEEK_MODEL', 'deepseek-chat'),
     ],
 
+    'public_api' => [
+        'key' => env('PUBLIC_API_KEY'),
+    ],
+
 ];
