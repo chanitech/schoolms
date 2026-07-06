@@ -26,7 +26,8 @@ class SchoolClassController extends Controller
     // Show create form
     public function create()
     {
-        $teachers = Staff::role('Teacher')->get(); // Only staff with Teacher role
+        // Roles are assigned to the linked User, not the Staff record itself.
+        $teachers = Staff::whereHas('user', fn ($q) => $q->role('Teacher'))->get(); // Only staff with Teacher role
         return view('classes.create', compact('teachers'));
     }
 
@@ -51,7 +52,7 @@ class SchoolClassController extends Controller
     // Show edit form
     public function edit(SchoolClass $class)
     {
-        $teachers = Staff::role('Teacher')->get();
+        $teachers = Staff::whereHas('user', fn ($q) => $q->role('Teacher'))->get();
         return view('classes.edit', compact('class', 'teachers'));
     }
 

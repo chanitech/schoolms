@@ -27,7 +27,10 @@ class DepartmentController extends Controller
     public function create()
     {
         // Only staff with HOD role can be assigned as head
-        $hods = Staff::role('HOD')->get();
+        // Roles are assigned to the linked User, not the Staff record itself
+        // (StaffController::syncRoles targets $staff->user) — Staff::role()
+        // would always return empty.
+        $hods = Staff::whereHas('user', fn ($q) => $q->role('HOD'))->get();
         return view('departments.create', compact('hods'));
     }
 
@@ -55,7 +58,10 @@ class DepartmentController extends Controller
 
     public function edit(Department $department)
     {
-        $hods = Staff::role('HOD')->get();
+        // Roles are assigned to the linked User, not the Staff record itself
+        // (StaffController::syncRoles targets $staff->user) — Staff::role()
+        // would always return empty.
+        $hods = Staff::whereHas('user', fn ($q) => $q->role('HOD'))->get();
         return view('departments.edit', compact('department', 'hods'));
     }
 

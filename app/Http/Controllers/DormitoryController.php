@@ -33,7 +33,8 @@ class DormitoryController extends Controller
 
     public function create()
     {
-        $dormMasters = Staff::role('Dorm Master')->get();
+        // Roles are assigned to the linked User, not the Staff record itself.
+        $dormMasters = Staff::whereHas('user', fn ($q) => $q->role('Dorm Master'))->get();
         return view('dormitories.create', compact('dormMasters'));
     }
 
@@ -53,7 +54,8 @@ class DormitoryController extends Controller
 
     public function edit(Dormitory $dormitory)
     {
-        $dormMasters = Staff::role('Dorm Master')->get();
+        // Roles are assigned to the linked User, not the Staff record itself.
+        $dormMasters = Staff::whereHas('user', fn ($q) => $q->role('Dorm Master'))->get();
         return view('dormitories.edit', compact('dormitory', 'dormMasters'));
     }
 
