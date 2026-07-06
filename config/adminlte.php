@@ -540,7 +540,7 @@ return [
         'can' => ['view sessions', 'view classes', 'view divisions', 'view dormitories',
                   'view subjects', 'view subject assignments', 'view teacher assignments',
                   'view timetable', 'view exams', 'view marks', 'enter marks', 'view grading',
-                  'view student results', 'view class results', 'export marksheets'],
+                  'view results', 'export marksheets'],
         'submenu' => [
 
             // ── School Setup ──────────────────────────────────────────
@@ -563,8 +563,12 @@ return [
                 'can'     => ['view subjects', 'view subject assignments', 'view teacher assignments'],
                 'submenu' => [
                     ['text' => 'Subjects',            'url' => 'subjects',           'icon' => 'fas fa-book-open', 'can' => 'view subjects'],
-                    ['text' => 'Subjects Assignment', 'url' => 'subject-assignment', 'icon' => 'fas fa-tasks',     'can' => 'view subject assignments'],
-                    ['text' => 'Teachers Assignment', 'url' => 'teacher-assignment', 'icon' => 'fas fa-user-tie',  'can' => 'view teacher assignments'],
+                    // These pointed at URLs with no matching route at all (404, not
+                    // 403) — no "assign students/teachers" listing page was ever
+                    // built. Assigning students to a subject already happens via
+                    // Subjects > a specific subject's "assign students" action.
+                    ['text' => 'Subjects Assignment', 'url' => '#', 'icon' => 'fas fa-tasks',     'can' => 'view subject assignments'],
+                    ['text' => 'Teachers Assignment', 'url' => '#', 'icon' => 'fas fa-user-tie',  'can' => 'view teacher assignments'],
                 ],
             ],
 
@@ -624,10 +628,10 @@ return [
             [
                 'text'    => 'Results & Reports',
                 'icon'    => 'fas fa-chart-bar',
-                'can'     => ['view student results', 'view class results', 'export marksheets'],
+                'can'     => ['view results', 'export marksheets'],
                 'submenu' => [
-                    ['text' => 'Student Results', 'url'   => 'results',       'icon' => 'fas fa-chart-bar', 'can' => 'view student results'],
-                    ['text' => 'Class Results',   'url'   => 'results/class', 'icon' => 'fas fa-chart-bar', 'can' => 'view class results'],
+                    ['text' => 'Student Results', 'url'   => 'results',       'icon' => 'fas fa-chart-bar', 'can' => 'view results'],
+                    ['text' => 'Class Results',   'url'   => 'results/class', 'icon' => 'fas fa-chart-bar', 'can' => 'view results'],
                     ['text' => 'Export Marksheet','route' => 'results.export.form', 'icon' => 'fas fa-file-pdf', 'can' => 'export marksheets'],
                 ],
             ],
@@ -650,8 +654,8 @@ return [
     // filtered — it doesn't (see Counseling Office above), so this showed
     // an empty section to anyone without any HR permission.
     'can' => ['view department dashboard', 'view staff', 'view departments',
-              'view job cards', 'view own job cards', 'view attendance', 'view leaves',
-              'view received leaves', 'view events', 'view staff report',
+              'view any jobcards', 'view own jobcards', 'view attendance', 'view leaves',
+              'view events', 'view staff report',
               'view attendance report', 'view leave report', 'view job cards report',
               'view evaluation report'],
     'submenu' => [
@@ -675,11 +679,14 @@ return [
         // Departments – assumes a DepartmentController with similar permissions
         ['text' => 'Departments', 'url' => 'departments', 'icon' => 'fas fa-sitemap', 'can' => 'view departments'],
 
-        // Job Cards (global list) – requires 'view job cards'
-        ['text' => 'Job Cards', 'url' => 'jobcards', 'icon' => 'fas fa-briefcase', 'can' => 'view job cards'],
+        // Job Cards (global list) – JobCardController actually requires
+        // 'view any jobcards' (no space) — this used to say 'view job
+        // cards' (an older, differently-named permission), so anyone with
+        // only that legacy permission would see the link and 403 on click.
+        ['text' => 'Job Cards', 'url' => 'jobcards', 'icon' => 'fas fa-briefcase', 'can' => 'view any jobcards'],
 
-        // My Job Cards – user-specific view; we'll use a custom gate (see below)
-        ['text' => 'my Job Cards', 'url' => 'jobcards/my', 'icon' => 'fas fa-clipboard-list', 'can' => 'view own job cards'],
+        // My Job Cards – same fix: real permission is 'view own jobcards' (no space).
+        ['text' => 'my Job Cards', 'url' => 'jobcards/my', 'icon' => 'fas fa-clipboard-list', 'can' => 'view own jobcards'],
 
         // Attendance – requires 'view attendance'
         ['text' => 'Attendance', 'url' => 'attendance', 'icon' => 'fas fa-calendar-check', 'can' => 'view attendance'],
@@ -687,8 +694,10 @@ return [
         // Leaves – requires 'view leaves'
         ['text' => 'Leaves', 'url' => 'leaves', 'icon' => 'fas fa-file-signature', 'can' => 'view leaves'],
 
-        // Received Leaves – for managers/approvers; requires 'view received leaves'
-        ['text' => 'Received Leaves', 'url' => 'leaves/received', 'icon' => 'fas fa-inbox', 'can' => 'view received leaves'],
+        // Received Leaves – LeaveController@received is actually gated by
+        // 'view leaves' (same as the index above), not a separate
+        // 'view received leaves' permission.
+        ['text' => 'Received Leaves', 'url' => 'leaves/received', 'icon' => 'fas fa-inbox', 'can' => 'view leaves'],
 
         // Events – requires 'view events'
         ['text' => 'Events', 'url' => 'events', 'icon' => 'fas fa-calendar-alt', 'can' => 'view events'],
@@ -866,6 +875,7 @@ return [
                     'text' => 'Pocket Money',
                      'url' => '/finance/pocket/transactions',   // ✅ correct
                     'icon' => 'fas fa-piggy-bank',
+                    'can' => 'view pocket money',
                 ],
             ],
         ],
