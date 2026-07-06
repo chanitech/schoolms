@@ -857,7 +857,7 @@ return [
             'can' => ['view bills', 'view student bills', 'view payments', 'verify payments', 'view pocket money'],
             'submenu' => [
                 [
-                    'text' => 'Bills / Invoices',
+                    'text' => 'Class Bills',
                     'route' => 'finance.bills.index',
                     'icon' => 'fas fa-file-invoice-dollar',
                     'can' => 'view bills',

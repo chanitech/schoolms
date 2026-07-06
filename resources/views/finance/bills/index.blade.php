@@ -1,15 +1,17 @@
 @extends('adminlte::page')
 
-@section('title', 'Bills')
+@section('title', 'Class Bills')
 
 @section('content_header')
-    <h1>Bills</h1>
+    <h1>Class Bills</h1>
 @stop
 
 @section('content')
 <div class="card">
     <div class="card-header">
+        @can('create bills')
         <a href="{{ route('finance.bills.create') }}" class="btn btn-primary">Create Bill</a>
+        @endcan
     </div>
     <div class="card-body">
         @if(session('success'))
@@ -37,12 +39,16 @@
                         <td>{{ $bill->due_date?->format('Y-m-d') ?? '-' }}</td>
                         <td>
                             <a href="{{ route('finance.bills.show', $bill->id) }}" class="btn btn-sm btn-info">View</a>
+                            @can('edit bills')
                             <a href="{{ route('finance.bills.edit', $bill->id) }}" class="btn btn-sm btn-warning">Edit</a>
+                            @endcan
+                            @can('delete bills')
                             <form action="{{ route('finance.bills.destroy', $bill->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this bill?')">
                                 @csrf
                                 @method('DELETE')
                                 <button class="btn btn-sm btn-danger">Delete</button>
                             </form>
+                            @endcan
                         </td>
                     </tr>
                 @endforeach

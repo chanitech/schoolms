@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Create Bill')
+@section('title', 'Create Class Bill')
 
 @section('content_header')
-    <h1>Create Bill</h1>
+    <h1>Create Class Bill</h1>
 @stop
 
 @section('content')
