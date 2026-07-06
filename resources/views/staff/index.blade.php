@@ -24,7 +24,8 @@
             <p class="text-muted mb-2">Share these with <strong>{{ $creds['name'] }}</strong> now — this password won't be shown again. They should change it after logging in.</p>
             <div class="table-responsive">
                 <table class="table table-bordered table-sm mb-0" style="max-width:420px">
-                    <tr><th style="width:110px">Email</th><td><code>{{ $creds['email'] }}</code></td></tr>
+                    <tr><th style="width:110px">School Code</th><td><code>{{ $creds['school_code'] ?? '—' }}</code></td></tr>
+                    <tr><th>Email</th><td><code>{{ $creds['email'] }}</code></td></tr>
                     <tr><th>Password</th><td><code>{{ $creds['password'] }}</code></td></tr>
                 </table>
             </div>

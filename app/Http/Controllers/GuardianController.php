@@ -93,9 +93,11 @@ class GuardianController extends Controller
         return redirect()->route('guardians.index')
             ->with('success', 'Guardian created successfully.')
             ->with('new_staff_credentials', [
-                'name'     => $user->name,
-                'email'    => $user->email,
-                'password' => 'password123',
+                'name'        => $user->name,
+                'email'       => $user->email,
+                'phone'       => $user->phone,
+                'password'    => 'password123',
+                'school_code' => app()->bound('currentSchool') ? app('currentSchool')->slug : null,
             ]);
     }
 
