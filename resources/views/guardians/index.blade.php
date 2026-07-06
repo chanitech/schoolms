@@ -21,7 +21,12 @@
                 <h3 class="card-title"><i class="fas fa-key mr-1"></i> New Guardian Login Details</h3>
             </div>
             <div class="card-body">
-                <p class="text-muted mb-2">Share these with <strong>{{ $creds['name'] }}</strong> now — this password won't be shown again. Guardians log in with their phone number, not email.</p>
+                <p class="text-muted mb-2">
+                    Share these with <strong>{{ $creds['name'] }}</strong> now — this won't be shown again.
+                    Guardians log in with their phone number, not email; their default password is
+                    @if(!empty($creds['password_note'])) <strong>{{ $creds['password_note'] }}</strong> @else the password shown below @endif,
+                    and they should change it after logging in.
+                </p>
                 <div class="table-responsive">
                     <table class="table table-bordered table-sm mb-0" style="max-width:420px">
                         <tr><th style="width:110px">School Code</th><td><code>{{ $creds['school_code'] ?? '—' }}</code></td></tr>

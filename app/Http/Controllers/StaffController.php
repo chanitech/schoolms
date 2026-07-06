@@ -41,7 +41,7 @@ class StaffController extends Controller
             'first_name'    => 'required|string',
             'last_name'     => 'required|string',
             'email'         => 'required|email|unique:users,email',
-            'phone'         => 'nullable|string',
+            'phone'         => 'required|string',
             'department_id' => 'required|exists:departments,id',
             'position'      => 'nullable|string',
             'photo'         => 'nullable|image|max:2048',
@@ -51,13 +51,15 @@ class StaffController extends Controller
             'hire_date'     => 'required|date|before_or_equal:today',
         ]);
 
-        // Create user
+        // Create user — default password is the staff member's own phone
+        // number, so it's something they already know and can be told
+        // plainly ("your phone number") without a separate secret to share.
         $user = User::create([
             'first_name' => $request->first_name,
             'last_name'  => $request->last_name,
             'name'       => $request->first_name . ' ' . $request->last_name,
             'email'      => $request->email,
-            'password'   => Hash::make('password123'),
+            'password'   => Hash::make($request->phone),
         ]);
 
         // Assign roles to user
@@ -85,7 +87,8 @@ class StaffController extends Controller
                          ->with('new_staff_credentials', [
                              'name'        => $user->name,
                              'email'       => $user->email,
-                             'password'    => 'password123',
+                             'password'    => $request->phone,
+                             'password_note' => 'their phone number',
                              'school_code' => app()->bound('currentSchool') ? app('currentSchool')->slug : null,
                          ]);
     }

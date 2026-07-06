@@ -59,14 +59,17 @@ class GuardianController extends Controller
             'student_ids.*'       => 'exists:students,id',
         ]);
 
-        // 1. Create user account
+        // 1. Create user account — default password is the guardian's own
+        // phone number (matches the existing convention used by the
+        // guardian self-registration API), so it's something they already
+        // know rather than a separate secret to hand over.
         $user = User::create([
             'first_name' => $request->first_name,
             'last_name'  => $request->last_name,
             'name'       => $request->first_name . ' ' . $request->last_name,
             'email'      => $request->email,
             'phone'      => $request->phone,
-            'password'   => Hash::make('password123'),
+            'password'   => Hash::make($request->phone),
         ]);
         $user->assignRole('guardian');
 
@@ -96,7 +99,8 @@ class GuardianController extends Controller
                 'name'        => $user->name,
                 'email'       => $user->email,
                 'phone'       => $user->phone,
-                'password'    => 'password123',
+                'password'    => $user->phone,
+                'password_note' => 'their phone number',
                 'school_code' => app()->bound('currentSchool') ? app('currentSchool')->slug : null,
             ]);
     }

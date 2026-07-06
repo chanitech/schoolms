@@ -61,9 +61,10 @@
                     <!-- Phone -->
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label>Phone</label>
+                            <label>Phone <span class="text-danger">*</span></label>
                             <input type="text" name="phone" class="form-control @error('phone') is-invalid @enderror"
-                                   value="{{ old('phone') }}">
+                                   value="{{ old('phone') }}" required>
+                            <small class="form-text text-muted">Used as the staff member's default login password.</small>
                             @error('phone')
                                 <span class="invalid-feedback">{{ $message }}</span>
                             @enderror
