@@ -23,9 +23,6 @@ class Payment extends Model
         'recorded_by',
         'received_by',
         'note',
-        'class_id',
-        'verified_by',
-        'status',
     ];
 
     // ✅ Cast payment_date to Carbon
@@ -46,15 +43,5 @@ class Payment extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'recorded_by');
-    }
-
-    public function schoolClass()
-    {
-        return $this->belongsTo(SchoolClass::class, 'class_id');
-    }
-
-    public function verifiedBy()
-    {
-        return $this->belongsTo(User::class, 'verified_by');
     }
 }

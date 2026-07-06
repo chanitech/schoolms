@@ -51,7 +51,5 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withSchedule(function (Schedule $schedule): void {
         // Mark overdue loan repayments daily at midnight
         $schedule->command('loans:mark-overdue')->dailyAt('00:00');
-        // Mark overdue Finance Office task logs daily at midnight
-        $schedule->command('finance:mark-overdue-tasks')->dailyAt('00:00');
     })
     ->create();
