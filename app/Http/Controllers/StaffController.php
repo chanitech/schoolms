@@ -81,7 +81,12 @@ class StaffController extends Controller
         ]);
 
         return redirect()->route('staff.index')
-                         ->with('success', 'Staff created successfully. Default password: password123');
+                         ->with('success', 'Staff created successfully.')
+                         ->with('new_staff_credentials', [
+                             'name'     => $user->name,
+                             'email'    => $user->email,
+                             'password' => 'password123',
+                         ]);
     }
 
     // Show edit form

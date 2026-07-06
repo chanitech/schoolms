@@ -91,7 +91,12 @@ class GuardianController extends Controller
         }
 
         return redirect()->route('guardians.index')
-            ->with('success', 'Guardian created successfully. Default password: password123');
+            ->with('success', 'Guardian created successfully.')
+            ->with('new_staff_credentials', [
+                'name'     => $user->name,
+                'email'    => $user->email,
+                'password' => 'password123',
+            ]);
     }
 
     public function show(Guardian $guardian)

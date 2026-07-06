@@ -14,6 +14,24 @@
         </div>
     @endif
 
+    @if(session('new_staff_credentials'))
+        @php $creds = session('new_staff_credentials'); @endphp
+        <div class="card card-outline card-warning mb-3">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-key mr-1"></i> New Guardian Login Details</h3>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-2">Share these with <strong>{{ $creds['name'] }}</strong> now — this password won't be shown again.</p>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm mb-0" style="max-width:420px">
+                        <tr><th style="width:110px">Email</th><td><code>{{ $creds['email'] }}</code></td></tr>
+                        <tr><th>Password</th><td><code>{{ $creds['password'] }}</code></td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    @endif
+
     <div class="card shadow">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h3 class="card-title"><i class="fas fa-list"></i> Guardian Records</h3>
