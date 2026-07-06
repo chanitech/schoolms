@@ -84,6 +84,11 @@ class SyncAllPermissionsToAdminSeeder extends Seeder
         // the sidebar menu's 'can' gate stood between any authenticated
         // user and full inventory access. Splitting read from write.
         'view inventory',
+
+        // New: Storekeeper -> Procurement Officer -> Treasurer stock request
+        // workflow.
+        'create stock requests',
+        'review stock requests',
     ];
 
     public function run(): void

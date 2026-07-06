@@ -8,6 +8,14 @@
 
 @section('content')
 <div class="container-fluid">
+    @if($stockRequest)
+    <div class="alert alert-info">
+        <i class="fas fa-people-arrows"></i>
+        Converting <strong>{{ $stockRequest->requestedBy->name ?? 'a' }}</strong>'s stock request for
+        <strong>{{ $stockRequest->quantity }} × {{ $stockRequest->item }}</strong> — fill in the cost and supplier below.
+    </div>
+    @endif
+
     @if($lowStockItems->count())
     <div class="alert alert-warning">
         <i class="fas fa-exclamation-triangle"></i> <strong>Low stock:</strong>
@@ -19,13 +27,16 @@
         <div class="card-body">
             <form action="{{ route('treasurer.procurement.store') }}" method="POST">
                 @csrf
+                @if($stockRequest)
+                    <input type="hidden" name="stock_request_id" value="{{ $stockRequest->id }}">
+                @endif
 
                 <div class="form-group">
                     <label for="inventory_item_id">Related Inventory Item (optional)</label>
                     <select name="inventory_item_id" id="inventory_item_id" class="form-control">
                         <option value="">— None —</option>
                         @foreach($inventoryItems as $item)
-                            <option value="{{ $item->id }}">
+                            <option value="{{ $item->id }}" {{ optional($stockRequest)->inventory_item_id === $item->id ? 'selected' : '' }}>
                                 {{ $item->name }} ({{ $item->category->name ?? 'Uncategorized' }}) — in stock: {{ $item->quantity_in_stock }}{{ $item->isLowStock() ? ' ⚠️ LOW' : '' }}
                             </option>
                         @endforeach
@@ -45,14 +56,14 @@
 
                 <div class="form-group">
                     <label for="item">Item <span class="text-danger">*</span></label>
-                    <input type="text" name="item" id="item" class="form-control @error('item') is-invalid @enderror" value="{{ old('item') }}" required>
+                    <input type="text" name="item" id="item" class="form-control @error('item') is-invalid @enderror" value="{{ old('item', optional($stockRequest)->item) }}" required>
                     @error('item') <span class="invalid-feedback">{{ $message }}</span> @enderror
                 </div>
 
                 <div class="form-row">
                     <div class="form-group col-md-6">
                         <label for="quantity">Quantity <span class="text-danger">*</span></label>
-                        <input type="number" min="1" name="quantity" id="quantity" class="form-control @error('quantity') is-invalid @enderror" value="{{ old('quantity') }}" required>
+                        <input type="number" min="1" name="quantity" id="quantity" class="form-control @error('quantity') is-invalid @enderror" value="{{ old('quantity', optional($stockRequest)->quantity) }}" required>
                         @error('quantity') <span class="invalid-feedback">{{ $message }}</span> @enderror
                     </div>
                     <div class="form-group col-md-6">

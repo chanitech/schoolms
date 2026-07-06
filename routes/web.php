@@ -63,6 +63,7 @@ use App\Http\Controllers\Treasurer\LoanApprovalController;
 use App\Http\Controllers\Treasurer\LoanCategoryController;
 use App\Http\Controllers\Treasurer\BankStatementController;
 use App\Http\Controllers\Treasurer\ProcurementRequestController;
+use App\Http\Controllers\Treasurer\StockRequestController;
 use App\Http\Controllers\Treasurer\JobDescriptionController;
 use App\Http\Controllers\Treasurer\TaskLogController;
 use App\Http\Controllers\Treasurer\TaskJustificationController;
@@ -168,6 +169,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/{procurementRequest}/approve', [ProcurementRequestController::class, 'approve'])->name('approve');
         Route::post('/{procurementRequest}/reject', [ProcurementRequestController::class, 'reject'])->name('reject');
         Route::post('/{procurementRequest}/disburse', [ProcurementRequestController::class, 'disburse'])->name('disburse');
+    });
+
+    // Stock Requests — Storekeeper flags a need to the Procurement Officer,
+    // who converts an approved one into a procurement request above.
+    Route::prefix('treasurer/stock-requests')->name('treasurer.stock-requests.')->group(function () {
+        Route::get('/', [StockRequestController::class, 'index'])->name('index');
+        Route::get('/create', [StockRequestController::class, 'create'])->name('create');
+        Route::post('/', [StockRequestController::class, 'store'])->name('store');
+        Route::post('/{stockRequest}/approve', [StockRequestController::class, 'approve'])->name('approve');
+        Route::post('/{stockRequest}/reject', [StockRequestController::class, 'reject'])->name('reject');
     });
 
     // Job Descriptions — Treasurer-managed, one per Finance Office role

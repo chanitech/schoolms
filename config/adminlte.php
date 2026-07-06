@@ -894,17 +894,34 @@ return [
         [
             'text' => 'Procurement',
             'icon' => 'fas fa-shopping-cart',
+            'can' => ['create procurement requests', 'approve procurement requests', 'disburse payments',
+                      'create stock requests', 'review stock requests'],
             'submenu' => [
                 [
                     'text' => 'Requests',
                     'route' => 'treasurer.procurement.index',
                     'icon' => 'fas fa-list',
+                    // Cashier can't create/approve but still needs to see this
+                    // list to find approved requests awaiting disbursement.
+                    'can' => ['create procurement requests', 'approve procurement requests', 'disburse payments'],
                 ],
                 [
                     'text' => 'New Request',
                     'route' => 'treasurer.procurement.create',
                     'icon' => 'fas fa-plus',
                     'can' => 'create procurement requests',
+                ],
+                [
+                    'text' => 'Request Stock',
+                    'route' => 'treasurer.stock-requests.create',
+                    'icon' => 'fas fa-dolly',
+                    'can' => 'create stock requests',
+                ],
+                [
+                    'text' => 'Stock Requests',
+                    'route' => 'treasurer.stock-requests.index',
+                    'icon' => 'fas fa-clipboard-list',
+                    'can' => ['create stock requests', 'review stock requests'],
                 ],
             ],
         ],

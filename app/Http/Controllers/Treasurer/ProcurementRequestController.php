@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ExpenseLog;
 use App\Models\InventoryItem;
 use App\Models\ProcurementRequest;
+use App\Models\StockRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -39,12 +40,19 @@ class ProcurementRequestController extends Controller
         return view('treasurer.procurement.index', compact('requests'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $inventoryItems = InventoryItem::with('category')->orderBy('name')->get();
         $lowStockItems = $inventoryItems->filter(fn (InventoryItem $item) => $item->isLowStock());
 
-        return view('treasurer.procurement.create', compact('inventoryItems', 'lowStockItems'));
+        // Arriving from an approved Stock Request (Storekeeper -> Procurement
+        // Officer) — pre-fill what the Storekeeper already specified.
+        $stockRequest = null;
+        if ($request->filled('stock_request')) {
+            $stockRequest = StockRequest::where('status', 'approved')->find($request->input('stock_request'));
+        }
+
+        return view('treasurer.procurement.create', compact('inventoryItems', 'lowStockItems', 'stockRequest'));
     }
 
     public function store(Request $request)
@@ -56,16 +64,26 @@ class ProcurementRequestController extends Controller
             'estimated_cost' => 'required|numeric|min:0.01',
             'supplier' => 'nullable|string|max:255',
             'notes' => 'nullable|string|max:1000',
+            'stock_request_id' => 'nullable|exists:stock_requests,id',
         ]);
 
         $threshold = (float) config('finance.procurement_approval_threshold');
+        $stockRequestId = $validated['stock_request_id'] ?? null;
+        unset($validated['stock_request_id']);
 
-        ProcurementRequest::create([
+        $procurementRequest = ProcurementRequest::create([
             ...$validated,
             'requested_by' => Auth::id(),
             'status' => 'pending',
             'threshold_flag' => $threshold > 0 && $validated['estimated_cost'] > $threshold,
         ]);
+
+        if ($stockRequestId) {
+            StockRequest::where('id', $stockRequestId)->where('status', 'approved')->update([
+                'status' => 'converted',
+                'procurement_request_id' => $procurementRequest->id,
+            ]);
+        }
 
         return redirect()->route('treasurer.procurement.index')
             ->with('success', 'Procurement request submitted for Treasurer approval.');
