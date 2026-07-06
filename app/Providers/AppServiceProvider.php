@@ -16,6 +16,21 @@ class AppServiceProvider extends ServiceProvider
         // Gate for super-admin menu visibility (used by AdminLTE `can` key)
         Gate::define('is-super-admin', fn ($user) => $user->isSuperAdmin());
 
+        // AdminLTE's `can` menu key only checks Spatie PERMISSIONS via
+        // Gate — it has no equivalent for ROLE-gated routes (Spatie doesn't
+        // auto-register role names as Gate abilities the way it does
+        // permissions). Routes gated by role: middleware need an explicit
+        // Gate like this one so their menu item can actually be hidden from
+        // users who'd otherwise see a link and 403 on click.
+        Gate::define('is-treasurer', fn ($user) => $user->hasAnyRole(['treasurer', 'Admin']));
+
+        // Matches the outer role gate on the whole 'treasurer.*' route
+        // group (routes/web.php) — chief-accountant/accountant/treasurer
+        // all sit in the staff-loan approval chain, plus Admin.
+        Gate::define('is-loan-approver', fn ($user) => $user->hasAnyRole([
+            'chief-accountant', 'accountant', 'treasurer', 'Admin',
+        ]));
+
         // Share unread notification count with every view.
         // View::composer('*') fires once per rendered view/partial, not once
         // per page — a single AdminLTE page composes 20-30+ partials (sidebar,

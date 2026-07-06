@@ -751,6 +751,7 @@ return [
                     'text' => 'Loan Categories (Setup)',
                     'route' => 'treasurer.loan-categories.index',
                     'icon' => 'fas fa-tags',
+                    'can' => 'is-treasurer',
                 ],
                 [
                     'text' => 'Pending Loan Approvals',
@@ -764,16 +765,19 @@ return [
                     'text' => 'All Loan Applications',
                     'route' => 'treasurer.loans.index',
                     'icon' => 'fas fa-database',
+                    'can' => 'is-loan-approver',
                 ],
                 [
                     'text' => 'Record Repayments',                     // ✅ NEW
                     'route' => 'treasurer.loans.active',               // ✅ route defined in web.php
                     'icon' => 'fas fa-money-bill-wave',
+                    'can' => 'is-loan-approver',
                 ],
                 [
                     'text' => 'Upload Bank Statements',
                     'route' => 'treasurer.bank-statements.create',
                     'icon' => 'fas fa-upload',
+                    'can' => 'is-loan-approver',
                 ],
             ],
         ],
