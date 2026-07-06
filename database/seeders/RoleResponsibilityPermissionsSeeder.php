@@ -122,8 +122,16 @@ class RoleResponsibilityPermissionsSeeder extends Seeder
             'view profile', 'edit profile',
         ],
 
+        // Storekeeper physically manages stock ('manage stock' — full inventory
+        // CRUD, granted in FinanceOfficeRolesSeeder) and flags needs to the
+        // Procurement Officer instead of requesting purchases directly
+        // ('create stock requests', granted in StockRequestPermissionsSeeder).
+        // Re-declared here too so this seeder stays the accurate, complete
+        // picture of the role's job on its own.
         'storekeeper' => [
-            'view inventory', 'view profile', 'edit profile',
+            'manage stock', 'view inventory', 'create stock requests',
+            'manage tasks', 'submit task justification',
+            'view profile', 'edit profile',
         ],
 
         // Explicit ask: procurement officer needs to see inventory (to know
