@@ -76,14 +76,14 @@ class LoginRequest extends FormRequest
     /**
      * The entered School Code is now the source of truth for which tenant
      * this login belongs to — reject if the account belongs to a different
-     * school. Super admins bypass this so the code can be used to enter any
-     * school's context directly.
+     * school. Applies to every account, including super admins: a
+     * super-admin login must match that account's own school_id just like
+     * anyone else. (Cross-school management still works via the dedicated
+     * SuperAdmin routes/scopes, which bypass tenant scoping independently
+     * of this login check.)
      */
     private function enforceSchoolCodeMatch(User $user, School $school): void
     {
-        if ($user->isSuperAdmin()) return;
-        if ($user->school_id === null) return;
-
         if ((int) $user->school_id !== (int) $school->id) {
             throw ValidationException::withMessages([
                 'school_code' => 'This account does not belong to this school.',
