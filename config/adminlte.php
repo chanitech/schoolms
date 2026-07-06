@@ -456,7 +456,7 @@ return [
                 [
                     'text' => 'Aptitude Test',
                     'icon' => 'far fa-file-alt',
-                    'route' => 'aptitude.index',
+                    'route' => 'counseling.psychometric.aptitude.index',
                     'can'  => 'view aptitude tests',       // placeholder
                 ],
                 [
