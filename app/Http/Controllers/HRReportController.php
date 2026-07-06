@@ -296,9 +296,12 @@ public function evaluationReport()
         ->pluck('total', 'assigned_to');
 
     // 4️⃣ Lesson plan completion per teacher (by user_id on staff)
+    // Raw DB::table() bypasses the tenant scope — filter explicitly or this
+    // aggregates every school's lesson plans together.
     $lessonData = DB::table('lesson_plans')
         ->join('lesson_topics', 'lesson_topics.lesson_plan_id', '=', 'lesson_plans.id')
         ->join('lesson_subtopics', 'lesson_subtopics.lesson_topic_id', '=', 'lesson_topics.id')
+        ->when(app()->bound('currentSchool'), fn ($q) => $q->where('lesson_plans.school_id', app('currentSchool')->id))
         ->whereNull('lesson_plans.deleted_at')
         ->selectRaw('lesson_plans.teacher_id,
             COUNT(lesson_subtopics.id) as total_subtopics,

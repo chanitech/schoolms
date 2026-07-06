@@ -694,6 +694,9 @@ class TimetableController extends Controller
             ->join('subjects', 'subjects.id', '=', 'subject_class.subject_id')
             ->join('school_classes', 'school_classes.id', '=', 'subject_class.class_id')
             ->whereIn('subject_class.class_id', $classIds)
+            // class_ids come straight from client input — without this, a
+            // crafted request could probe another school's subject/class data.
+            ->when(app()->bound('currentSchool'), fn ($q) => $q->where('school_classes.school_id', app('currentSchool')->id))
             ->select(
                 'subject_class.class_id',
                 'school_classes.name as class_name',

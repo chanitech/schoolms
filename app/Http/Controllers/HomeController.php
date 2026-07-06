@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\AcademicSession;
 use App\Models\Attendance;
+use App\Models\Book;
 use App\Models\DailyReport;
 use App\Models\Dormitory;
 use App\Models\Department;
 use App\Models\Event;
 use App\Models\Leave;
+use App\Models\Lending;
 use App\Models\LessonPlan;
 use App\Models\Payment;
 use App\Models\SchoolClass;
@@ -91,12 +93,16 @@ class HomeController extends Controller
             ]);
 
         // ── Library stats (safe fallback) ────────────────────────────────────
+        // Was DB::table('books')->count() — a raw query bypasses the tenant
+        // scope entirely and showed the total across ALL schools. Also
+        // referenced a 'book_lendings' table that doesn't exist (the real
+        // table is 'lendings'), so borrowing stats were silently always 0.
         $libraryStats = [];
         try {
             $libraryStats = [
-                'books'            => DB::table('books')->count(),
-                'active_borrowings'=> DB::table('book_lendings')->whereNull('returned_at')->count(),
-                'issued_this_month' => DB::table('book_lendings')->whereDate('issued_at', '>=', $month)->count(),
+                'books'             => Book::count(),
+                'active_borrowings' => Lending::whereNull('returned_at')->count(),
+                'issued_this_month' => Lending::whereDate('lend_date', '>=', $month)->count(),
             ];
         } catch (\Exception) {
             $libraryStats = ['books' => 0, 'active_borrowings' => 0, 'issued_this_month' => 0];

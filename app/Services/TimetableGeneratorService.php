@@ -10,6 +10,11 @@ class TimetableGeneratorService
 {
     private array $warnings = [];
 
+    private function currentSchoolId(): ?int
+    {
+        return app()->bound('currentSchool') ? (int) app('currentSchool')->id : null;
+    }
+
     // ── Class Timetable ───────────────────────────────────────────────────
 
     public function generateClassTimetable(Timetable $timetable): array
@@ -87,11 +92,15 @@ class TimetableGeneratorService
 
         // ── SEED teacher slots from other non-draft timetables of the same session ──
         // Prevents this timetable from double-booking a teacher already committed elsewhere.
+        // academic_session_id is just an auto-increment PK — without the school_id
+        // filter, two schools sharing an id would seed teacher slots from each
+        // other's timetables entirely.
         $crossEntries = DB::table('timetable_entries')
             ->join('timetables', 'timetables.id', '=', 'timetable_entries.timetable_id')
             ->where('timetables.academic_session_id', $timetable->academic_session_id)
             ->where('timetables.type', 'class')
             ->where('timetables.id', '!=', $timetable->id)
+            ->when($this->currentSchoolId(), fn ($q, $id) => $q->where('timetables.school_id', $id))
             ->whereIn('timetables.status', ['published', 'pending_review', 'approved'])
             ->whereNotNull('timetable_entries.teacher_id')
             ->whereNotNull('timetable_entries.day_of_week')
@@ -582,6 +591,11 @@ class TimetableGeneratorService
     private function buildClassEntry(Timetable $timetable, object $asgn, int $day, int $periodId, array $timings): array
     {
         return [
+            // saveEntries() inserts via raw DB::table(), which skips the
+            // BelongsToSchool auto-fill — without this, every generated
+            // entry gets school_id = NULL and becomes invisible under the
+            // scoped queries used everywhere else (TimetableEntry::with(...)).
+            'school_id'    => $timetable->school_id,
             'timetable_id' => $timetable->id,
             'class_id'     => $asgn->class_id,
             'subject_id'   => $asgn->subject_id,
@@ -631,6 +645,8 @@ class TimetableGeneratorService
         }
 
         // Load all staff available to invigilate (Teachers + HODs)
+        // Without the school_id filter this pulled teachers from EVERY school
+        // as invigilator candidates for this school's exams.
         $allInvigilators = DB::table('users')
             ->join('model_has_roles', function ($j) {
                 $j->on('users.id', '=', 'model_has_roles.model_id')
@@ -638,6 +654,7 @@ class TimetableGeneratorService
             })
             ->join('roles', 'roles.id', '=', 'model_has_roles.role_id')
             ->whereIn('roles.name', ['Teacher', 'HOD', 'Academic'])
+            ->when($this->currentSchoolId(), fn ($q, $id) => $q->where('users.school_id', $id))
             ->distinct()
             ->pluck('users.id')
             ->toArray();
@@ -680,6 +697,7 @@ class TimetableGeneratorService
                         $classDateSlot[$classId][$date][$si] = true;
 
                         $entries[] = [
+                            'school_id'       => $timetable->school_id,
                             'timetable_id'    => $timetable->id,
                             'class_id'        => $classId,
                             'subject_id'      => $sub['subject_id'],
@@ -856,6 +874,7 @@ class TimetableGeneratorService
                 ->where('timetables.academic_session_id', $timetable->academic_session_id)
                 ->where('timetables.type', 'class')
                 ->where('timetables.id', '!=', $timetable->id)
+                ->when($this->currentSchoolId(), fn ($q, $id) => $q->where('timetables.school_id', $id))
                 ->where('timetables.status', 'published')
                 ->whereNotNull('timetable_entries.teacher_id')
                 ->whereNotNull('timetable_entries.day_of_week')

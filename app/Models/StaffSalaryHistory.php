@@ -12,6 +12,8 @@ class StaffSalaryHistory extends Model
 
     use HasFactory;
 
+    protected $table = 'staff_salary_history';
+
     protected $fillable = [
         'school_id',
         'staff_id', 'old_salary', 'new_salary', 'effective_date', 'changed_by', 'reason',
