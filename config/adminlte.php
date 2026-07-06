@@ -822,32 +822,40 @@ return [
             ],
         ],
 
-        // ========== FINANCE OFFICE (Procurement / Tasks / Oversight) ==========
+        // ========== PROCUREMENT ==========
         [
-            'text' => 'Finance Office',
-            'icon' => 'fas fa-sitemap',
+            'text' => 'Procurement',
+            'icon' => 'fas fa-shopping-cart',
             'submenu' => [
                 [
-                    'text' => 'Procurement Requests',
+                    'text' => 'Requests',
                     'route' => 'treasurer.procurement.index',
-                    'icon' => 'fas fa-shopping-cart',
+                    'icon' => 'fas fa-list',
                 ],
                 [
-                    'text' => 'New Procurement Request',
+                    'text' => 'New Request',
                     'route' => 'treasurer.procurement.create',
                     'icon' => 'fas fa-plus',
                     'can' => 'create procurement requests',
+                ],
+            ],
+        ],
+
+        // ========== PERFORMANCE & TASKS ==========
+        [
+            'text' => 'Performance & Tasks',
+            'icon' => 'fas fa-tasks',
+            'submenu' => [
+                [
+                    'text' => 'Tasks',
+                    'route' => 'treasurer.tasks.index',
+                    'icon' => 'fas fa-list-check',
                 ],
                 [
                     'text' => 'Job Descriptions',
                     'route' => 'treasurer.job-descriptions.index',
                     'icon' => 'fas fa-id-card',
                     'can' => 'manage job descriptions',
-                ],
-                [
-                    'text' => 'Tasks',
-                    'route' => 'treasurer.tasks.index',
-                    'icon' => 'fas fa-tasks',
                 ],
                 [
                     'text' => 'Oversight Dashboard',
