@@ -18,11 +18,23 @@ class ProcurementRequestController extends Controller
         $this->middleware('permission:disburse payments')->only(['disburse']);
     }
 
+    /**
+     * Anyone who can approve (Treasurer/Admin) sees every request, for
+     * oversight. Everyone else (Procurement Officer, Storekeeper) only
+     * submits requests, so they see only their own — not the whole
+     * school's procurement activity.
+     */
     public function index()
     {
-        $requests = ProcurementRequest::with(['requestedBy', 'approvedBy', 'inventoryItem'])
-            ->latest()
-            ->paginate(20);
+        $user = Auth::user();
+
+        $query = ProcurementRequest::with(['requestedBy', 'approvedBy', 'inventoryItem'])->latest();
+
+        if (! $user->can('approve procurement requests')) {
+            $query->where('requested_by', $user->id);
+        }
+
+        $requests = $query->paginate(20);
 
         return view('treasurer.procurement.index', compact('requests'));
     }
