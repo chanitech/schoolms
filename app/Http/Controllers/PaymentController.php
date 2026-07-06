@@ -17,6 +17,8 @@ class PaymentController extends Controller
     {
         $this->middleware('permission:record payments')->only(['create', 'store', 'createIndividual', 'storeIndividual']);
         $this->middleware('permission:view payments')->only(['index', 'show', 'receipt']);
+        $this->middleware('permission:verify payments')->only(['pendingReview', 'verify']);
+        $this->middleware('permission:flag payments')->only(['flag']);
     }
 
     /**
@@ -101,12 +103,14 @@ class PaymentController extends Controller
         $payment = Payment::create([
             'student_id' => $studentBill->student_id,
             'student_bill_id' => $studentBill->id,
+            'class_id' => $studentBill->bill->class_id ?? null,
             'amount' => $validated['amount'],
             'payment_method' => $validated['payment_method'] ?? null,
             'reference' => $validated['reference'] ?? null,
             'payment_date' => now(),
             'recorded_by' => Auth::id(),
             'note' => $validated['note'] ?? null,
+            'status' => 'pending',
         ]);
 
         // Update StudentBill balance and status
@@ -146,5 +150,63 @@ class PaymentController extends Controller
     {
         $payment->load('studentBill.student', 'studentBill.bill');
         return view('finance.payments.show', compact('payment'));
+    }
+
+    /**
+     * Class accountants see only payments for their assigned classes;
+     * treasurers (via 'view finance dashboard') see everything pending/flagged.
+     */
+    public function pendingReview()
+    {
+        $user = Auth::user();
+
+        $query = Payment::with(['studentBill.student', 'studentBill.bill', 'schoolClass'])
+            ->whereIn('status', ['pending', 'flagged']);
+
+        if (!$user->can('view finance dashboard')) {
+            $classIds = \App\Models\AccountantClassAssignment::where('user_id', $user->id)->pluck('class_id');
+            $query->whereIn('class_id', $classIds);
+        }
+
+        $payments = $query->latest()->paginate(20);
+
+        return view('finance.payments.review', compact('payments'));
+    }
+
+    public function verify(Payment $payment)
+    {
+        $user = Auth::user();
+
+        if (!$user->can('view finance dashboard')) {
+            $assigned = \App\Models\AccountantClassAssignment::where('user_id', $user->id)
+                ->where('class_id', $payment->class_id)
+                ->exists();
+
+            if (!$assigned) {
+                abort(403, 'You are not the assigned accountant for this class.');
+            }
+        }
+
+        $payment->update([
+            'status' => 'verified',
+            'verified_by' => $user->id,
+        ]);
+
+        return back()->with('success', 'Payment verified.');
+    }
+
+    public function flag(Request $request, Payment $payment)
+    {
+        $validated = $request->validate([
+            'note' => 'nullable|string|max:500',
+        ]);
+
+        $payment->update([
+            'status' => 'flagged',
+            'verified_by' => Auth::id(),
+            'note' => $validated['note'] ?? $payment->note,
+        ]);
+
+        return back()->with('success', 'Payment flagged for Treasurer review.');
     }
 }

@@ -15,7 +15,7 @@ class InventoryItem extends Model
         'school_id',
         'category_id', 'name', 'code', 'description', 'unit',
         'quantity_in_stock', 'minimum_stock', 'unit_cost',
-        'condition', 'location', 'notes',
+        'condition', 'location', 'notes', 'managed_by',
     ];
 
     protected $casts = [
@@ -25,6 +25,11 @@ class InventoryItem extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(InventoryCategory::class, 'category_id');
+    }
+
+    public function managedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'managed_by');
     }
 
     public function transactions(): HasMany

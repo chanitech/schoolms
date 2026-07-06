@@ -807,11 +807,53 @@ return [
                     'route' => 'finance.payments.index',
                     'icon' => 'fas fa-credit-card',
                 ],
+                [
+                    'text' => 'Verify/Flag Payments',
+                    'route' => 'finance.payments.review',
+                    'icon' => 'fas fa-check-double',
+                    'can' => 'verify payments',
+                ],
                 // ✅ FIXED: Use direct URL instead of route name
                 [
                     'text' => 'Pocket Money',
                      'url' => '/finance/pocket/transactions',   // ✅ correct
                     'icon' => 'fas fa-piggy-bank',
+                ],
+            ],
+        ],
+
+        // ========== FINANCE OFFICE (Procurement / Tasks / Oversight) ==========
+        [
+            'text' => 'Finance Office',
+            'icon' => 'fas fa-sitemap',
+            'submenu' => [
+                [
+                    'text' => 'Procurement Requests',
+                    'route' => 'treasurer.procurement.index',
+                    'icon' => 'fas fa-shopping-cart',
+                ],
+                [
+                    'text' => 'New Procurement Request',
+                    'route' => 'treasurer.procurement.create',
+                    'icon' => 'fas fa-plus',
+                    'can' => 'create procurement requests',
+                ],
+                [
+                    'text' => 'Job Descriptions',
+                    'route' => 'treasurer.job-descriptions.index',
+                    'icon' => 'fas fa-id-card',
+                    'can' => 'manage job descriptions',
+                ],
+                [
+                    'text' => 'Tasks',
+                    'route' => 'treasurer.tasks.index',
+                    'icon' => 'fas fa-tasks',
+                ],
+                [
+                    'text' => 'Oversight Dashboard',
+                    'route' => 'treasurer.dashboard',
+                    'icon' => 'fas fa-chart-line',
+                    'can' => 'view finance dashboard',
                 ],
             ],
         ],

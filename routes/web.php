@@ -62,6 +62,11 @@ use App\Http\Controllers\Staff\BankStatementController as StaffBankStatementCont
 use App\Http\Controllers\Treasurer\LoanApprovalController;
 use App\Http\Controllers\Treasurer\LoanCategoryController;
 use App\Http\Controllers\Treasurer\BankStatementController;
+use App\Http\Controllers\Treasurer\ProcurementRequestController;
+use App\Http\Controllers\Treasurer\JobDescriptionController;
+use App\Http\Controllers\Treasurer\TaskLogController;
+use App\Http\Controllers\Treasurer\TaskJustificationController;
+use App\Http\Controllers\Treasurer\FinanceDashboardController;
 use App\Http\Controllers\SuperAdmin\SchoolController as SuperSchoolController;
 
 /*
@@ -144,6 +149,47 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('loan-categories', LoanCategoryController::class)->middleware('role:treasurer');
         Route::resource('bank-statements', BankStatementController::class)->except(['show', 'edit', 'update']);
     });
+
+    // ==================== FINANCE OFFICE ====================
+    // Payment reconciliation — Class Accountants verify/flag, Treasurer reviews
+    Route::prefix('finance/payments')->name('finance.payments.')->group(function () {
+        Route::get('/review', [PaymentController::class, 'pendingReview'])->name('review');
+        Route::post('/{payment}/verify', [PaymentController::class, 'verify'])->name('verify');
+        Route::post('/{payment}/flag', [PaymentController::class, 'flag'])->name('flag');
+    });
+
+    // Procurement/Expense — Storekeeper/Procurement Officer request, Treasurer approves, Cashier disburses
+    Route::prefix('treasurer/procurement')->name('treasurer.procurement.')->group(function () {
+        Route::get('/', [ProcurementRequestController::class, 'index'])->name('index');
+        Route::get('/create', [ProcurementRequestController::class, 'create'])->name('create');
+        Route::post('/', [ProcurementRequestController::class, 'store'])->name('store');
+        Route::get('/pending', [ProcurementRequestController::class, 'pending'])->name('pending');
+        Route::post('/{procurementRequest}/approve', [ProcurementRequestController::class, 'approve'])->name('approve');
+        Route::post('/{procurementRequest}/reject', [ProcurementRequestController::class, 'reject'])->name('reject');
+        Route::post('/{procurementRequest}/disburse', [ProcurementRequestController::class, 'disburse'])->name('disburse');
+    });
+
+    // Job Descriptions — Treasurer-managed, one per Finance Office role
+    Route::prefix('treasurer/job-descriptions')->name('treasurer.job-descriptions.')->group(function () {
+        Route::get('/', [JobDescriptionController::class, 'index'])->name('index');
+        Route::put('/{roleName}', [JobDescriptionController::class, 'update'])->name('update');
+    });
+
+    // Task/Performance tracking — assigned by Treasurer, tracked by assignee
+    Route::prefix('treasurer/tasks')->name('treasurer.tasks.')->group(function () {
+        Route::get('/', [TaskLogController::class, 'index'])->name('index');
+        Route::get('/create', [TaskLogController::class, 'create'])->name('create');
+        Route::post('/', [TaskLogController::class, 'store'])->name('store');
+        Route::post('/{taskLog}/progress', [TaskLogController::class, 'updateProgress'])->name('progress');
+        Route::post('/{taskLog}/submit', [TaskLogController::class, 'submitForReview'])->name('submit');
+        Route::post('/{taskLog}/approve', [TaskLogController::class, 'approve'])->name('approve');
+        Route::post('/{taskLog}/toggle-exceeds', [TaskLogController::class, 'toggleExceeds'])->name('toggle-exceeds');
+        Route::post('/{taskLog}/justification', [TaskJustificationController::class, 'store'])->name('justification.store');
+    });
+    Route::post('/treasurer/justifications/{justification}/review', [TaskJustificationController::class, 'review'])->name('treasurer.justifications.review');
+
+    // Treasurer oversight dashboard
+    Route::get('/treasurer/dashboard', [FinanceDashboardController::class, 'index'])->name('treasurer.dashboard');
 
     // ==================== STUDENT ROUTES ====================
     Route::get('/students/download-template', [StudentController::class, 'downloadTemplate'])->name('students.download-template');
