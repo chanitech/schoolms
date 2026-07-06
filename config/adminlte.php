@@ -325,6 +325,12 @@ return [
                 'icon'  => 'fas fa-plus-circle',
                 'can'   => 'is-super-admin',
             ],
+            [
+                'text'  => 'All Accounts',
+                'route' => 'super.accounts.index',
+                'icon'  => 'fas fa-users-cog',
+                'can'   => 'is-super-admin',
+            ],
         ],
     ],
     // AI Tools

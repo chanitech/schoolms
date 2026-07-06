@@ -213,18 +213,25 @@ class SchoolController extends Controller
         return back()->with('success', "Subscription status set to " . ucfirst($request->status) . ".");
     }
 
-    public function resetUserPassword(Request $request, School $school, User $user)
+    // Deliberately NOT using implicit Eloquent route binding (User $user)
+    // here: User uses the BelongsToSchool scope, so implicit binding would
+    // silently 404 whenever $school isn't whatever the super admin's own
+    // session currently has bound as currentSchool — i.e. almost always,
+    // since a super admin only has one school in session at a time.
+    public function resetUserPassword(Request $request, School $school, int $user)
     {
         $request->validate([
             'password' => 'required|string|min:8|confirmed',
         ]);
 
+        $targetUser = User::withoutGlobalScope('school')->findOrFail($user);
+
         // Safety: user must actually belong to this school
-        abort_if((int) $user->school_id !== (int) $school->id, 403);
+        abort_if((int) $targetUser->school_id !== (int) $school->id, 403);
 
-        $user->update(['password' => Hash::make($request->password)]);
+        $targetUser->update(['password' => Hash::make($request->password)]);
 
-        return back()->with('success', "Password reset for {$user->email}.");
+        return back()->with('success', "Password reset for {$targetUser->email}.");
     }
 
     // Add an extra admin user to an existing school

@@ -68,6 +68,7 @@ use App\Http\Controllers\Treasurer\TaskLogController;
 use App\Http\Controllers\Treasurer\TaskJustificationController;
 use App\Http\Controllers\Treasurer\FinanceDashboardController;
 use App\Http\Controllers\SuperAdmin\SchoolController as SuperSchoolController;
+use App\Http\Controllers\SuperAdmin\AccountController as SuperAccountController;
 
 /*
 |--------------------------------------------------------------------------
@@ -669,6 +670,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::post('schools/{school}/users/{user}/reset-password', [SuperSchoolController::class, 'resetUserPassword'])
             ->name('schools.reset-password');
+
+        Route::get('accounts', [SuperAccountController::class, 'index'])
+            ->name('accounts.index');
+
+        Route::post('accounts/{user}/change-school', [SuperAccountController::class, 'changeSchool'])
+            ->name('accounts.change-school');
     });
 
 });

@@ -5,9 +5,14 @@
 @section('content_header')
     <div class="d-flex align-items-center justify-content-between">
         <h1 class="m-0"><i class="fas fa-building mr-2"></i>All Schools</h1>
-        <a href="{{ route('super.schools.create') }}" class="btn btn-primary">
-            <i class="fas fa-plus mr-1"></i> Add School
-        </a>
+        <div>
+            <a href="{{ route('super.accounts.index') }}" class="btn btn-outline-secondary mr-1">
+                <i class="fas fa-users-cog mr-1"></i> All Accounts
+            </a>
+            <a href="{{ route('super.schools.create') }}" class="btn btn-primary">
+                <i class="fas fa-plus mr-1"></i> Add School
+            </a>
+        </div>
     </div>
 @endsection
 
