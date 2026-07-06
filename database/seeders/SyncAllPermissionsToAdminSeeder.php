@@ -89,6 +89,11 @@ class SyncAllPermissionsToAdminSeeder extends Seeder
         // workflow.
         'create stock requests',
         'review stock requests',
+
+        // New: StudentBillController's edit/update/destroy had zero
+        // permission checks — any authenticated user could reach them.
+        'edit student bills',
+        'delete student bills',
     ];
 
     public function run(): void

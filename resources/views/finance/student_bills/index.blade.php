@@ -5,9 +5,11 @@
 @section('content_header')
     <div class="d-flex justify-content-between align-items-center">
         <h1 class="m-0 text-dark"><i class="fas fa-file-invoice-dollar"></i> Student Bills</h1>
+        @can('create student bills')
         <a href="{{ route('finance.student-bills.create') }}" class="btn btn-primary">
             <i class="fas fa-plus"></i> Create Bill
         </a>
+        @endcan
     </div>
 @stop
 
@@ -60,15 +62,19 @@
                                     <a href="{{ route('finance.student-bills.show', $bill) }}" class="btn btn-sm btn-info">
                                         <i class="fas fa-eye"></i> View
                                     </a>
+                                    @can('edit student bills')
                                     <a href="{{ route('finance.student-bills.edit', $bill) }}" class="btn btn-sm btn-warning">
                                         <i class="fas fa-edit"></i> Edit
                                     </a>
+                                    @endcan
+                                    @can('delete student bills')
                                     <form action="{{ route('finance.student-bills.destroy', $bill) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this bill?')">
                                         @csrf @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-danger">
                                             <i class="fas fa-trash"></i> Delete
                                         </button>
                                     </form>
+                                    @endcan
                                 </td>
                             </tr>
                         @empty

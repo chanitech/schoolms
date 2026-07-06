@@ -12,6 +12,8 @@ class StudentBillController extends Controller
     {
         $this->middleware('permission:view student bills')->only(['index', 'show']);
         $this->middleware('permission:create student bills')->only(['create', 'store']);
+        $this->middleware('permission:edit student bills')->only(['edit', 'update']);
+        $this->middleware('permission:delete student bills')->only('destroy');
     }
 
     public function index()
