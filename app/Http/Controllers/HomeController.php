@@ -42,79 +42,105 @@ class HomeController extends Controller
         }
         $lastMonth = Carbon::now()->subMonth()->startOfMonth();
 
+        // ── Permission flags — each stat/widget below is only computed and
+        // shown if the user actually holds the permission behind it, so the
+        // dashboard reflects what this specific role can see/do rather than
+        // showing school-wide data (finance, staff counts, etc.) to every
+        // authenticated user regardless of role.
+        $canViewStudents   = $user->can('view students');
+        $canViewStaff      = $user->can('view staff');
+        $canViewClasses    = $user->can('view classes') || $user->can('view subjects');
+        $canViewPayments   = $user->can('view payments');
+        $canViewTimetables = $user->can('view timetable');
+        $canViewLeaves     = $user->can('view leaves');
+        $canViewDorms      = $user->can('view dormitories') || $user->can('view departments');
+        $canViewLibrary    = $user->can('view books');
+        $canViewEvents     = $user->can('view events');
+
         // ── Core counts ─────────────────────────────────────────────────────
-        $studentCount   = Student::count();
-        $staffCount     = Staff::count();
-        $classCount     = SchoolClass::count();
-        $subjectCount   = Subject::count();
-        $dormCount      = Dormitory::count();
-        $departmentCount = Department::count();
+        $studentCount   = $canViewStudents ? Student::count() : 0;
+        $staffCount     = $canViewStaff ? Staff::count() : 0;
+        $classCount     = $canViewClasses ? SchoolClass::count() : 0;
+        $subjectCount   = $canViewClasses ? Subject::count() : 0;
+        $dormCount      = $canViewDorms ? Dormitory::count() : 0;
+        $departmentCount = $canViewDorms ? Department::count() : 0;
 
         // ── Growth badges (this month vs last month) ─────────────────────────
-        $studentsThisMonth = Student::whereDate('created_at', '>=', $month)->count();
-        $studentsLastMonth = Student::whereBetween('created_at', [$lastMonth, $month])->count();
-        $studentGrowth     = $studentsLastMonth > 0
-            ? round((($studentsThisMonth - $studentsLastMonth) / $studentsLastMonth) * 100)
-            : null;
+        $studentGrowth = null;
+        if ($canViewStudents) {
+            $studentsThisMonth = Student::whereDate('created_at', '>=', $month)->count();
+            $studentsLastMonth = Student::whereBetween('created_at', [$lastMonth, $month])->count();
+            $studentGrowth     = $studentsLastMonth > 0
+                ? round((($studentsThisMonth - $studentsLastMonth) / $studentsLastMonth) * 100)
+                : null;
+        }
 
         // ── Academic session ─────────────────────────────────────────────────
         $currentSession = AcademicSession::where('is_current', true)->first();
 
         // ── Today's finance snapshot ─────────────────────────────────────────
-        $todayCollection = Payment::whereDate('payment_date', $today)->sum('amount');
-        $monthCollection = Payment::whereDate('payment_date', '>=', $month)->sum('amount');
+        $todayCollection = $canViewPayments ? Payment::whereDate('payment_date', $today)->sum('amount') : 0;
+        $monthCollection = $canViewPayments ? Payment::whereDate('payment_date', '>=', $month)->sum('amount') : 0;
 
         // ── Staff attendance today ───────────────────────────────────────────
-        $staffPresentToday  = Attendance::whereDate('date', $today)->where('status', 'present')->count();
-        $staffAttendanceRate = $staffCount > 0 ? round(($staffPresentToday / $staffCount) * 100) : 0;
+        $staffPresentToday  = $canViewStaff ? Attendance::whereDate('date', $today)->where('status', 'present')->count() : 0;
+        $staffAttendanceRate = $canViewStaff && $staffCount > 0 ? round(($staffPresentToday / $staffCount) * 100) : 0;
 
         // ── Pending leaves ───────────────────────────────────────────────────
-        $pendingLeaves = Leave::where('status', 'pending')->count();
+        $pendingLeaves = $canViewLeaves ? Leave::where('status', 'pending')->count() : 0;
 
         // ── Published timetables ─────────────────────────────────────────────
-        $publishedTimetables = Timetable::where('status', 'published')->count();
+        $publishedTimetables = $canViewTimetables ? Timetable::where('status', 'published')->count() : 0;
 
         // ── Events ───────────────────────────────────────────────────────────
-        $eventStats    = Event::selectRaw('type, COUNT(*) as total')->groupBy('type')->pluck('total', 'type');
-        $upcomingEvents = Event::whereDate('start_date', '>=', $today)->orderBy('start_date')->take(5)->get();
-        $calendarEvents = Event::whereDate('start_date', '>=', $today->copy()->startOfMonth())
-            ->whereDate('end_date', '<=', $today->copy()->endOfMonth()->addMonths(2))
-            ->get(['title', 'start_date', 'end_date', 'type'])
-            ->map(fn($e) => [
-                'title' => $e->title,
-                'start' => $e->start_date,
-                'end'   => $e->end_date,
-                'color' => match($e->type) {
-                    'academic' => '#007bff', 'sport' => '#28a745',
-                    'cultural' => '#ffc107', 'holiday' => '#dc3545',
-                    default    => '#6c757d',
-                },
-            ]);
+        $eventStats     = collect();
+        $upcomingEvents = collect();
+        $calendarEvents = collect();
+        if ($canViewEvents) {
+            $eventStats    = Event::selectRaw('type, COUNT(*) as total')->groupBy('type')->pluck('total', 'type');
+            $upcomingEvents = Event::whereDate('start_date', '>=', $today)->orderBy('start_date')->take(5)->get();
+            $calendarEvents = Event::whereDate('start_date', '>=', $today->copy()->startOfMonth())
+                ->whereDate('end_date', '<=', $today->copy()->endOfMonth()->addMonths(2))
+                ->get(['title', 'start_date', 'end_date', 'type'])
+                ->map(fn($e) => [
+                    'title' => $e->title,
+                    'start' => $e->start_date,
+                    'end'   => $e->end_date,
+                    'color' => match($e->type) {
+                        'academic' => '#007bff', 'sport' => '#28a745',
+                        'cultural' => '#ffc107', 'holiday' => '#dc3545',
+                        default    => '#6c757d',
+                    },
+                ]);
+        }
 
         // ── Library stats (safe fallback) ────────────────────────────────────
         // Was DB::table('books')->count() — a raw query bypasses the tenant
         // scope entirely and showed the total across ALL schools. Also
         // referenced a 'book_lendings' table that doesn't exist (the real
         // table is 'lendings'), so borrowing stats were silently always 0.
-        $libraryStats = [];
-        try {
-            $libraryStats = [
-                'books'             => Book::count(),
-                'active_borrowings' => Lending::whereNull('returned_at')->count(),
-                'issued_this_month' => Lending::whereDate('lend_date', '>=', $month)->count(),
-            ];
-        } catch (\Exception) {
-            $libraryStats = ['books' => 0, 'active_borrowings' => 0, 'issued_this_month' => 0];
+        $libraryStats = ['books' => 0, 'active_borrowings' => 0, 'issued_this_month' => 0];
+        if ($canViewLibrary) {
+            try {
+                $libraryStats = [
+                    'books'             => Book::count(),
+                    'active_borrowings' => Lending::whereNull('returned_at')->count(),
+                    'issued_this_month' => Lending::whereDate('lend_date', '>=', $month)->count(),
+                ];
+            } catch (\Exception) {
+                // keep the zeroed fallback
+            }
         }
 
         // ── Recent students ──────────────────────────────────────────────────
-        $recentStudents = Student::latest()->take(5)->get();
+        $recentStudents = $canViewStudents ? Student::latest()->take(5)->get() : collect();
 
         return view('home', compact(
+            'canViewStudents', 'canViewStaff', 'canViewClasses', 'canViewPayments',
+            'canViewTimetables', 'canViewLeaves', 'canViewDorms', 'canViewLibrary', 'canViewEvents',
             'studentCount', 'staffCount', 'classCount', 'subjectCount',
             'dormCount', 'departmentCount',
-            'studentGrowth', 'studentsThisMonth',
-            'currentSession',
+            'studentGrowth', 'currentSession',
             'todayCollection', 'monthCollection',
             'staffPresentToday', 'staffAttendanceRate', 'staffCount',
             'pendingLeaves', 'publishedTimetables',

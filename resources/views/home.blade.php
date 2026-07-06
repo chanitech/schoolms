@@ -50,6 +50,7 @@
      STATS ROW
 ══════════════════════════════════════════════════════════════════════ --}}
 <div class="row stats-row">
+    @if($canViewStudents)
     <div class="col-xl-2 col-md-4 col-6">
         <div class="stat-card stat-blue">
             <div class="stat-icon"><i class="fas fa-user-graduate"></i></div>
@@ -64,6 +65,8 @@
             </div>
         </div>
     </div>
+    @endif
+    @if($canViewStaff)
     <div class="col-xl-2 col-md-4 col-6">
         <div class="stat-card stat-teal">
             <div class="stat-icon"><i class="fas fa-chalkboard-teacher"></i></div>
@@ -76,6 +79,8 @@
             </div>
         </div>
     </div>
+    @endif
+    @if($canViewClasses)
     <div class="col-xl-2 col-md-4 col-6">
         <div class="stat-card stat-green">
             <div class="stat-icon"><i class="fas fa-school"></i></div>
@@ -86,6 +91,8 @@
             </div>
         </div>
     </div>
+    @endif
+    @if($canViewPayments)
     <div class="col-xl-2 col-md-4 col-6">
         <div class="stat-card stat-purple">
             <div class="stat-icon"><i class="fas fa-money-bill-wave"></i></div>
@@ -96,22 +103,28 @@
             </div>
         </div>
     </div>
+    @endif
+    @if($canViewTimetables)
     <div class="col-xl-2 col-md-4 col-6">
         <div class="stat-card stat-orange">
             <div class="stat-icon"><i class="fas fa-calendar-week"></i></div>
             <div class="stat-body">
                 <div class="stat-number">{{ $publishedTimetables }}</div>
                 <div class="stat-label">Active Timetables</div>
-                @if($pendingLeaves > 0)
-                    <div class="stat-growth text-warning">
-                        <i class="fas fa-exclamation-circle mr-1"></i>{{ $pendingLeaves }} leave(s) pending
-                    </div>
-                @else
-                    <div class="stat-growth text-success"><i class="fas fa-check mr-1"></i>No pending leaves</div>
+                @if($canViewLeaves)
+                    @if($pendingLeaves > 0)
+                        <div class="stat-growth text-warning">
+                            <i class="fas fa-exclamation-circle mr-1"></i>{{ $pendingLeaves }} leave(s) pending
+                        </div>
+                    @else
+                        <div class="stat-growth text-success"><i class="fas fa-check mr-1"></i>No pending leaves</div>
+                    @endif
                 @endif
             </div>
         </div>
     </div>
+    @endif
+    @if($canViewDorms)
     <div class="col-xl-2 col-md-4 col-6">
         <div class="stat-card stat-red">
             <div class="stat-icon"><i class="fas fa-bed"></i></div>
@@ -122,8 +135,19 @@
             </div>
         </div>
     </div>
+    @endif
 </div>
+@if(!$canViewStudents && !$canViewStaff && !$canViewClasses && !$canViewPayments && !$canViewTimetables && !$canViewDorms)
+<div class="row stats-row">
+    <div class="col-12">
+        <div class="alert alert-light border text-muted mb-3" style="border-radius:12px">
+            <i class="fas fa-info-circle mr-1"></i> Your role doesn't have school-wide statistics to show here — use the sidebar menu for what you're set up to do.
+        </div>
+    </div>
+</div>
+@endif
 
+@if($canViewStaff)
 {{-- ══════════════════════════════════════════════════════════════════════
      STAFF ATTENDANCE PROGRESS BAR
 ══════════════════════════════════════════════════════════════════════ --}}
@@ -145,6 +169,7 @@
         </div>
     </div>
 </div>
+@endif
 
 {{-- ══════════════════════════════════════════════════════════════════════
      MAIN CONTENT: Schedule | Events | Quick Actions
@@ -183,6 +208,7 @@
     {{-- RIGHT SIDEBAR: Quick Stats + Quick Actions --}}
     <div class="col-lg-4">
         {{-- Library Quick Stats --}}
+        @if($canViewLibrary)
         <div class="card shadow-sm border-0 mb-3" style="border-radius:12px;overflow:hidden">
             <div class="card-header" style="background:linear-gradient(135deg,#6f42c1,#4a148c);color:#fff">
                 <i class="fas fa-book mr-2"></i><strong>Library</strong>
@@ -209,6 +235,7 @@
                 @endif
             </div>
         </div>
+        @endif
 
         {{-- Quick Actions --}}
         <div class="card shadow-sm border-0" style="border-radius:12px;overflow:hidden">
@@ -251,12 +278,16 @@
                             <i class="fas fa-chart-line"></i><span>Results</span>
                         </a>
                     @endif
+                    @if($canViewLibrary)
                     <a href="{{ route('library.lendings.create') }}" class="qa-btn qa-orange">
                         <i class="fas fa-book"></i><span>Lend Book</span>
                     </a>
+                    @endif
+                    @if($canViewEvents)
                     <a href="{{ route('events.calendar') }}" class="qa-btn qa-red">
                         <i class="fas fa-calendar"></i><span>Calendar</span>
                     </a>
+                    @endif
                 </div>
             </div>
         </div>
@@ -268,6 +299,7 @@
 ══════════════════════════════════════════════════════════════════════ --}}
 <div class="row">
     {{-- Upcoming Events --}}
+    @if($canViewEvents)
     <div class="col-lg-4 mb-3">
         <div class="card shadow-sm border-0 h-100" style="border-radius:12px;overflow:hidden">
             <div class="card-header d-flex justify-content-between align-items-center"
@@ -304,8 +336,10 @@
             </div>
         </div>
     </div>
+    @endif
 
     {{-- Recent Student Registrations --}}
+    @if($canViewStudents)
     <div class="col-lg-4 mb-3">
         <div class="card shadow-sm border-0 h-100" style="border-radius:12px;overflow:hidden">
             <div class="card-header d-flex justify-content-between align-items-center"
@@ -339,8 +373,10 @@
             </div>
         </div>
     </div>
+    @endif
 
     {{-- Event Type Chart --}}
+    @if($canViewEvents)
     <div class="col-lg-4 mb-3">
         <div class="card shadow-sm border-0 h-100" style="border-radius:12px;overflow:hidden">
             <div class="card-header"
@@ -358,9 +394,11 @@
             </div>
         </div>
     </div>
+    @endif
 </div>
 
 {{-- Event Calendar --}}
+@if($canViewEvents)
 <div class="row">
     <div class="col-12 mb-3">
         <div class="card shadow-sm border-0" style="border-radius:12px;overflow:hidden">
@@ -377,6 +415,7 @@
         </div>
     </div>
 </div>
+@endif
 
 @stop
 
