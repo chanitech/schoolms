@@ -97,20 +97,24 @@ class Loan extends Model
         };
     }
 
-    // Approve by a user (checks role & level)
+    // Approve by a user (checks role & level). Admin can act at whichever
+    // stage is currently pending, on top of the normal chain — it doesn't
+    // skip stages, it just isn't locked out of any of them.
     public function approveBy(User $user): bool
     {
         if ($this->status !== 'pending') return false;
 
-        if ($user->hasRole('chief-accountant') && $this->approval_level === 0) {
+        $isAdmin = $user->hasRole('Admin');
+
+        if (($user->hasRole('chief-accountant') || $isAdmin) && $this->approval_level === 0) {
             $this->approval_level = 1;
             $this->chief_accountant_approved_by = $user->id;
             $this->chief_accountant_approved_at = now();
-        } elseif ($user->hasRole('accountant') && $this->approval_level === 1) {
+        } elseif (($user->hasRole('accountant') || $isAdmin) && $this->approval_level === 1) {
             $this->approval_level = 2;
             $this->accountant_approved_by = $user->id;
             $this->accountant_approved_at = now();
-        } elseif ($user->hasRole('treasurer') && $this->approval_level === 2) {
+        } elseif (($user->hasRole('treasurer') || $isAdmin) && $this->approval_level === 2) {
             $this->approval_level = 3;
             $this->treasurer_approved_by = $user->id;
             $this->treasurer_approved_at = now();

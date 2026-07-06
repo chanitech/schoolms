@@ -23,7 +23,11 @@ class LoanApprovalController extends Controller
         $user = Auth::user();
         $loans = collect();
 
-        if ($user->hasRole('chief-accountant')) {
+        if ($user->hasRole('Admin')) {
+            $loans = Loan::where('status', 'pending')
+                         ->orderBy('application_date', 'asc')
+                         ->get();
+        } elseif ($user->hasRole('chief-accountant')) {
             $loans = Loan::where('status', 'pending')
                          ->where('approval_level', 0)
                          ->orderBy('application_date', 'asc')

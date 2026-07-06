@@ -136,7 +136,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // ==================== TREASURER ROUTES ====================
-    Route::middleware(['auth', 'role:chief-accountant|accountant|treasurer'])->prefix('treasurer')->name('treasurer.')->group(function () {
+    Route::middleware(['auth', 'role:chief-accountant|accountant|treasurer|Admin'])->prefix('treasurer')->name('treasurer.')->group(function () {
         Route::get('loans/pending', [LoanApprovalController::class, 'pending'])->name('loans.pending');
         Route::post('loans/{loan}/approve', [LoanApprovalController::class, 'approve'])->name('loans.approve');
         Route::post('loans/{loan}/reject', [LoanApprovalController::class, 'reject'])->name('loans.reject');
@@ -146,7 +146,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('loans/active', [LoanApprovalController::class, 'activeLoans'])->name('loans.active');
         Route::get('loans/{loan}/statement', [LoanApprovalController::class, 'treasurerStatement'])->name('loans.statement');
         Route::post('loans/{loan}/repayments/{repayment}/pay', [LoanApprovalController::class, 'recordRepayment'])->name('loans.repayments.pay');
-        Route::resource('loan-categories', LoanCategoryController::class)->middleware('role:treasurer');
+        Route::resource('loan-categories', LoanCategoryController::class)->middleware('role:treasurer|Admin');
         Route::resource('bank-statements', BankStatementController::class)->except(['show', 'edit', 'update']);
     });
 

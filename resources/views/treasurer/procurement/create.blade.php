@@ -24,10 +24,23 @@
                     <label for="inventory_item_id">Related Inventory Item (optional)</label>
                     <select name="inventory_item_id" id="inventory_item_id" class="form-control">
                         <option value="">— None —</option>
-                        @foreach($lowStockItems as $item)
-                            <option value="{{ $item->id }}">{{ $item->name }} (in stock: {{ $item->quantity_in_stock }})</option>
+                        @foreach($inventoryItems as $item)
+                            <option value="{{ $item->id }}">
+                                {{ $item->name }} ({{ $item->category->name ?? 'Uncategorized' }}) — in stock: {{ $item->quantity_in_stock }}{{ $item->isLowStock() ? ' ⚠️ LOW' : '' }}
+                            </option>
                         @endforeach
                     </select>
+                    @if($inventoryItems->isEmpty())
+                        <small class="form-text text-muted">
+                            No inventory items exist yet. You don't need one to submit this request — but if you want to
+                            link it to stock tracking, <a href="{{ url('inventory/items/create') }}" target="_blank">create an inventory item first <i class="fas fa-external-link-alt"></i></a>
+                            (also found under the sidebar's <strong>Inventory → Items</strong> menu).
+                        </small>
+                    @else
+                        <small class="form-text text-muted">
+                            Don't see the item? <a href="{{ url('inventory/items/create') }}" target="_blank">Create a new inventory item <i class="fas fa-external-link-alt"></i></a>.
+                        </small>
+                    @endif
                 </div>
 
                 <div class="form-group">

@@ -29,11 +29,10 @@ class ProcurementRequestController extends Controller
 
     public function create()
     {
-        $lowStockItems = InventoryItem::withoutSchoolScope()
-            ->get()
-            ->filter(fn (InventoryItem $item) => $item->isLowStock());
+        $inventoryItems = InventoryItem::with('category')->orderBy('name')->get();
+        $lowStockItems = $inventoryItems->filter(fn (InventoryItem $item) => $item->isLowStock());
 
-        return view('treasurer.procurement.create', compact('lowStockItems'));
+        return view('treasurer.procurement.create', compact('inventoryItems', 'lowStockItems'));
     }
 
     public function store(Request $request)

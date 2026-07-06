@@ -120,7 +120,7 @@ class FinanceDashboardController extends Controller
             : null;
 
         $lowStockCount = $user->can('manage stock')
-            ? InventoryItem::withoutSchoolScope()->get()->filter(fn (InventoryItem $item) => $item->isLowStock())->count()
+            ? InventoryItem::all()->filter(fn (InventoryItem $item) => $item->isLowStock())->count()
             : null;
 
         return view('treasurer.my-dashboard', compact(
