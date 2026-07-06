@@ -5,9 +5,11 @@
 @section('content_header')
 <div class="d-flex justify-content-between align-items-center">
     <h1 class="m-0"><i class="fas fa-boxes mr-2 text-primary"></i>Inventory Items</h1>
+    @canany(['manage settings', 'manage stock'])
     <a href="{{ route('inventory.items.create') }}" class="btn btn-primary btn-sm">
         <i class="fas fa-plus mr-1"></i>Add Item
     </a>
+    @endcanany
 </div>
 @endsection
 
@@ -87,6 +89,7 @@
                         <td class="text-muted">{{ $item->location ?: '—' }}</td>
                         <td>
                             <a href="{{ route('inventory.items.show', $item) }}" class="btn btn-xs btn-info" title="View"><i class="fas fa-eye"></i></a>
+                            @canany(['manage settings', 'manage stock'])
                             <a href="{{ route('inventory.transactions.create', ['item'=>$item->id]) }}" class="btn btn-xs btn-success" title="Transaction"><i class="fas fa-exchange-alt"></i></a>
                             <a href="{{ route('inventory.items.edit', $item) }}" class="btn btn-xs btn-warning" title="Edit"><i class="fas fa-edit"></i></a>
                             <form action="{{ route('inventory.items.destroy', $item) }}" method="POST" class="d-inline"
@@ -94,6 +97,7 @@
                                 @csrf @method('DELETE')
                                 <button class="btn btn-xs btn-danger" title="Delete"><i class="fas fa-trash"></i></button>
                             </form>
+                            @endcanany
                         </td>
                     </tr>
                     @empty

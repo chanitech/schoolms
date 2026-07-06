@@ -95,7 +95,7 @@ class RoleResponsibilityPermissionsSeeder extends Seeder
         'treasurer' => [
             'view students', 'view staff',
             'view fee reports', 'view payments', 'view invoices', 'view bills',
-            'view budgets', 'view student bills',
+            'view budgets', 'view student bills', 'view inventory',
             'view profile', 'edit profile',
         ],
 
@@ -123,11 +123,14 @@ class RoleResponsibilityPermissionsSeeder extends Seeder
         ],
 
         'storekeeper' => [
-            'view profile', 'edit profile',
+            'view inventory', 'view profile', 'edit profile',
         ],
 
+        // Explicit ask: procurement officer needs to see inventory (to know
+        // what's low in stock before requesting a purchase) — view only,
+        // not 'manage stock', which stays Storekeeper's job.
         'procurement_officer' => [
-            'view pending approvals',
+            'view pending approvals', 'view inventory',
             'view profile', 'edit profile',
         ],
     ];

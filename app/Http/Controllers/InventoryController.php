@@ -12,6 +12,23 @@ use Illuminate\Validation\Rule;
 
 class InventoryController extends Controller
 {
+    public function __construct()
+    {
+        // Previously had no permission checks at all — only the sidebar
+        // menu's 'can' gate stood between any authenticated user and full
+        // create/edit/delete access, once they knew the URL. View-only
+        // access (for Procurement Officer to see stock before requesting
+        // purchases) is now separated from actually managing stock.
+        $this->middleware('permission:manage settings|manage stock|view inventory')
+            ->only(['index', 'categories', 'items', 'showItem', 'transactions']);
+        $this->middleware('permission:manage settings|manage stock')
+            ->only([
+                'storeCategory', 'updateCategory', 'destroyCategory',
+                'createItem', 'storeItem', 'editItem', 'updateItem', 'destroyItem',
+                'createTransaction', 'storeTransaction',
+            ]);
+    }
+
     // ─────────────────── Dashboard ───────────────────
 
     public function index()

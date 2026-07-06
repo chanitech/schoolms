@@ -79,6 +79,11 @@ class SyncAllPermissionsToAdminSeeder extends Seeder
         'view pocket money',
         'view student bills',
         'withdraw budget items',
+
+        // New: InventoryController had zero permission checks at all — only
+        // the sidebar menu's 'can' gate stood between any authenticated
+        // user and full inventory access. Splitting read from write.
+        'view inventory',
     ];
 
     public function run(): void

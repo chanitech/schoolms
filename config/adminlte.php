@@ -358,6 +358,7 @@ return [
     [
         'text' => 'Students Management',
         'icon' => 'fas fa-user-graduate',
+        'can' => ['view students', 'view guardians', 'view enrollments', 'manage promotions'],
         'submenu' => [
             ['text' => 'Students',   'url' => 'students',    'icon' => 'fas fa-user-graduate',  'can' => 'view students'],
             ['text' => 'Guardians',  'url' => 'guardians',   'icon' => 'fas fa-users',          'can' => 'view guardians'],
@@ -377,7 +378,16 @@ return [
 [
     'text' => 'Counseling Office',
     'icon' => 'fas fa-user-md',
-    // No top-level 'can' – children control visibility
+    // Previously left ungated on the (incorrect) assumption that the menu
+    // builder auto-hides a parent once all its children are filtered out —
+    // it doesn't, so this showed an empty section to everyone without any
+    // of the counseling permissions.
+    'can' => ['create counseling intake forms', 'view counseling intake forms',
+              'create session reports', 'view session reports',
+              'create group sessions', 'view group sessions', 'view classroom guidance',
+              'view interest inventories', 'view aptitude tests', 'create aptitude questions',
+              'view multiple intelligence', 'view thinking style', 'view learning preferences',
+              'view holland code', 'view mbti test', 'view learning profile reports'],
     'submenu' => [
 
         // ============================
@@ -386,6 +396,8 @@ return [
         [
             'text' => 'Individual Counseling',
             'icon' => 'fas fa-user-edit',
+            'can' => ['create counseling intake forms', 'view counseling intake forms',
+                      'create session reports', 'view session reports'],
             'submenu' => [
                 [
                     'text' => 'New Intake Form',
@@ -420,6 +432,7 @@ return [
         [
             'text' => 'Group Counseling',
             'icon' => 'fas fa-users',
+            'can' => ['create group sessions', 'view group sessions'],
             'submenu' => [
                 [
                     'text' => 'New Group Session',
@@ -452,6 +465,9 @@ return [
         [
             'text' => 'Learning Profile',
             'icon' => 'fas fa-brain',
+            'can' => ['view interest inventories', 'view aptitude tests', 'create aptitude questions',
+                      'view multiple intelligence', 'view thinking style', 'view learning preferences',
+                      'view holland code', 'view mbti test', 'view learning profile reports'],
             'submenu' => [
                 [
                     'text' => 'Interest Inventory',
@@ -521,12 +537,17 @@ return [
     [
         'text' => 'Academic',
         'icon' => 'fas fa-book',
+        'can' => ['view sessions', 'view classes', 'view divisions', 'view dormitories',
+                  'view subjects', 'view subject assignments', 'view teacher assignments',
+                  'view timetable', 'view exams', 'view marks', 'enter marks', 'view grading',
+                  'view student results', 'view class results', 'export marksheets'],
         'submenu' => [
 
             // ── School Setup ──────────────────────────────────────────
             [
                 'text'    => 'School Setup',
                 'icon'    => 'fas fa-school',
+                'can'     => ['view sessions', 'view classes', 'view divisions', 'view dormitories'],
                 'submenu' => [
                     ['text' => 'Academic Sessions', 'url' => 'sessions',    'icon' => 'fas fa-calendar-alt',   'can' => 'view sessions'],
                     ['text' => 'Classes',           'url' => 'classes',     'icon' => 'fas fa-chalkboard',     'can' => 'view classes'],
@@ -539,6 +560,7 @@ return [
             [
                 'text'    => 'Subjects & Staff',
                 'icon'    => 'fas fa-chalkboard-teacher',
+                'can'     => ['view subjects', 'view subject assignments', 'view teacher assignments'],
                 'submenu' => [
                     ['text' => 'Subjects',            'url' => 'subjects',           'icon' => 'fas fa-book-open', 'can' => 'view subjects'],
                     ['text' => 'Subjects Assignment', 'url' => 'subject-assignment', 'icon' => 'fas fa-tasks',     'can' => 'view subject assignments'],
@@ -588,6 +610,7 @@ return [
             [
                 'text'    => 'Assessment',
                 'icon'    => 'fas fa-file-alt',
+                'can'     => ['view exams', 'view marks', 'enter marks', 'view grading'],
                 'submenu' => [
                     ['text' => 'Exams',              'url' => 'exams',                    'icon' => 'fas fa-file-alt',  'can' => 'view exams'],
                     ['text' => 'Marks',              'url' => 'marks',                    'icon' => 'fas fa-pen',       'can' => 'view marks'],
@@ -601,6 +624,7 @@ return [
             [
                 'text'    => 'Results & Reports',
                 'icon'    => 'fas fa-chart-bar',
+                'can'     => ['view student results', 'view class results', 'export marksheets'],
                 'submenu' => [
                     ['text' => 'Student Results', 'url'   => 'results',       'icon' => 'fas fa-chart-bar', 'can' => 'view student results'],
                     ['text' => 'Class Results',   'url'   => 'results/class', 'icon' => 'fas fa-chart-bar', 'can' => 'view class results'],
@@ -622,7 +646,14 @@ return [
     [
     'text' => 'HR & Staff',
     'icon' => 'fas fa-user-tie',
-    // No top-level 'can' – the menu will show if any child is visible.
+    // Previously assumed the menu auto-hides once all children are
+    // filtered — it doesn't (see Counseling Office above), so this showed
+    // an empty section to anyone without any HR permission.
+    'can' => ['view department dashboard', 'view staff', 'view departments',
+              'view job cards', 'view own job cards', 'view attendance', 'view leaves',
+              'view received leaves', 'view events', 'view staff report',
+              'view attendance report', 'view leave report', 'view job cards report',
+              'view evaluation report'],
     'submenu' => [
         // HOD Department Dashboard
         [
@@ -666,6 +697,8 @@ return [
         [
             'text' => 'HR Reports',
             'icon' => 'fas fa-chart-line',
+            'can' => ['view staff report', 'view attendance report', 'view leave report',
+                      'view job cards report', 'view evaluation report'],
             'submenu' => [
                 ['text' => 'Staff Report', 'url' => 'hr-reports/staff', 'icon' => 'fas fa-users', 'can' => 'view staff report'],
                 ['text' => 'Attendance Report', 'url' => 'hr-reports/attendance', 'icon' => 'fas fa-calendar-check', 'can' => 'view attendance report'],
@@ -740,6 +773,7 @@ return [
         [
             'text' => 'Budgets',
             'icon' => 'fas fa-file-invoice',
+            'can' => ['create budgets', 'view pending approvals', 'view budgets', 'view hod dashboard'],
             'submenu' => [
                 [
                     'text' => 'Submit Budget',
@@ -774,6 +808,7 @@ return [
         [
             'text' => 'Invoices',
             'icon' => 'fas fa-receipt',
+            'can' => ['approve invoices', 'pay invoices', 'view invoices'],
             'submenu' => [
                 [
                     'text' => 'DO Approvals',
@@ -890,6 +925,7 @@ return [
 [
     'text' => 'Library',
     'icon' => 'fas fa-book',
+    'can' => ['view books', 'view categories', 'view lendings'],
     'submenu' => [
         [
             'text' => 'Books',
@@ -924,31 +960,31 @@ return [
     [
         'text' => 'Inventory',
         'icon' => 'fas fa-boxes',
-        'can'  => 'manage settings',
+        'can'  => ['manage settings', 'manage stock', 'view inventory'],
         'submenu' => [
             [
                 'text'  => 'Dashboard',
                 'url'   => 'inventory',
                 'icon'  => 'fas fa-tachometer-alt',
-                'can'   => 'manage settings',
+                'can'   => ['manage settings', 'manage stock', 'view inventory'],
             ],
             [
                 'text'  => 'Items',
                 'url'   => 'inventory/items',
                 'icon'  => 'fas fa-box',
-                'can'   => 'manage settings',
+                'can'   => ['manage settings', 'manage stock', 'view inventory'],
             ],
             [
                 'text'  => 'Categories',
                 'url'   => 'inventory/categories',
                 'icon'  => 'fas fa-tags',
-                'can'   => 'manage settings',
+                'can'   => ['manage settings', 'manage stock', 'view inventory'],
             ],
             [
                 'text'  => 'Transactions',
                 'url'   => 'inventory/transactions',
                 'icon'  => 'fas fa-exchange-alt',
-                'can'   => 'manage settings',
+                'can'   => ['manage settings', 'manage stock', 'view inventory'],
             ],
         ],
     ],

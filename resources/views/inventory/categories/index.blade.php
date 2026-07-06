@@ -5,9 +5,11 @@
 @section('content_header')
 <div class="d-flex justify-content-between align-items-center">
     <h1 class="m-0"><i class="fas fa-tags mr-2 text-success"></i>Inventory Categories</h1>
+    @canany(['manage settings', 'manage stock'])
     <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#addCategoryModal">
         <i class="fas fa-plus mr-1"></i>Add Category
     </button>
+    @endcanany
 </div>
 @endsection
 
@@ -45,6 +47,7 @@
                             </a>
                         </td>
                         <td>
+                            @canany(['manage settings', 'manage stock'])
                             <button class="btn btn-xs btn-warning btn-edit-cat"
                                 data-id="{{ $category->id }}"
                                 data-name="{{ $category->name }}"
@@ -57,6 +60,9 @@
                                 @csrf @method('DELETE')
                                 <button class="btn btn-xs btn-danger"><i class="fas fa-trash"></i></button>
                             </form>
+                            @else
+                            <span class="text-muted">—</span>
+                            @endcanany
                         </td>
                     </tr>
                     @empty
