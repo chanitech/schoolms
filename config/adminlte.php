@@ -655,6 +655,7 @@ return [
     // an empty section to anyone without any HR permission.
     'can' => ['view department dashboard', 'view staff', 'view departments',
               'view any jobcards', 'view own jobcards', 'view attendance', 'view leaves',
+              'create leaves', 'view own leaves',
               'view events', 'view staff report',
               'view attendance report', 'view leave report', 'view job cards report',
               'view evaluation report'],
@@ -691,8 +692,11 @@ return [
         // Attendance – requires 'view attendance'
         ['text' => 'Attendance', 'url' => 'attendance', 'icon' => 'fas fa-calendar-check', 'can' => 'view attendance'],
 
-        // Leaves – requires 'view leaves'
-        ['text' => 'Leaves', 'url' => 'leaves', 'icon' => 'fas fa-file-signature', 'can' => 'view leaves'],
+        // Leaves – index() shows "my own leaves" for any staff member and
+        // isn't actually gated behind 'view leaves' (that's the approver-
+        // side permission, used by 'Received Leaves' below). Match either.
+        ['text' => 'Leaves', 'url' => 'leaves', 'icon' => 'fas fa-file-signature',
+         'can' => ['create leaves', 'view own leaves', 'view leaves']],
 
         // Received Leaves – LeaveController@received is actually gated by
         // 'view leaves' (same as the index above), not a separate

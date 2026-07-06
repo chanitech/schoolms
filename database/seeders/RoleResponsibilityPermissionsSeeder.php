@@ -148,5 +148,21 @@ class RoleResponsibilityPermissionsSeeder extends Seeder
             $valid = array_values(array_intersect($permissions, $existingPermissions));
             $role->givePermissionTo($valid);
         }
+
+        // Every role here represents an actual staff member — regardless of
+        // their specific function, they all need to be able to request and
+        // see their own leave. 'guardian' is excluded (not a staff role).
+        // HOD/HR additionally hold 'view leaves' (the approver side) from
+        // the map above, so this doesn't change what they can already see.
+        $baselineLeavePermissions = array_values(array_intersect(
+            ['create leaves', 'view own leaves'],
+            $existingPermissions
+        ));
+        foreach (array_keys(self::MAP) as $roleName) {
+            if ($roleName === 'guardian') continue;
+            $role = Role::where('name', $roleName)->first();
+            if (! $role) continue;
+            $role->givePermissionTo($baselineLeavePermissions);
+        }
     }
 }

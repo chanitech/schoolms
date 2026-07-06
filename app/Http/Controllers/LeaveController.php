@@ -17,7 +17,11 @@ class LeaveController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('permission:view leaves')->only(['index', 'received']);
+        // 'index' is deliberately NOT gated behind 'view leaves' — every
+        // staff member needs to see their own leave requests, but 'view
+        // leaves' was only ever granted to HOD/HR (the approver side).
+        // 'received' (leaves routed to you for approval) stays manager-only.
+        $this->middleware('permission:view leaves')->only(['received']);
         $this->middleware('permission:create leaves')->only(['create', 'store']);
         $this->middleware('permission:edit leaves')->only(['edit', 'update']);
         $this->middleware('permission:delete leaves')->only(['destroy']);
@@ -33,6 +37,10 @@ class LeaveController extends Controller
 
         if ($user->staff) {
             $query->where('staff_id', $user->staff->id);
+        } elseif (! $user->can('view leaves')) {
+            // No staff profile and no elevated permission — show nothing
+            // rather than silently listing every school's leave requests.
+            $query->whereRaw('1 = 0');
         }
 
         if ($request->filled('status')) {
