@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Subject;
 use App\Models\SchoolClass;
 use App\Models\Department;
+use App\Models\Staff;
 use App\Models\User;
 use App\Models\Student;
 use Illuminate\Http\Request;
@@ -46,12 +47,13 @@ class SubjectController extends Controller
 
     $subjects = $query->paginate(10)->withQueryString();
 
-    // Collect all teacher IDs from the pivot to avoid N+1 queries
+    // Collect all teacher IDs from the pivot to avoid N+1 queries.
+    // subject_class.teacher_id is a foreign key to staff.id, not users.id.
     $teacherIds = $subjects->flatMap(function ($subject) {
         return $subject->classes->pluck('pivot.teacher_id');
     })->filter()->unique();
 
-    $teachers = User::whereIn('id', $teacherIds)->get()->keyBy('id');
+    $teachers = Staff::whereIn('id', $teacherIds)->get()->keyBy('id');
 
     $departments = Department::all();
 
@@ -67,8 +69,10 @@ class SubjectController extends Controller
         $classes = SchoolClass::all();
         $departments = Department::all();
 
-        // Teachers
-        $teachers = User::role('teacher')->get(['id', 'first_name', 'last_name']);
+        // Teachers — subject_class.teacher_id is a foreign key to staff.id,
+        // so the option values here must be Staff IDs, not User IDs.
+        $teachers = Staff::whereHas('user', fn ($q) => $q->role('teacher'))
+            ->get(['id', 'first_name', 'last_name']);
 
         return view('subjects.create', compact('classes', 'teachers', 'departments'));
     }
@@ -89,9 +93,9 @@ class SubjectController extends Controller
             'classes'       => 'required|array',
             'classes.*'     => 'exists:school_classes,id',
 
-            // teacher per class
+            // teacher per class — must be a Staff ID (subject_class.teacher_id's FK target)
             'teacher'       => 'required|array',
-            'teacher.*'     => 'nullable|exists:users,id',
+            'teacher.*'     => 'nullable|exists:staff,id',
         ]);
 
         $subject = Subject::create($request->only('name', 'code', 'type', 'department_id'));
@@ -118,7 +122,7 @@ class SubjectController extends Controller
         $withdrawnStudentsCount = $subject->withdrawnStudents()->count();
 
         $teacherIds = $subject->classes->pluck('pivot.teacher_id')->filter()->unique();
-        $teachers = User::whereIn('id', $teacherIds)->get()->keyBy('id');
+        $teachers = Staff::whereIn('id', $teacherIds)->get()->keyBy('id');
 
         return view('subjects.show', compact('subject', 'activeStudentsCount', 'withdrawnStudentsCount', 'teachers'));
     }
@@ -130,7 +134,9 @@ class SubjectController extends Controller
     {
         $classes = SchoolClass::all();
         $departments = Department::all();
-        $teachers = User::role('teacher')->get(['id', 'first_name', 'last_name']);
+        // subject_class.teacher_id is a foreign key to staff.id, not users.id.
+        $teachers = Staff::whereHas('user', fn ($q) => $q->role('teacher'))
+            ->get(['id', 'first_name', 'last_name']);
 
         $subject->load('classes', 'department');
 
@@ -154,7 +160,7 @@ class SubjectController extends Controller
             'classes.*'     => 'exists:school_classes,id',
 
             'teacher'       => 'required|array',
-            'teacher.*'     => 'nullable|exists:users,id',
+            'teacher.*'     => 'nullable|exists:staff,id',
         ]);
 
         $subject->update($request->only('name', 'code', 'type', 'department_id'));
