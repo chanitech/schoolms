@@ -32,6 +32,14 @@ class FinanceOfficeRolesSeeder extends Seeder
             Permission::firstOrCreate(['name' => $permission]);
         }
 
+        // Admin already gets Permission::all() in RolesAndPermissionsSeeder,
+        // but that ran before these permissions existed — grant explicitly
+        // so Admin (this app's super-admin role) can access every Finance
+        // Office screen without needing a separate Finance Office role.
+        if ($admin = Role::where('name', 'Admin')->first()) {
+            $admin->givePermissionTo($permissions);
+        }
+
         // Fixes previously-dead role gates in routes/web.php (treasurer.* group)
         // and Loan::approveBy() — these role names were referenced in code but
         // never existed as rows, making those routes unreachable by anyone.
