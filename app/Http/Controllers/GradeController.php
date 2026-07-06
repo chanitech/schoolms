@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Grade;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class GradeController extends Controller
 {
@@ -25,8 +26,10 @@ class GradeController extends Controller
 
     public function store(Request $request)
     {
+        $schoolId = app()->bound('currentSchool') ? app('currentSchool')->id : null;
+
         $request->validate([
-            'name' => 'required|string|max:2|unique:grades,name',
+            'name' => ['required', 'string', 'max:2', Rule::unique('grades', 'name')->where('school_id', $schoolId)],
             'min_mark' => 'required|numeric|between:0,100',
             'max_mark' => 'required|numeric|between:0,100|gte:min_mark',
             'point' => 'required|numeric|between:0,5',
@@ -45,8 +48,10 @@ class GradeController extends Controller
 
     public function update(Request $request, Grade $grade)
     {
+        $schoolId = app()->bound('currentSchool') ? app('currentSchool')->id : null;
+
         $request->validate([
-            'name' => 'required|string|max:2|unique:grades,name,' . $grade->id,
+            'name' => ['required', 'string', 'max:2', Rule::unique('grades', 'name')->ignore($grade->id)->where('school_id', $schoolId)],
             'min_mark' => 'required|numeric|between:0,100',
             'max_mark' => 'required|numeric|between:0,100|gte:min_mark',
             'point' => 'required|numeric|between:0,5',

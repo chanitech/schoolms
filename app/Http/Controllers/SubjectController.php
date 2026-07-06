@@ -8,6 +8,7 @@ use App\Models\Department;
 use App\Models\User;
 use App\Models\Student;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class SubjectController extends Controller
 {
@@ -65,9 +66,11 @@ class SubjectController extends Controller
      */
     public function store(Request $request)
     {
+        $schoolId = app()->bound('currentSchool') ? app('currentSchool')->id : null;
+
         $request->validate([
-            'name'          => 'required|unique:subjects,name',
-            'code'          => 'nullable|unique:subjects,code',
+            'name'          => ['required', Rule::unique('subjects', 'name')->where('school_id', $schoolId)],
+            'code'          => ['nullable', Rule::unique('subjects', 'code')->where('school_id', $schoolId)],
             'type'          => 'required|in:core,elective',
             'department_id' => 'required|exists:departments,id',
 
@@ -112,9 +115,11 @@ class SubjectController extends Controller
      */
     public function update(Request $request, Subject $subject)
     {
+        $schoolId = app()->bound('currentSchool') ? app('currentSchool')->id : null;
+
         $request->validate([
-            'name'          => 'required|unique:subjects,name,' . $subject->id,
-            'code'          => 'nullable|unique:subjects,code,' . $subject->id,
+            'name'          => ['required', Rule::unique('subjects', 'name')->ignore($subject->id)->where('school_id', $schoolId)],
+            'code'          => ['nullable', Rule::unique('subjects', 'code')->ignore($subject->id)->where('school_id', $schoolId)],
             'type'          => 'required|in:core,elective',
             'department_id' => 'required|exists:departments,id',
 

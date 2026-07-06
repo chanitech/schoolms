@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\AcademicSession;
+use Illuminate\Validation\Rule;
 
 
 class AcademicSessionController extends Controller
@@ -38,8 +39,10 @@ class AcademicSessionController extends Controller
      */
     public function store(Request $request)
     {
+        $schoolId = app()->bound('currentSchool') ? app('currentSchool')->id : null;
+
         $validated = $request->validate([
-            'name' => 'required|unique:academic_sessions,name',
+            'name' => ['required', Rule::unique('academic_sessions', 'name')->where('school_id', $schoolId)],
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'is_current' => 'nullable|boolean',
@@ -69,8 +72,10 @@ class AcademicSessionController extends Controller
      */
     public function update(Request $request, AcademicSession $session)
     {
+        $schoolId = app()->bound('currentSchool') ? app('currentSchool')->id : null;
+
         $validated = $request->validate([
-            'name' => 'required|unique:academic_sessions,name,' . $session->id,
+            'name' => ['required', Rule::unique('academic_sessions', 'name')->ignore($session->id)->where('school_id', $schoolId)],
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'is_current' => 'nullable|boolean',

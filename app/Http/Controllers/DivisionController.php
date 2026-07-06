@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Division;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class DivisionController extends Controller
 {
@@ -27,8 +28,10 @@ class DivisionController extends Controller
 
     public function store(Request $request)
     {
+        $schoolId = app()->bound('currentSchool') ? app('currentSchool')->id : null;
+
         $request->validate([
-            'name' => 'required|unique:divisions,name',
+            'name' => ['required', Rule::unique('divisions', 'name')->where('school_id', $schoolId)],
             'min_points' => 'required|integer',
             'max_points' => 'required|integer|gte:min_points',
             'description' => 'nullable|string',
@@ -46,8 +49,10 @@ class DivisionController extends Controller
 
     public function update(Request $request, Division $division)
     {
+        $schoolId = app()->bound('currentSchool') ? app('currentSchool')->id : null;
+
         $request->validate([
-            'name' => 'required|unique:divisions,name,'.$division->id,
+            'name' => ['required', Rule::unique('divisions', 'name')->ignore($division->id)->where('school_id', $schoolId)],
             'min_points' => 'required|integer',
             'max_points' => 'required|integer|gte:min_points',
             'description' => 'nullable|string',

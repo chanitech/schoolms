@@ -7,6 +7,7 @@ use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 
 class StudentsImport implements ToModel, WithHeadingRow, WithValidation
 {
@@ -44,8 +45,10 @@ class StudentsImport implements ToModel, WithHeadingRow, WithValidation
 
     public function rules(): array
     {
+        $schoolId = app()->bound('currentSchool') ? app('currentSchool')->id : null;
+
         return [
-            'admission_no' => 'required|unique:students,admission_no',
+            'admission_no' => ['required', Rule::unique('students', 'admission_no')->where('school_id', $schoolId)],
             'first_name'   => 'required|string|max:255',
             'last_name'    => 'required|string|max:255',
             'gender'       => 'nullable|in:male,female',

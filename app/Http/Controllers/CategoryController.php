@@ -6,16 +6,17 @@ use App\Models\Category;
 use App\Models\Book;
 use App\Models\Lending;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class CategoryController extends Controller
 {
     public function __construct()
     {
         // Apply permissions middleware if using Spatie
-        $this->middleware('permission:library.view')->only(['index', 'show']);
-        $this->middleware('permission:library.create')->only(['create', 'store']);
-        $this->middleware('permission:library.edit')->only(['edit', 'update']);
-        $this->middleware('permission:library.delete')->only(['destroy']);
+        $this->middleware('permission:view categories')->only(['index', 'show']);
+        $this->middleware('permission:create categories')->only(['create', 'store']);
+        $this->middleware('permission:edit categories')->only(['edit', 'update']);
+        $this->middleware('permission:delete categories')->only(['destroy']);
     }
 
     // List all categories
@@ -51,8 +52,10 @@ class CategoryController extends Controller
     // Store a new category
     public function store(Request $request)
     {
+        $schoolId = app()->bound('currentSchool') ? app('currentSchool')->id : null;
+
         $request->validate([
-            'name' => 'required|string|max:255|unique:categories,name',
+            'name' => ['required', 'string', 'max:255', Rule::unique('categories', 'name')->where('school_id', $schoolId)],
         ]);
 
         Category::create($request->only('name')); // Only pass 'name' for mass assignment
@@ -69,8 +72,10 @@ class CategoryController extends Controller
     // Update a category
     public function update(Request $request, Category $category)
     {
+        $schoolId = app()->bound('currentSchool') ? app('currentSchool')->id : null;
+
         $request->validate([
-            'name' => 'required|string|max:255|unique:categories,name,' . $category->id,
+            'name' => ['required', 'string', 'max:255', Rule::unique('categories', 'name')->ignore($category->id)->where('school_id', $schoolId)],
         ]);
 
         $category->update($request->only('name'));

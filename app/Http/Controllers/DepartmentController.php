@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Department;
 use App\Models\Staff;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class DepartmentController extends Controller
 {
@@ -32,8 +33,10 @@ class DepartmentController extends Controller
 
     public function store(Request $request)
     {
+        $schoolId = app()->bound('currentSchool') ? app('currentSchool')->id : null;
+
         $request->validate([
-            'name' => 'required|unique:departments,name',
+            'name' => ['required', Rule::unique('departments', 'name')->where('school_id', $schoolId)],
             'description' => 'nullable|string',
             'head_id' => 'nullable|exists:staff,id', // must be a valid staff
             'rank_requires_7_subjects' => 'nullable|boolean', // new validation
@@ -58,8 +61,10 @@ class DepartmentController extends Controller
 
     public function update(Request $request, Department $department)
     {
+        $schoolId = app()->bound('currentSchool') ? app('currentSchool')->id : null;
+
         $request->validate([
-            'name' => 'required|unique:departments,name,' . $department->id,
+            'name' => ['required', Rule::unique('departments', 'name')->ignore($department->id)->where('school_id', $schoolId)],
             'description' => 'nullable|string',
             'head_id' => 'nullable|exists:staff,id', // must be a valid staff
             'rank_requires_7_subjects' => 'nullable|boolean', // new validation

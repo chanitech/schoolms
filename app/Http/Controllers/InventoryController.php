@@ -8,6 +8,7 @@ use App\Models\InventoryTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class InventoryController extends Controller
 {
@@ -48,8 +49,10 @@ class InventoryController extends Controller
 
     public function storeCategory(Request $request)
     {
+        $schoolId = app()->bound('currentSchool') ? app('currentSchool')->id : null;
+
         $data = $request->validate([
-            'name'        => 'required|string|max:100|unique:inventory_categories,name',
+            'name'        => ['required', 'string', 'max:100', Rule::unique('inventory_categories', 'name')->where('school_id', $schoolId)],
             'icon'        => 'nullable|string|max:60',
             'description' => 'nullable|string|max:255',
         ]);
@@ -60,8 +63,10 @@ class InventoryController extends Controller
 
     public function updateCategory(Request $request, InventoryCategory $category)
     {
+        $schoolId = app()->bound('currentSchool') ? app('currentSchool')->id : null;
+
         $data = $request->validate([
-            'name'        => 'required|string|max:100|unique:inventory_categories,name,' . $category->id,
+            'name'        => ['required', 'string', 'max:100', Rule::unique('inventory_categories', 'name')->ignore($category->id)->where('school_id', $schoolId)],
             'icon'        => 'nullable|string|max:60',
             'description' => 'nullable|string|max:255',
         ]);
@@ -114,10 +119,12 @@ class InventoryController extends Controller
 
     public function storeItem(Request $request)
     {
+        $schoolId = app()->bound('currentSchool') ? app('currentSchool')->id : null;
+
         $data = $request->validate([
             'category_id'      => 'required|exists:inventory_categories,id',
             'name'             => 'required|string|max:150',
-            'code'             => 'nullable|string|max:50|unique:inventory_items,code',
+            'code'             => ['nullable', 'string', 'max:50', Rule::unique('inventory_items', 'code')->where('school_id', $schoolId)],
             'description'      => 'nullable|string',
             'unit'             => 'required|string|max:30',
             'quantity_in_stock'=> 'required|integer|min:0',
@@ -155,10 +162,12 @@ class InventoryController extends Controller
 
     public function updateItem(Request $request, InventoryItem $item)
     {
+        $schoolId = app()->bound('currentSchool') ? app('currentSchool')->id : null;
+
         $data = $request->validate([
             'category_id' => 'required|exists:inventory_categories,id',
             'name'        => 'required|string|max:150',
-            'code'        => 'nullable|string|max:50|unique:inventory_items,code,' . $item->id,
+            'code'        => ['nullable', 'string', 'max:50', Rule::unique('inventory_items', 'code')->ignore($item->id)->where('school_id', $schoolId)],
             'description' => 'nullable|string',
             'unit'        => 'required|string|max:30',
             'minimum_stock' => 'required|integer|min:0',

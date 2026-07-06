@@ -13,6 +13,7 @@ use App\Models\AcademicSession;
 use App\Models\Department;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\StudentsImport;
@@ -62,8 +63,10 @@ class StudentController extends Controller
 
     public function store(Request $request)
     {
+        $schoolId = app()->bound('currentSchool') ? app('currentSchool')->id : null;
+
         $request->validate([
-            'admission_no'        => 'required|unique:students',
+            'admission_no'        => ['required', Rule::unique('students', 'admission_no')->where('school_id', $schoolId)],
             'first_name'          => 'required',
             'last_name'           => 'required',
             'gender'              => 'required|in:male,female',
@@ -125,8 +128,10 @@ class StudentController extends Controller
 
     public function update(Request $request, Student $student)
     {
+        $schoolId = app()->bound('currentSchool') ? app('currentSchool')->id : null;
+
         $request->validate([
-            'admission_no'        => 'required|unique:students,admission_no,' . $student->id,
+            'admission_no'        => ['required', Rule::unique('students', 'admission_no')->ignore($student->id)->where('school_id', $schoolId)],
             'first_name'          => 'required',
             'last_name'           => 'required',
             'gender'              => 'required|in:male,female',
