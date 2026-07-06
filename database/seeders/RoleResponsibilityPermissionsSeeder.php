@@ -108,6 +108,7 @@ class RoleResponsibilityPermissionsSeeder extends Seeder
         'accountant' => [
             'view budgets', 'view invoices', 'view bills', 'view student bills',
             'create bills', 'create student bills',
+            'view payments', 'record payments',
             'view pending approvals',
             'view profile', 'edit profile',
         ],
