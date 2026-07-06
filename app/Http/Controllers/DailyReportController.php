@@ -14,6 +14,15 @@ use Illuminate\Support\Facades\DB;
 
 class DailyReportController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:view daily reports')->only(['index', 'show']);
+        $this->middleware('permission:create daily reports')->only(['create', 'store', 'edit']);
+        // Matches the 'Staff Reports' menu item's gate (config/adminlte.php),
+        // which is Principal-inclusive unlike 'view daily reports'.
+        $this->middleware('permission:view department dashboard')->only('hodIndex');
+    }
+
     // ── Teacher: list own reports ──────────────────────────────────────────
     public function index()
     {

@@ -49,12 +49,14 @@
     {{-- Top Buttons --}}
     <div class="d-flex justify-content-between mb-3">
         <div>
+            @can('create attendance')
             <a href="{{ route('attendance.create') }}" class="btn btn-primary">
                 <i class="fas fa-check-circle"></i> Mark Attendance
             </a>
             <a href="{{ route('attendance.bulk.create') }}" class="btn btn-success">
                 <i class="fas fa-users"></i> Bulk Mark
             </a>
+            @endcan
         </div>
         <div>
             <a href="{{ route('attendance.export.excel', request()->query()) }}" class="btn btn-outline-success">
@@ -125,9 +127,12 @@
                                     @endif
                                 </td>
                                 <td>
+                                    @can('edit attendance')
                                     <a href="{{ route('attendance.edit', $attendance) }}" class="btn btn-sm btn-warning">
                                         <i class="fas fa-edit"></i> Edit
                                     </a>
+                                    @endcan
+                                    @can('delete attendance')
                                     <form action="{{ route('attendance.destroy', $attendance) }}" method="POST" class="d-inline">
                                         @csrf
                                         @method('DELETE')
@@ -135,6 +140,7 @@
                                             <i class="fas fa-trash-alt"></i> Delete
                                         </button>
                                     </form>
+                                    @endcan
                                 </td>
                             </tr>
                         @endforeach

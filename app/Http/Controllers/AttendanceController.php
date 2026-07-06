@@ -11,6 +11,14 @@ use App\Exports\AttendanceExport;
 
 class AttendanceController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:view attendance')->only(['index', 'filter', 'exportExcel', 'exportPDF']);
+        $this->middleware('permission:create attendance')->only(['create', 'store', 'bulkCreate', 'bulkStore']);
+        $this->middleware('permission:edit attendance')->only(['edit', 'update']);
+        $this->middleware('permission:delete attendance')->only('destroy');
+    }
+
     public function index(Request $request)
 {
     $attendances = Attendance::with('staff')->orderBy('date', 'desc')->paginate(10);
