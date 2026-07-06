@@ -21,7 +21,6 @@ use App\Models\Timetable;
 use App\Models\TimetableSessionLog;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
@@ -141,10 +140,13 @@ class HomeController extends Controller
         }
 
         // Leaves this year
+        // The 'leaves' table has no 'days' column — it only stores
+        // start_date/end_date, so the day count has to be derived.
         $leavesApproved = $leavesPending = 0;
         if ($staff) {
             $leavesApproved = Leave::where('staff_id', $staff->id)
-                ->where('status', 'approved')->whereYear('start_date', now()->year)->sum('days');
+                ->where('status', 'approved')->whereYear('start_date', now()->year)->get()
+                ->sum(fn ($leave) => $leave->start_date->diffInDays($leave->end_date) + 1);
             $leavesPending  = Leave::where('staff_id', $staff->id)->where('status', 'pending')->count();
         }
 
