@@ -14,11 +14,13 @@
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
 
+        @can('record payments')
         <div class="mb-3">
             <a href="{{ route('finance.payments.create') }}" class="btn btn-primary">
                 <i class="fas fa-plus"></i> Record Payment
             </a>
         </div>
+        @endcan
 
         <table class="table table-bordered table-striped">
             <thead>
