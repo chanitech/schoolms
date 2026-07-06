@@ -18,7 +18,13 @@ class TaskLogController extends Controller
 
     public function __construct()
     {
-        $this->middleware('permission:manage tasks')->only(['index', 'create', 'store', 'approve', 'toggleExceeds']);
+        // 'index' is deliberately NOT gated here — its own logic already
+        // shows the treasurer/managers everything and everyone else only
+        // their own assigned tasks. Gating it behind 'manage tasks' would
+        // block roles like class_accountant/chief-accountant/accountant
+        // (who don't have that permission) from viewing tasks assigned to
+        // them.
+        $this->middleware('permission:manage tasks')->only(['create', 'store', 'approve', 'toggleExceeds']);
     }
 
     /**
