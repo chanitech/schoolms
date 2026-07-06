@@ -50,28 +50,38 @@ class ResolveTenant
 
     private function resolveSchool(Request $request): ?School
     {
-        // 1. Subdomain (production)
+        // 1. School explicitly selected via the School Code at login — the
+        //    primary, reliable mechanism. Checked first: the app's own base
+        //    domain (e.g. schoolms.chanitech.co.tz) is itself a 3-part host
+        //    that the subdomain checks below would otherwise misread as a
+        //    school slug ("schoolms"), fail to match, and — since those
+        //    checks used to return immediately on a miss — never even reach
+        //    this session value, always falling through to the hardcoded
+        //    .env default instead.
+        if ($id = session('tenant_school_id')) {
+            $school = School::find((int) $id);
+            if ($school) return $school;
+        }
+
+        // 2. Subdomain (only relevant if a school has its own real subdomain
+        //    configured, distinct from the app's own base domain).
         $host      = $request->getHost();
         $appDomain = config('tenancy.domain', '');
 
         if ($appDomain && str_ends_with($host, '.' . $appDomain)) {
             $subdomain = substr($host, 0, strlen($host) - strlen('.' . $appDomain) - 1);
             if ($subdomain) {
-                return School::where('slug', $subdomain)->first();
+                $school = School::where('slug', $subdomain)->first();
+                if ($school) return $school;
             }
         }
 
         if (! filter_var($host, FILTER_VALIDATE_IP)) {
             $parts = explode('.', $host);
             if (count($parts) >= 3) {
-                return School::where('slug', $parts[0])->first();
+                $school = School::where('slug', $parts[0])->first();
+                if ($school) return $school;
             }
-        }
-
-        // 2. School stored in session after login (set from user->school_id in
-        //    AuthenticatedSessionController::store).
-        if ($id = session('tenant_school_id')) {
-            return School::find((int) $id);
         }
 
         return null;
