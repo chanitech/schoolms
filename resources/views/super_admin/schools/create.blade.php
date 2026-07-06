@@ -25,7 +25,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Slug (used in subdomain) <span class="text-danger">*</span></label>
+                        <label>School Code (used to log in, also used in subdomain) <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <input type="text" name="slug" id="slug"
                                    class="form-control @error('slug') is-invalid @enderror"

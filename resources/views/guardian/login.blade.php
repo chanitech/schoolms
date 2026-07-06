@@ -144,6 +144,23 @@ input.is-invalid { border-color: #ef4444; }
             @csrf
 
             <div class="form-group">
+                <label for="school_code">School Code</label>
+                <div class="input-wrap">
+                    <span class="icon">&#127979;</span>
+                    <input
+                        type="text"
+                        id="school_code"
+                        name="school_code"
+                        value="{{ old('school_code') }}"
+                        placeholder="e.g. kass"
+                        autocomplete="off"
+                        autofocus
+                        class="{{ $errors->has('school_code') ? 'is-invalid' : '' }}"
+                    >
+                </div>
+            </div>
+
+            <div class="form-group">
                 <label for="phone">Phone Number</label>
                 <div class="input-wrap">
                     <span class="icon">&#128222;</span>
@@ -154,7 +171,6 @@ input.is-invalid { border-color: #ef4444; }
                         value="{{ old('phone') }}"
                         placeholder="e.g. 0712 345 678"
                         autocomplete="tel"
-                        autofocus
                         class="{{ $errors->has('phone') ? 'is-invalid' : '' }}"
                         inputmode="tel"
                     >

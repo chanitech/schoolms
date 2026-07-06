@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Auth;
 
 use App\Models\Guardian;
+use App\Models\School;
 use App\Models\Staff;
 use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
@@ -15,6 +16,10 @@ use Illuminate\Validation\ValidationException;
 
 class LoginRequest extends FormRequest
 {
+    // Set by authenticate() so the controller can read which school was
+    // resolved from the entered code without a second lookup.
+    public ?School $resolvedSchool = null;
+
     public function authorize(): bool
     {
         return true;
@@ -23,8 +28,9 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email'    => ['required', 'string'],
-            'password' => ['required', 'string'],
+            'school_code' => ['required', 'string'],
+            'email'       => ['required', 'string'],
+            'password'    => ['required', 'string'],
         ];
     }
 
@@ -32,79 +38,57 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
+        $schoolCode = Str::lower(trim($this->input('school_code')));
+        $school     = School::where('slug', $schoolCode)->first();
+
+        if (! $school) {
+            RateLimiter::hit($this->throttleKey());
+            throw ValidationException::withMessages([
+                'school_code' => "We couldn't find a school with that code.",
+            ]);
+        }
+
         $credential = trim($this->input('email'));
         $password   = $this->input('password');
         $isPhone    = ! str_contains($credential, '@');
 
-        if ($isPhone) {
-            $user = $this->findUserByPhone($credential);
-
-            if (! $user || ! Hash::check($password, $user->password)) {
-                RateLimiter::hit($this->throttleKey());
-                throw ValidationException::withMessages([
-                    'email' => trans('auth.failed'),
-                ]);
-            }
-
-            $this->enforceSubdomainSchoolMatch($user);
-            Auth::login($user, $this->boolean('remember'));
-        } else {
+        $user = $isPhone
+            ? $this->findUserByPhone($credential)
             // Bypass BelongsToSchool scope — we look up by email globally,
-            // then enforce school match only when a real subdomain is in use.
-            $user = User::withoutSchoolScope()->where('email', $credential)->first();
+            // then enforce the school-code match below.
+            : User::withoutSchoolScope()->where('email', $credential)->first();
 
-            if (! $user || ! Hash::check($password, $user->password)) {
-                RateLimiter::hit($this->throttleKey());
-                throw ValidationException::withMessages([
-                    'email' => trans('auth.failed'),
-                ]);
-            }
-
-            $this->enforceSubdomainSchoolMatch($user);
-            Auth::login($user, $this->boolean('remember'));
+        if (! $user || ! Hash::check($password, $user->password)) {
+            RateLimiter::hit($this->throttleKey());
+            throw ValidationException::withMessages([
+                'email' => trans('auth.failed'),
+            ]);
         }
+
+        $this->enforceSchoolCodeMatch($user, $school);
+
+        $this->resolvedSchool = $school;
+        Auth::login($user, $this->boolean('remember'));
 
         RateLimiter::clear($this->throttleKey());
     }
 
     /**
-     * In production with real subdomains, block a user who tries to log in
-     * at another school's URL.  When running on a plain IP/domain (local dev
-     * or single-domain deploy) this check is skipped — the school is resolved
-     * from the user's own school_id after login.
+     * The entered School Code is now the source of truth for which tenant
+     * this login belongs to — reject if the account belongs to a different
+     * school. Super admins bypass this so the code can be used to enter any
+     * school's context directly.
      */
-    private function enforceSubdomainSchoolMatch(?User $user): void
+    private function enforceSchoolCodeMatch(User $user, School $school): void
     {
-        if (! $user || $user->isSuperAdmin()) return;
-        if (! $this->hasSubdomain()) return;
-        if (! app()->bound('currentSchool')) return;
+        if ($user->isSuperAdmin()) return;
         if ($user->school_id === null) return;
 
-        $school = app('currentSchool');
-
         if ((int) $user->school_id !== (int) $school->id) {
-            Auth::logout();
             throw ValidationException::withMessages([
-                'email' => 'This account does not belong to this school.',
+                'school_code' => 'This account does not belong to this school.',
             ]);
         }
-    }
-
-    private function hasSubdomain(): bool
-    {
-        $host = $this->getHost();
-
-        // IP addresses (127.0.0.1, ::1, etc.) are never subdomains
-        if (filter_var($host, FILTER_VALIDATE_IP)) {
-            return false;
-        }
-
-        $appDomain = config('tenancy.domain', '');
-        if ($appDomain && str_ends_with($host, '.' . $appDomain)) {
-            return true;
-        }
-
-        return count(explode('.', $host)) >= 3;
     }
 
     public function ensureIsNotRateLimited(): void

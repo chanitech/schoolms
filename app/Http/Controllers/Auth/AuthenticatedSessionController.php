@@ -30,10 +30,12 @@ class AuthenticatedSessionController extends Controller
 
         $user = Auth::user();
 
-        // Store the user's school in session so ResolveTenant uses it on every
-        // subsequent request — no subdomain needed.
-        if ($user->school_id) {
-            $request->session()->put('tenant_school_id', $user->school_id);
+        // Store the school resolved from the entered School Code in session
+        // so ResolveTenant uses it on every subsequent request — no
+        // subdomain needed, and this works even for super admins (whose own
+        // school_id is null).
+        if ($request->resolvedSchool) {
+            $request->session()->put('tenant_school_id', $request->resolvedSchool->id);
         }
 
         if ($user->hasRole('guardian')) {
