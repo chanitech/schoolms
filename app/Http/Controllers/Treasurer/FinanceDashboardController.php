@@ -3,20 +3,40 @@
 namespace App\Http\Controllers\Treasurer;
 
 use App\Http\Controllers\Controller;
+use App\Models\AccountantClassAssignment;
+use App\Models\Budget;
+use App\Models\InventoryItem;
+use App\Models\Invoice;
+use App\Models\JobDescription;
+use App\Models\Loan;
 use App\Models\Payment;
+use App\Models\ProcurementRequest;
 use App\Models\TaskLog;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class FinanceDashboardController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('permission:view finance dashboard');
+        $this->middleware('permission:view finance dashboard')->only(['index']);
     }
 
+    /**
+     * Treasurer's whole-office overview: every Treasurer Office module in one place,
+     * not just the new Finance Office additions.
+     */
     public function index()
     {
+        $officeSummary = [
+            'pending_loans' => Loan::where('status', 'pending')->count(),
+            'pending_budgets' => Budget::whereIn('status', ['pending', 'partially_approved'])->count(),
+            'pending_invoices' => Invoice::where('status', 'pending')->count(),
+            'pending_procurement' => ProcurementRequest::where('status', 'pending')->count(),
+            'payments_needing_review' => Payment::whereIn('status', ['pending', 'flagged'])->count(),
+            'overdue_tasks' => TaskLog::where('status', 'overdue')->count(),
+        ];
+
         $taskStats = TaskLog::select('user_id')
             ->selectRaw("COUNT(*) as total_tasks")
             ->selectRaw("SUM(CASE WHEN status = 'approved' AND submitted_at <= deadline THEN 1 ELSE 0 END) as on_time")
@@ -62,6 +82,50 @@ class FinanceDashboardController extends Controller
             })
             ->get();
 
-        return view('treasurer.dashboard', compact('staffOverview', 'complianceIssues'));
+        return view('treasurer.dashboard', compact('officeSummary', 'staffOverview', 'complianceIssues'));
+    }
+
+    /**
+     * Personal dashboard for any Finance Office member — their own tasks,
+     * job description(s), and whatever is relevant to their specific role.
+     * No permission gate: it only ever shows the logged-in user's own data.
+     */
+    public function myDashboard()
+    {
+        $user = Auth::user();
+
+        $tasks = TaskLog::with('justifications')
+            ->where('user_id', $user->id)
+            ->latest('deadline')
+            ->get();
+
+        $jobDescriptions = JobDescription::whereIn('role_name', $user->getRoleNames())->get();
+
+        $assignedClasses = AccountantClassAssignment::where('user_id', $user->id)
+            ->with('schoolClass')
+            ->get();
+
+        $pendingClassPayments = $assignedClasses->isNotEmpty()
+            ? Payment::whereIn('class_id', $assignedClasses->pluck('class_id'))
+                ->whereIn('status', ['pending', 'flagged'])
+                ->count()
+            : null;
+
+        $myProcurementRequests = ProcurementRequest::where('requested_by', $user->id)
+            ->latest()
+            ->get();
+
+        $awaitingDisbursement = $user->can('disburse payments')
+            ? ProcurementRequest::where('status', 'approved')->count()
+            : null;
+
+        $lowStockCount = $user->can('manage stock')
+            ? InventoryItem::withoutSchoolScope()->get()->filter(fn (InventoryItem $item) => $item->isLowStock())->count()
+            : null;
+
+        return view('treasurer.my-dashboard', compact(
+            'tasks', 'jobDescriptions', 'assignedClasses', 'pendingClassPayments',
+            'myProcurementRequests', 'awaitingDisbursement', 'lowStockCount'
+        ));
     }
 }

@@ -190,6 +190,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Treasurer oversight dashboard
     Route::get('/treasurer/dashboard', [FinanceDashboardController::class, 'index'])->name('treasurer.dashboard');
+    Route::get('/treasurer/my-dashboard', [FinanceDashboardController::class, 'myDashboard'])->name('treasurer.my-dashboard');
 
     // ==================== STUDENT ROUTES ====================
     Route::get('/students/download-template', [StudentController::class, 'downloadTemplate'])->name('students.download-template');

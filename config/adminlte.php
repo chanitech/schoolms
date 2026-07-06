@@ -847,6 +847,11 @@ return [
             'icon' => 'fas fa-tasks',
             'submenu' => [
                 [
+                    'text' => 'My Dashboard',
+                    'route' => 'treasurer.my-dashboard',
+                    'icon' => 'fas fa-user-circle',
+                ],
+                [
                     'text' => 'Tasks',
                     'route' => 'treasurer.tasks.index',
                     'icon' => 'fas fa-list-check',
@@ -858,7 +863,7 @@ return [
                     'can' => 'manage job descriptions',
                 ],
                 [
-                    'text' => 'Oversight Dashboard',
+                    'text' => 'Office Oversight Dashboard',
                     'route' => 'treasurer.dashboard',
                     'icon' => 'fas fa-chart-line',
                     'can' => 'view finance dashboard',

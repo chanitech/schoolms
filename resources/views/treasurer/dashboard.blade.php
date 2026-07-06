@@ -9,6 +9,69 @@
 @section('content')
 <div class="container-fluid">
 
+    <div class="row">
+        <div class="col-lg-2 col-md-4 col-6">
+            <div class="small-box bg-info">
+                <div class="inner">
+                    <h3>{{ $officeSummary['pending_loans'] }}</h3>
+                    <p>Pending Loans</p>
+                </div>
+                <i class="icon fas fa-hand-holding-usd"></i>
+                <a href="{{ route('treasurer.loans.pending') }}" class="small-box-footer">View <i class="fas fa-arrow-circle-right"></i></a>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-6">
+            <div class="small-box bg-warning">
+                <div class="inner">
+                    <h3>{{ $officeSummary['pending_budgets'] }}</h3>
+                    <p>Pending Budgets</p>
+                </div>
+                <i class="icon fas fa-file-invoice"></i>
+                <a href="{{ route('finance.budgets.pending') }}" class="small-box-footer">View <i class="fas fa-arrow-circle-right"></i></a>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-6">
+            <div class="small-box bg-secondary">
+                <div class="inner">
+                    <h3>{{ $officeSummary['pending_invoices'] }}</h3>
+                    <p>Pending Invoices</p>
+                </div>
+                <i class="icon fas fa-receipt"></i>
+                <a href="{{ route('finance.invoices.do') }}" class="small-box-footer">View <i class="fas fa-arrow-circle-right"></i></a>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-6">
+            <div class="small-box bg-primary">
+                <div class="inner">
+                    <h3>{{ $officeSummary['pending_procurement'] }}</h3>
+                    <p>Pending Procurement</p>
+                </div>
+                <i class="icon fas fa-shopping-cart"></i>
+                <a href="{{ route('treasurer.procurement.pending') }}" class="small-box-footer">View <i class="fas fa-arrow-circle-right"></i></a>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-6">
+            <div class="small-box bg-danger">
+                <div class="inner">
+                    <h3>{{ $officeSummary['payments_needing_review'] }}</h3>
+                    <p>Payments to Review</p>
+                </div>
+                <i class="icon fas fa-check-double"></i>
+                <a href="{{ route('finance.payments.review') }}" class="small-box-footer">View <i class="fas fa-arrow-circle-right"></i></a>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-6">
+            <div class="small-box bg-dark">
+                <div class="inner">
+                    <h3>{{ $officeSummary['overdue_tasks'] }}</h3>
+                    <p>Overdue Tasks</p>
+                </div>
+                <i class="icon fas fa-exclamation-triangle"></i>
+                <a href="{{ route('treasurer.tasks.index') }}" class="small-box-footer">View <i class="fas fa-arrow-circle-right"></i></a>
+            </div>
+        </div>
+    </div>
+
     <div class="card card-outline card-primary shadow-sm">
         <div class="card-header">
             <h3 class="card-title"><i class="fas fa-users mr-2"></i> Staff Performance Overview</h3>

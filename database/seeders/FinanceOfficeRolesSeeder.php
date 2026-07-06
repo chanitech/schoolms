@@ -28,7 +28,17 @@ class FinanceOfficeRolesSeeder extends Seeder
             'view finance dashboard',
         ];
 
-        foreach ($permissions as $permission) {
+        // Pre-existing permissions referenced by BudgetController/InvoiceController/
+        // the sidebar's 'can' checks but never created — same dead-gate pattern as
+        // the treasurer/accountant roles below. Needed so the Treasurer dashboard's
+        // links to Pending Budgets/Invoices actually work instead of 403ing.
+        $legacyApprovalPermissions = [
+            'approve loans',
+            'view pending approvals',
+            'approve invoices',
+        ];
+
+        foreach ([...$permissions, ...$legacyApprovalPermissions] as $permission) {
             Permission::firstOrCreate(['name' => $permission]);
         }
 
@@ -37,14 +47,14 @@ class FinanceOfficeRolesSeeder extends Seeder
         // so Admin (this app's super-admin role) can access every Finance
         // Office screen without needing a separate Finance Office role.
         if ($admin = Role::where('name', 'Admin')->first()) {
-            $admin->givePermissionTo($permissions);
+            $admin->givePermissionTo([...$permissions, ...$legacyApprovalPermissions]);
         }
 
         // Fixes previously-dead role gates in routes/web.php (treasurer.* group)
         // and Loan::approveBy() — these role names were referenced in code but
         // never existed as rows, making those routes unreachable by anyone.
         $treasurer = Role::firstOrCreate(['name' => 'treasurer']);
-        $treasurer->givePermissionTo($permissions);
+        $treasurer->givePermissionTo([...$permissions, ...$legacyApprovalPermissions]);
 
         $chiefAccountant = Role::firstOrCreate(['name' => 'chief-accountant']);
         $chiefAccountant->givePermissionTo(['view payments', 'view fee reports']);
