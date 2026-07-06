@@ -12,6 +12,18 @@ use Illuminate\Validation\Rule;
 
 class SubjectController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:view subjects')->only(['index', 'show']);
+        $this->middleware('permission:create subjects')->only(['create', 'store']);
+        $this->middleware('permission:edit subjects')->only(['edit', 'update']);
+        $this->middleware('permission:delete subjects')->only('destroy');
+        $this->middleware('permission:view subject assignments')->only('assignStudents');
+        $this->middleware('permission:manage subjects')->only([
+            'assignIndividualStudents', 'unassignIndividualStudents', 'updateAssignedStudents',
+        ]);
+    }
+
     /**
      * 📘 List all subjects
      */
@@ -94,6 +106,21 @@ class SubjectController extends Controller
         $subject->classes()->sync($pivotData);
 
         return redirect()->route('subjects.index')->with('success', 'Subject created successfully.');
+    }
+
+    /**
+     * 👁️ Show subject details
+     */
+    public function show(Subject $subject)
+    {
+        $subject->load('department', 'classes');
+        $activeStudentsCount = $subject->activeStudents()->count();
+        $withdrawnStudentsCount = $subject->withdrawnStudents()->count();
+
+        $teacherIds = $subject->classes->pluck('pivot.teacher_id')->filter()->unique();
+        $teachers = User::whereIn('id', $teacherIds)->get()->keyBy('id');
+
+        return view('subjects.show', compact('subject', 'activeStudentsCount', 'withdrawnStudentsCount', 'teachers'));
     }
 
     /**
