@@ -889,6 +889,39 @@ return [
             ],
         ],
 
+        // ========== INVENTORY ==========
+        [
+            'text' => 'Inventory',
+            'icon' => 'fas fa-boxes',
+            'can'  => ['manage settings', 'manage stock', 'view inventory'],
+            'submenu' => [
+                [
+                    'text'  => 'Dashboard',
+                    'url'   => 'inventory',
+                    'icon'  => 'fas fa-tachometer-alt',
+                    'can'   => ['manage settings', 'manage stock', 'view inventory'],
+                ],
+                [
+                    'text'  => 'Items',
+                    'url'   => 'inventory/items',
+                    'icon'  => 'fas fa-box',
+                    'can'   => ['manage settings', 'manage stock', 'view inventory'],
+                ],
+                [
+                    'text'  => 'Categories',
+                    'url'   => 'inventory/categories',
+                    'icon'  => 'fas fa-tags',
+                    'can'   => ['manage settings', 'manage stock', 'view inventory'],
+                ],
+                [
+                    'text'  => 'Transactions',
+                    'url'   => 'inventory/transactions',
+                    'icon'  => 'fas fa-exchange-alt',
+                    'can'   => ['manage settings', 'manage stock', 'view inventory'],
+                ],
+            ],
+        ],
+
         // ========== PERFORMANCE & TASKS ==========
         [
             'text' => 'Performance & Tasks',
@@ -954,39 +987,6 @@ return [
         'url'   => 'documents',
         'icon'  => 'fas fa-folder-open',
         'can'   => 'view documents',
-    ],
-
-    // Inventory Management
-    [
-        'text' => 'Inventory',
-        'icon' => 'fas fa-boxes',
-        'can'  => ['manage settings', 'manage stock', 'view inventory'],
-        'submenu' => [
-            [
-                'text'  => 'Dashboard',
-                'url'   => 'inventory',
-                'icon'  => 'fas fa-tachometer-alt',
-                'can'   => ['manage settings', 'manage stock', 'view inventory'],
-            ],
-            [
-                'text'  => 'Items',
-                'url'   => 'inventory/items',
-                'icon'  => 'fas fa-box',
-                'can'   => ['manage settings', 'manage stock', 'view inventory'],
-            ],
-            [
-                'text'  => 'Categories',
-                'url'   => 'inventory/categories',
-                'icon'  => 'fas fa-tags',
-                'can'   => ['manage settings', 'manage stock', 'view inventory'],
-            ],
-            [
-                'text'  => 'Transactions',
-                'url'   => 'inventory/transactions',
-                'icon'  => 'fas fa-exchange-alt',
-                'can'   => ['manage settings', 'manage stock', 'view inventory'],
-            ],
-        ],
     ],
 
     // Reports
