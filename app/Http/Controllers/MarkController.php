@@ -87,7 +87,20 @@ class MarkController extends Controller
             $marksQuery->where('marks.exam_id', $request->exam_id);
         }
         if ($user->hasRole('Teacher')) {
-            $marksQuery->whereHas('subject.classes', fn($q) => $q->where('teacher_id', $staffId));
+            // whereHas('subject.classes', ...where teacher_id) only checks that
+            // the SUBJECT has *some* class taught by this teacher — a teacher
+            // assigned Chemistry for Form 1 only would still match every other
+            // class's Chemistry marks too, since Chemistry itself has at least
+            // one class taught by them. Correlate on the mark's own class_id
+            // as well, so only the exact (subject, class) pairs actually
+            // assigned to this teacher are visible.
+            $marksQuery->whereExists(function ($query) use ($staffId) {
+                $query->select(DB::raw(1))
+                    ->from('subject_class')
+                    ->whereColumn('subject_class.subject_id', 'marks.subject_id')
+                    ->whereColumn('subject_class.class_id', 'marks.class_id')
+                    ->where('subject_class.teacher_id', $staffId);
+            });
         }
 
         // Statistics, ranking, and grade distribution (only when a specific exam, subject, class, and session are selected)
@@ -510,15 +523,20 @@ public function getExamsBySession(Request $request)
         if ($user->hasRole('Teacher')) {
             // subject_class.teacher_id is a foreign key to staff.id, not users.id.
             $staffId = optional(\App\Models\Staff::where('user_id', $user->id)->first())->id;
+
+            // Must be assigned to this exact mark's (subject, class) pair —
+            // previously any teacher could open any mark's edit page by URL
+            // regardless of whose class/subject it belonged to.
+            $isAssigned = DB::table('subject_class')
+                ->where('subject_id', $mark->subject_id)
+                ->where('class_id', $mark->class_id)
+                ->where('teacher_id', $staffId)
+                ->exists();
+            abort_unless($isAssigned, 403, 'You are not assigned to this subject for this class.');
+
             $subjects = Subject::whereHas('classes', function($q) use ($staffId) {
                 $q->where('teacher_id', $staffId);
             })->get();
-            
-            // Also ensure the current mark's subject is included even if not assigned (view only)
-            $currentSubject = Subject::find($mark->subject_id);
-            if ($currentSubject && !$subjects->contains('id', $currentSubject->id)) {
-                $subjects->push($currentSubject);
-            }
         } else {
             $subjects = Subject::all();
         }
@@ -547,16 +565,28 @@ public function getExamsBySession(Request $request)
             // subject_class.teacher_id is a foreign key to staff.id, not users.id.
             $staffId = optional(\App\Models\Staff::where('user_id', $user->id)->first())->id;
 
-            $isAssigned = Subject::where('id', $request->subject_id)
-                ->whereHas('classes', function($q) use ($classId, $staffId) {
-                    $q->where('class_id', $classId)
-                      ->where('teacher_id', $staffId);
-                })
+            // Must be assigned to the ORIGINAL (subject, class) pair to touch
+            // this mark at all — previously this check only ran if the
+            // subject was being changed, so a teacher could overwrite a mark
+            // outside their assignment as long as they left the subject
+            // dropdown untouched.
+            $originallyAssigned = DB::table('subject_class')
+                ->where('subject_id', $mark->subject_id)
+                ->where('class_id', $classId)
+                ->where('teacher_id', $staffId)
                 ->exists();
-            
-            // If not assigned and it's not the original subject, deny
-            if (!$isAssigned && $mark->subject_id != $request->subject_id) {
-                abort(403, "You are not assigned to this subject.");
+            abort_unless($originallyAssigned, 403, 'You are not assigned to this subject for this class.');
+
+            // If also changing to a different subject, the new subject must
+            // be assigned to them for this same class too.
+            if ($mark->subject_id != $request->subject_id) {
+                $newlyAssigned = Subject::where('id', $request->subject_id)
+                    ->whereHas('classes', function($q) use ($classId, $staffId) {
+                        $q->where('class_id', $classId)
+                          ->where('teacher_id', $staffId);
+                    })
+                    ->exists();
+                abort_unless($newlyAssigned, 403, 'You are not assigned to this subject for the selected class.');
             }
         }
 
