@@ -373,10 +373,11 @@ class TimetableGeneratorService
             )
             ->get();
 
-        // Load teacher names
+        // Load teacher names — subject_class.teacher_id is a foreign key to
+        // staff.id, not users.id.
         $teacherIds = $assignments->pluck('teacher_id')->filter()->unique()->toArray();
-        $teachers   = DB::table('users')->whereIn('id', $teacherIds)
-            ->select('id', 'name', 'first_name', 'last_name')
+        $teachers   = DB::table('staff')->whereIn('id', $teacherIds)
+            ->select('id', 'first_name', 'last_name')
             ->get()->keyBy('id');
 
         // Build per-class and per-teacher metrics
@@ -409,7 +410,7 @@ class TimetableGeneratorService
                     $t = $teachers[$asgn->teacher_id] ?? null;
                     $teacherLoad[$asgn->teacher_id] = [
                         'teacher_id'   => $asgn->teacher_id,
-                        'teacher_name' => $t ? ($t->name ?: trim($t->first_name . ' ' . $t->last_name)) : "Teacher #{$asgn->teacher_id}",
+                        'teacher_name' => $t ? trim($t->first_name . ' ' . $t->last_name) : "Teacher #{$asgn->teacher_id}",
                         'load'         => 0,
                         'classes'      => 0,
                     ];
@@ -463,7 +464,12 @@ class TimetableGeneratorService
         }
         unset($cls);
 
-        $teacherOverload = array_filter($teacherLoad, fn($t) => $t['load'] > $teacherSlots);
+        // $teacherSlots is 0 when no active, non-break TimetablePeriod rows
+        // exist yet — nothing to compare load against, so there's no
+        // meaningful "overload" and dividing by it would crash.
+        $teacherOverload = $teacherSlots > 0
+            ? array_filter($teacherLoad, fn($t) => $t['load'] > $teacherSlots)
+            : [];
         foreach ($teacherOverload as &$t) {
             $t['available'] = $teacherSlots;
             $t['overload']  = $t['load'] - $teacherSlots;
