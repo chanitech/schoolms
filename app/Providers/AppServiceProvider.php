@@ -31,6 +31,18 @@ class AppServiceProvider extends ServiceProvider
             'chief-accountant', 'accountant', 'treasurer', 'Admin',
         ]));
 
+        // Membership in the Finance Office, independent of any specific
+        // permission — TaskLogController@index and
+        // FinanceDashboardController@myDashboard are deliberately
+        // self-scoped (no cross-user data leak) so they were left without a
+        // permission gate, but that also meant any role — including
+        // Teacher — could reach them. This is the boundary for both those
+        // routes and the 'Performance & Tasks' menu section.
+        Gate::define('is-finance-office', fn ($user) => $user->hasAnyRole([
+            'treasurer', 'chief-accountant', 'accountant', 'class_accountant',
+            'procurement_officer', 'cashier', 'storekeeper', 'Admin',
+        ]));
+
         // Share unread notification count with every view.
         // View::composer('*') fires once per rendered view/partial, not once
         // per page — a single AdminLTE page composes 20-30+ partials (sidebar,

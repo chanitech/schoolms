@@ -18,12 +18,15 @@ class TaskLogController extends Controller
 
     public function __construct()
     {
-        // 'index' is deliberately NOT gated here — its own logic already
-        // shows the treasurer/managers everything and everyone else only
-        // their own assigned tasks. Gating it behind 'manage tasks' would
-        // block roles like class_accountant/chief-accountant/accountant
-        // (who don't have that permission) from viewing tasks assigned to
-        // them.
+        // 'index' is deliberately NOT gated by a specific permission — its
+        // own logic already shows the treasurer/managers everything and
+        // everyone else only their own assigned tasks. Gating it behind
+        // 'manage tasks' would block roles like
+        // class_accountant/chief-accountant/accountant (who don't have that
+        // permission) from viewing tasks assigned to them. It's still
+        // restricted to Finance Office membership so roles like Teacher
+        // can't reach it at all.
+        $this->middleware('can:is-finance-office')->only('index');
         $this->middleware('permission:manage tasks')->only(['create', 'store', 'approve', 'toggleExceeds']);
     }
 

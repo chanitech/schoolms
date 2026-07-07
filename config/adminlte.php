@@ -960,19 +960,29 @@ return [
         ],
 
         // ========== PERFORMANCE & TASKS ==========
+        // Was completely ungated (parent + My Dashboard + Tasks) — every
+        // authenticated user of any role saw this Treasurer/Finance-Office
+        // section, including Teacher. My Dashboard and Tasks' own controllers
+        // are deliberately self-scoped (no permission gate, see their
+        // comments) but now enforce 'can:is-finance-office' at the route
+        // level (AppServiceProvider) — this menu 'can' matches that same
+        // Gate so nobody sees a link they'd 403 on.
         [
             'text' => 'Performance & Tasks',
             'icon' => 'fas fa-tasks',
+            'can' => 'is-finance-office',
             'submenu' => [
                 [
                     'text' => 'My Dashboard',
                     'route' => 'treasurer.my-dashboard',
                     'icon' => 'fas fa-user-circle',
+                    'can' => 'is-finance-office',
                 ],
                 [
                     'text' => 'Tasks',
                     'route' => 'treasurer.tasks.index',
                     'icon' => 'fas fa-list-check',
+                    'can' => 'is-finance-office',
                 ],
                 [
                     'text' => 'Job Descriptions',

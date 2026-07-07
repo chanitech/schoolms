@@ -20,6 +20,10 @@ class FinanceDashboardController extends Controller
     public function __construct()
     {
         $this->middleware('permission:view finance dashboard')->only(['index']);
+        // myDashboard is deliberately self-scoped (no permission gate — see
+        // its own docblock), but still restricted to Finance Office
+        // membership so other roles like Teacher can't reach it.
+        $this->middleware('can:is-finance-office')->only('myDashboard');
     }
 
     /**
