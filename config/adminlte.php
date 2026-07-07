@@ -607,6 +607,12 @@ return [
                             ['text' => 'Evaluation & Progress','url' => 'topic-coverage/evaluation', 'icon' => 'fas fa-chart-line', 'can' => 'view lesson plans'],
                         ],
                     ],
+                    [
+                        'text'  => 'Period Settings',
+                        'route' => 'timetable-periods.index',
+                        'icon'  => 'fas fa-clock',
+                        'can'   => 'is-timetable-admin',
+                    ],
                 ],
             ],
 

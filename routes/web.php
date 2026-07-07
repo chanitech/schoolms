@@ -53,6 +53,7 @@ use App\Http\Controllers\{
     ExamQuestionController,
     TopicCoverageController,
     TimetableController,
+    TimetablePeriodController,
     GuardianLoginController,
     NotificationController,
     DocumentController,
@@ -371,6 +372,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/{timetable}/publish',    [TimetableController::class, 'publish'])->name('publish');
         Route::post('/{timetable}/unpublish',  [TimetableController::class, 'unpublish'])->name('unpublish');
     });
+
+    // Period Settings — the teaching/break periods timetable generation and
+    // capacity analysis are computed against. Each school manages its own.
+    Route::resource('timetable-periods', TimetablePeriodController::class)->except(['show']);
 
     // ==================== RESULTS GROUP ====================
     Route::prefix('results')->name('results.')->group(function () {

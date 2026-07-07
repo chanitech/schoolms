@@ -43,6 +43,10 @@ class AppServiceProvider extends ServiceProvider
             'procurement_officer', 'cashier', 'storekeeper', 'Admin',
         ]));
 
+        // Matches TimetableController's own inline role check on
+        // edit/update and TimetablePeriodController's constructor gate.
+        Gate::define('is-timetable-admin', fn ($user) => $user->hasAnyRole(['Admin', 'Academic']));
+
         // Share unread notification count with every view.
         // View::composer('*') fires once per rendered view/partial, not once
         // per page — a single AdminLTE page composes 20-30+ partials (sidebar,
