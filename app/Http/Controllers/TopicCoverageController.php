@@ -199,9 +199,18 @@ class TopicCoverageController extends Controller
     {
         $user        = Auth::user();
         $sessions    = AcademicSession::orderBy('name')->get();
-        $classes     = SchoolClass::orderBy('name')->get();
         $subjects    = Subject::orderBy('name')->get();
         $departments = Department::orderBy('name')->get();
+
+        // Classes dropdown: Teacher only sees classes they're actually
+        // assigned to teach (via subject_class), not every class in the school.
+        if ($user->hasRole('Teacher')) {
+            $staffId = optional(Staff::where('user_id', $user->id)->first())->id;
+            $classes = SchoolClass::whereHas('subjects', fn($q) => $q->where('subject_class.teacher_id', $staffId))
+                ->orderBy('name')->get();
+        } else {
+            $classes = SchoolClass::orderBy('name')->get();
+        }
 
         $query = LessonPlan::with(['session', 'subject', 'schoolClass', 'teacher']);
 
@@ -232,7 +241,6 @@ class TopicCoverageController extends Controller
     {
         $user     = Auth::user();
         $sessions = AcademicSession::orderBy('name')->get();
-        $classes  = SchoolClass::orderBy('name')->get();
 
         if ($user->hasRole('Teacher')) {
             // subject_class.teacher_id is a foreign key to staff.id, not users.id
@@ -240,8 +248,11 @@ class TopicCoverageController extends Controller
             $staffId = optional(Staff::where('user_id', $user->id)->first())->id;
             $subjects = Subject::whereHas('classes', fn($q) => $q->where('teacher_id', $staffId))
                 ->orderBy('name')->get();
+            $classes = SchoolClass::whereHas('subjects', fn($q) => $q->where('subject_class.teacher_id', $staffId))
+                ->orderBy('name')->get();
         } else {
             $subjects = Subject::orderBy('name')->get();
+            $classes  = SchoolClass::orderBy('name')->get();
         }
 
         return view('topic_coverage.create', compact('sessions', 'classes', 'subjects'));
@@ -256,6 +267,22 @@ class TopicCoverageController extends Controller
             'title'               => 'nullable|string|max:200',
             'description'         => 'nullable|string|max:1000',
         ]);
+
+        $user = Auth::user();
+        if ($user->hasRole('Teacher')) {
+            // The create form only scopes the Subject/Class dropdowns
+            // independently — nothing stops a crafted request from pairing
+            // a subject and class that were never actually assigned
+            // together. subject_class.teacher_id is a foreign key to
+            // staff.id, not users.id.
+            $staffId = optional(Staff::where('user_id', $user->id)->first())->id;
+            $isAssigned = \Illuminate\Support\Facades\DB::table('subject_class')
+                ->where('subject_id', $data['subject_id'])
+                ->where('class_id', $data['class_id'])
+                ->where('teacher_id', $staffId)
+                ->exists();
+            abort_unless($isAssigned, 403, 'You are not assigned to this subject for this class.');
+        }
 
         $data['teacher_id'] = Auth::id();
 
@@ -279,9 +306,16 @@ class TopicCoverageController extends Controller
     // ── Show ──────────────────────────────────────────────────────────────
     public function show(LessonPlan $lessonPlan)
     {
+        // Previously any authenticated user could open any lesson plan by
+        // URL — only editing was gated. canManage() already covers
+        // Admin/Academic (all), same-department HOD, and the plan's own
+        // teacher, which is exactly "the responsible teacher for this
+        // subject/class" plus oversight roles.
+        abort_unless($this->canManage($lessonPlan), 403, 'You are not assigned to this subject for this class.');
+
         $lessonPlan->load(['session', 'subject', 'schoolClass', 'teacher', 'topics.subtopics.coveredBy']);
         $stats   = $lessonPlan->completionStats();
-        $canEdit = $this->canManage($lessonPlan);
+        $canEdit = true;
 
         return view('topic_coverage.show', compact('lessonPlan', 'stats', 'canEdit'));
     }
