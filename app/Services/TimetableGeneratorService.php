@@ -66,12 +66,17 @@ class TimetableGeneratorService
         // Keys of subjects that must be placed as back-to-back consecutive pairs only
         $doubleKeys = $settings['double_periods'] ?? [];
 
-        // Load subject assignments
+        // Load subject assignments. subject_class.teacher_id is a foreign
+        // key to staff.id, but timetable_entries.teacher_id (where this
+        // ultimately gets written) is a foreign key to users.id — join
+        // through staff to translate it, or every insert with a non-null
+        // teacher fails its FK constraint.
         $assignments = DB::table('subject_class')
             ->join('subjects', 'subjects.id', '=', 'subject_class.subject_id')
+            ->leftJoin('staff', 'staff.id', '=', 'subject_class.teacher_id')
             ->whereIn('subject_class.class_id', $classIds)
             ->select('subject_class.class_id', 'subject_class.subject_id',
-                     'subject_class.teacher_id', 'subjects.name as subject_name')
+                     'staff.user_id as teacher_id', 'subjects.name as subject_name')
             ->get();
 
         // Sort hardest-to-place first (most periods needed)
@@ -633,13 +638,17 @@ class TimetableGeneratorService
             return ['entries' => [], 'warnings' => ['No exam dates configured.']];
         }
 
-        // Load all subjects for the selected classes
+        // Load all subjects for the selected classes. subject_class.teacher_id
+        // is a foreign key to staff.id, but timetable_entries.teacher_id is a
+        // foreign key to users.id — translate via staff, same as the class
+        // timetable generator above.
         $subjectsByClass = [];
         $rows = DB::table('subject_class')
             ->join('subjects', 'subjects.id', '=', 'subject_class.subject_id')
+            ->leftJoin('staff', 'staff.id', '=', 'subject_class.teacher_id')
             ->whereIn('class_id', $classIds)
             ->select('subject_class.class_id', 'subject_class.subject_id',
-                     'subject_class.teacher_id', 'subjects.name as subject_name')
+                     'staff.user_id as teacher_id', 'subjects.name as subject_name')
             ->get();
 
         foreach ($rows as $row) {
