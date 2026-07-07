@@ -42,10 +42,13 @@ class MarkController extends Controller
         $classes = SchoolClass::all();
         $departments = \App\Models\Department::all();
 
+        // subject_class.teacher_id is a foreign key to staff.id, not users.id.
+        $staffId = optional(\App\Models\Staff::where('user_id', $user->id)->first())->id;
+
         // Base subjects query
         $subjectsQuery = Subject::query();
         if ($user->hasRole('Teacher')) {
-            $subjectsQuery->whereHas('classes', fn($q) => $q->where('teacher_id', $user->id));
+            $subjectsQuery->whereHas('classes', fn($q) => $q->where('teacher_id', $staffId));
         }
         if ($request->filled('department_id')) {
             $subjectsQuery->where('department_id', $request->department_id);
@@ -79,7 +82,7 @@ class MarkController extends Controller
             $marksQuery->where('marks.exam_id', $request->exam_id);
         }
         if ($user->hasRole('Teacher')) {
-            $marksQuery->whereHas('subject.classes', fn($q) => $q->where('teacher_id', $user->id));
+            $marksQuery->whereHas('subject.classes', fn($q) => $q->where('teacher_id', $staffId));
         }
 
         // Statistics, ranking, and grade distribution (only when a specific exam, subject, class, and session are selected)
@@ -170,9 +173,11 @@ class MarkController extends Controller
         $classes = SchoolClass::all();
 
         if ($user->hasRole('Teacher')) {
+            // subject_class.teacher_id is a foreign key to staff.id, not users.id.
+            $staffId = optional(\App\Models\Staff::where('user_id', $user->id)->first())->id;
             // Only subjects assigned to this teacher via pivot
-            $subjects = \App\Models\Subject::whereHas('classes', function($q) use ($user) {
-                $q->where('teacher_id', $user->id);
+            $subjects = \App\Models\Subject::whereHas('classes', function($q) use ($staffId) {
+                $q->where('teacher_id', $staffId);
             })->get();
         } else {
             $subjects = Subject::all();
@@ -222,10 +227,12 @@ class MarkController extends Controller
         }
 
         if ($user->hasRole('Teacher')) {
+            // subject_class.teacher_id is a foreign key to staff.id, not users.id.
+            $staffId = optional(\App\Models\Staff::where('user_id', $user->id)->first())->id;
             $assigned = \App\Models\Subject::where('id', $request->subject_id)
-                ->whereHas('classes', function ($q) use ($request, $user) {
+                ->whereHas('classes', function ($q) use ($request, $staffId) {
                     $q->where('class_id', $request->class_id)
-                      ->where('teacher_id', $user->id);
+                      ->where('teacher_id', $staffId);
                 })
                 ->exists();
 
@@ -371,11 +378,15 @@ class MarkController extends Controller
 
         /** @var \App\Models\User $user */
         $user = Auth::user();
+        // subject_class.teacher_id is a foreign key to staff.id, not users.id.
+        $staffId = $user->hasRole('Teacher')
+            ? optional(\App\Models\Staff::where('user_id', $user->id)->first())->id
+            : null;
 
         $query = Subject::query()
-            ->with(['classes' => function ($q) use ($user) {
+            ->with(['classes' => function ($q) use ($user, $staffId) {
                 if ($user->hasRole('Teacher')) {
-                    $q->where('teacher_id', $user->id);
+                    $q->where('teacher_id', $staffId);
                 }
             }]);
 
@@ -385,8 +396,8 @@ class MarkController extends Controller
 
         // If teacher, only return subjects assigned to them via pivot
         if ($user->hasRole('Teacher')) {
-            $query->whereHas('classes', function($q) use ($user) {
-                $q->where('teacher_id', $user->id);
+            $query->whereHas('classes', function($q) use ($staffId) {
+                $q->where('teacher_id', $staffId);
             });
         }
 
@@ -460,8 +471,10 @@ public function getExamsBySession(Request $request)
 
         // Teacher: only subjects assigned to them
         if ($user->hasRole('Teacher')) {
-            $subjects = Subject::whereHas('classes', function($q) use ($user) {
-                $q->where('teacher_id', $user->id);
+            // subject_class.teacher_id is a foreign key to staff.id, not users.id.
+            $staffId = optional(\App\Models\Staff::where('user_id', $user->id)->first())->id;
+            $subjects = Subject::whereHas('classes', function($q) use ($staffId) {
+                $q->where('teacher_id', $staffId);
             })->get();
             
             // Also ensure the current mark's subject is included even if not assigned (view only)
@@ -494,11 +507,13 @@ public function getExamsBySession(Request $request)
         if ($user->hasRole('Teacher')) {
             // Get the class_id from the mark
             $classId = $mark->class_id;
-            
+            // subject_class.teacher_id is a foreign key to staff.id, not users.id.
+            $staffId = optional(\App\Models\Staff::where('user_id', $user->id)->first())->id;
+
             $isAssigned = Subject::where('id', $request->subject_id)
-                ->whereHas('classes', function($q) use ($classId, $user) {
+                ->whereHas('classes', function($q) use ($classId, $staffId) {
                     $q->where('class_id', $classId)
-                      ->where('teacher_id', $user->id);
+                      ->where('teacher_id', $staffId);
                 })
                 ->exists();
             
@@ -628,8 +643,10 @@ public function getExamsBySession(Request $request)
         $user = Auth::user();
 
         if ($user->hasRole('Teacher')) {
+            // subject_class.teacher_id is a foreign key to staff.id, not users.id.
+            $staffId = optional(\App\Models\Staff::where('user_id', $user->id)->first())->id;
             $assigned = Subject::where('id', $request->subject_id)
-                ->whereHas('classes', fn($q) => $q->where('class_id', $request->class_id)->where('teacher_id', $user->id))
+                ->whereHas('classes', fn($q) => $q->where('class_id', $request->class_id)->where('teacher_id', $staffId))
                 ->exists();
             if (!$assigned) {
                 abort(403, 'You are not assigned to this subject for the selected class.');

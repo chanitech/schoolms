@@ -34,7 +34,11 @@ class ExamQuestionController extends Controller
         $exams       = Exam::orderBy('name')->get();
 
         if ($user->hasRole('Teacher')) {
-            $subjects = Subject::whereHas('classes', fn($q) => $q->where('teacher_id', $user->id))
+            // subject_class.teacher_id is a foreign key to staff.id, not users.id.
+            // (Dead branch in practice — the constructor above already
+            // restricts this whole controller to Admin/HOD.)
+            $staffId = optional(\App\Models\Staff::where('user_id', $user->id)->first())->id;
+            $subjects = Subject::whereHas('classes', fn($q) => $q->where('teacher_id', $staffId))
                 ->orderBy('name')->get();
         } else {
             $subjects = Subject::orderBy('name')->get();
