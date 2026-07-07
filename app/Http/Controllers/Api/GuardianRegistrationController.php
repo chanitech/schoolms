@@ -18,7 +18,7 @@ class GuardianRegistrationController extends Controller
 {
     public function store(Request $request, string $schoolSlug): JsonResponse
     {
-        $school = School::where('slug', $schoolSlug)->firstOrFail();
+        $school = School::resolveBySlug($schoolSlug);
 
         $validated = $request->validate([
             'parentName'       => 'required|string|max:255',
@@ -53,7 +53,7 @@ class GuardianRegistrationController extends Controller
 
         if (! $user) {
             $plainPassword = $phone;
-            $email = $validated['email'] ?? "guardian.{$phone}@parents.{$schoolSlug}.local";
+            $email = $validated['email'] ?? "guardian.{$phone}@parents.{$school->slug}.local";
 
             $user = User::create([
                 'school_id'  => $school->id,

@@ -11,7 +11,7 @@ class StudentDirectoryController extends Controller
 {
     public function index(string $schoolSlug): JsonResponse
     {
-        $school = School::where('slug', $schoolSlug)->firstOrFail();
+        $school = School::resolveBySlug($schoolSlug);
 
         $data = SchoolClass::withoutSchoolScope()
             ->where('school_id', $school->id)
