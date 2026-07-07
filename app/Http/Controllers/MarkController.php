@@ -39,11 +39,16 @@ class MarkController extends Controller
         $user = Auth::user();
 
         $sessions = AcademicSession::all();
-        $classes = SchoolClass::all();
         $departments = \App\Models\Department::all();
 
         // subject_class.teacher_id is a foreign key to staff.id, not users.id.
         $staffId = optional(\App\Models\Staff::where('user_id', $user->id)->first())->id;
+
+        // Classes dropdown: Teacher only sees classes they're actually
+        // assigned to teach (via subject_class), not every class in the school.
+        $classes = $user->hasRole('Teacher')
+            ? SchoolClass::whereHas('subjects', fn($q) => $q->where('subject_class.teacher_id', $staffId))->get()
+            : SchoolClass::all();
 
         // Base subjects query
         $subjectsQuery = Subject::query();
@@ -156,6 +161,37 @@ class MarkController extends Controller
                     $mark->rank = $rankedMarks[$mark->id]->rank;
                 }
             }
+        } else {
+            // No single session/class/subject/exam combo was selected, so
+            // there's no one group to rank against globally — rank each
+            // visible row within its own (subject, class, exam, session)
+            // group instead, so Rank isn't just blank on the plain listing.
+            $groups = $marks->getCollection()->groupBy(fn($m) => "{$m->subject_id}|{$m->class_id}|{$m->exam_id}|{$m->academic_session_id}");
+            foreach ($groups as $groupMarks) {
+                $first = $groupMarks->first();
+                $groupAll = Mark::where('subject_id', $first->subject_id)
+                    ->where('class_id', $first->class_id)
+                    ->where('exam_id', $first->exam_id)
+                    ->where('academic_session_id', $first->academic_session_id)
+                    ->get(['id', 'mark'])
+                    ->sortByDesc('mark')
+                    ->values();
+
+                $rank = 1;
+                $prevMark = null;
+                $rankById = [];
+                foreach ($groupAll as $index => $m) {
+                    if ($prevMark !== null && $m->mark < $prevMark) {
+                        $rank = $index + 1;
+                    }
+                    $rankById[$m->id] = $rank;
+                    $prevMark = $m->mark;
+                }
+
+                foreach ($groupMarks as $mark) {
+                    $mark->rank = $rankById[$mark->id] ?? null;
+                }
+            }
         }
 
         return view('marks.index', compact('marks', 'sessions', 'classes', 'departments', 'subjects', 'exams', 'stats'));
@@ -170,17 +206,18 @@ class MarkController extends Controller
         $user = Auth::user();
 
         $sessions = AcademicSession::all();
-        $classes = SchoolClass::all();
 
         if ($user->hasRole('Teacher')) {
             // subject_class.teacher_id is a foreign key to staff.id, not users.id.
             $staffId = optional(\App\Models\Staff::where('user_id', $user->id)->first())->id;
-            // Only subjects assigned to this teacher via pivot
+            // Only subjects/classes assigned to this teacher via pivot
             $subjects = \App\Models\Subject::whereHas('classes', function($q) use ($staffId) {
                 $q->where('teacher_id', $staffId);
             })->get();
+            $classes = SchoolClass::whereHas('subjects', fn($q) => $q->where('subject_class.teacher_id', $staffId))->get();
         } else {
             $subjects = Subject::all();
+            $classes = SchoolClass::all();
         }
 
         // Retrieve old input from session (flashed after redirect)

@@ -4,6 +4,7 @@ namespace App\Imports;
 
 use App\Models\Enrollment;
 use App\Models\ExamQuestion;
+use App\Models\Grade;
 use App\Models\Mark;
 use App\Models\MarkQuestionScore;
 use App\Models\Student;
@@ -145,6 +146,8 @@ class QuestionMarksImport implements ToCollection
                 $totalMax = $questions->sum('max_marks');
                 $pct      = $totalMax > 0 ? round(($rawTotal / $totalMax) * 100, 4) : 0;
 
+                $grade = Grade::where('min_mark', '<=', $pct)->where('max_mark', '>=', $pct)->first();
+
                 // Save mark record
                 $mark = Mark::updateOrCreate(
                     [
@@ -156,7 +159,7 @@ class QuestionMarksImport implements ToCollection
                         'mark'                => $pct,
                         'class_id'            => $this->classId,
                         'academic_session_id' => $this->sessionId,
-                        'grade_id'            => null,
+                        'grade_id'            => $grade?->id,
                     ]
                 );
 

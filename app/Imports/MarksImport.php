@@ -2,6 +2,7 @@
 
 namespace App\Imports;
 
+use App\Models\Grade;
 use App\Models\Mark;
 use App\Models\Student;
 use Maatwebsite\Excel\Concerns\ToCollection;
@@ -77,6 +78,8 @@ class MarksImport implements ToCollection, WithHeadingRow
                 continue;
             }
 
+            $grade = Grade::where('min_mark', '<=', $mark)->where('max_mark', '>=', $mark)->first();
+
             // Update or create mark
             Mark::updateOrCreate(
                 [
@@ -88,7 +91,7 @@ class MarksImport implements ToCollection, WithHeadingRow
                     'mark'                 => $mark,
                     'class_id'             => $this->classId,
                     'academic_session_id'  => $this->sessionId,
-                    'grade_id'             => null,
+                    'grade_id'             => $grade?->id,
                 ]
             );
 
