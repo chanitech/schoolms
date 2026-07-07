@@ -450,7 +450,7 @@ class TimetableGeneratorService
                 }
             }
 
-            $extraPeriodsPerDay = (int)ceil($deficit / count($days));
+            $extraPeriodsPerDay = count($days) > 0 ? (int)ceil($deficit / count($days)) : 0;
             $uniformMax         = $numSubj > 0 ? (int)floor($available / $numSubj) : 0;
 
             $overCapacity[$clsId] = [
@@ -527,7 +527,7 @@ class TimetableGeneratorService
                     $numSubj   = $classSubjects[$clsId] ?? 1;
                     $deficit   = $total - $available;
                     $uniformMax = (int)floor($available / $numSubj);
-                    $extraDay   = (int)ceil($deficit / $numDays);
+                    $extraDay   = $numDays > 0 ? (int)ceil($deficit / $numDays) : 0;
                     $first = "e.g. Class #{$clsId} needs {$total}/{$available} slots — reduce default to ≤{$uniformMax}/week OR add {$extraDay} teaching period(s)/day in Period Settings.";
                 }
             }

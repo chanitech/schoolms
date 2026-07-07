@@ -179,16 +179,29 @@ class MarkController extends Controller
             // there's no one group to rank against globally — rank each
             // visible row within its own (subject, class, exam, session)
             // group instead, so Rank isn't just blank on the plain listing.
-            $groups = $marks->getCollection()->groupBy(fn($m) => "{$m->subject_id}|{$m->class_id}|{$m->exam_id}|{$m->academic_session_id}");
-            foreach ($groups as $groupMarks) {
-                $first = $groupMarks->first();
-                $groupAll = Mark::where('subject_id', $first->subject_id)
-                    ->where('class_id', $first->class_id)
-                    ->where('exam_id', $first->exam_id)
-                    ->where('academic_session_id', $first->academic_session_id)
-                    ->get(['id', 'mark'])
-                    ->sortByDesc('mark')
-                    ->values();
+            // One query for every group on the page instead of one query
+            // per group (up to 20 on a full page).
+            $groupKey = fn($m) => "{$m->subject_id}|{$m->class_id}|{$m->exam_id}|{$m->academic_session_id}";
+            $groups   = $marks->getCollection()->groupBy($groupKey);
+
+            $allGroupMarks = collect();
+            if ($groups->isNotEmpty()) {
+                $allGroupMarks = Mark::where(function ($q) use ($groups) {
+                    foreach ($groups as $groupMarks) {
+                        $first = $groupMarks->first();
+                        $q->orWhere(function ($q2) use ($first) {
+                            $q2->where('subject_id', $first->subject_id)
+                               ->where('class_id', $first->class_id)
+                               ->where('exam_id', $first->exam_id)
+                               ->where('academic_session_id', $first->academic_session_id);
+                        });
+                    }
+                })->get(['id', 'mark', 'subject_id', 'class_id', 'exam_id', 'academic_session_id']);
+            }
+            $allByGroup = $allGroupMarks->groupBy($groupKey);
+
+            foreach ($groups as $key => $groupMarks) {
+                $groupAll = ($allByGroup[$key] ?? collect())->sortByDesc('mark')->values();
 
                 $rank = 1;
                 $prevMark = null;

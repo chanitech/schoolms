@@ -12,8 +12,23 @@ trait BelongsToSchool
     {
         // Auto-fill school_id on every new record
         static::creating(function ($model) {
-            if (empty($model->school_id) && app()->bound('currentSchool')) {
-                $model->school_id = app('currentSchool')->id;
+            if (empty($model->school_id)) {
+                if (app()->bound('currentSchool')) {
+                    $model->school_id = app('currentSchool')->id;
+                } else {
+                    // This is exactly the bug class behind the timetable
+                    // periods/entries incidents this session: a request with
+                    // no resolvable tenant (ResolveTenant lets it through
+                    // unscoped rather than blocking it) creates a row with
+                    // school_id null, silently invisible to every
+                    // tenant-scoped query from then on. Log loudly instead
+                    // of failing silently, so this is caught immediately
+                    // instead of days later as a confusing "missing data" report.
+                    \Illuminate\Support\Facades\Log::warning(
+                        'BelongsToSchool: creating '.get_class($model).' with no bound currentSchool and no explicit school_id — row will be orphaned (school_id=null).',
+                        ['model' => get_class($model), 'attributes' => $model->getAttributes()]
+                    );
+                }
             }
         });
 
