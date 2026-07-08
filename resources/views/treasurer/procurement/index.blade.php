@@ -93,7 +93,8 @@
                                 @can('disburse payments')
                                     @if($request->status === 'approved')
                                         <button type="button" class="btn btn-sm btn-primary disburse-btn"
-                                            data-id="{{ $request->id }}" data-item="{{ $request->item }}">
+                                            data-id="{{ $request->id }}" data-item="{{ $request->item }}"
+                                            data-amount="{{ number_format($request->estimated_cost, 2) }}">
                                             <i class="fas fa-money-bill-wave"></i> Disburse
                                         </button>
                                     @endif
@@ -125,8 +126,9 @@
                 <div class="modal-body">
                     <p id="disburseItemLabel"></p>
                     <div class="form-group">
-                        <label for="actual_cost">Actual Cost (TZS) <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" min="0.01" name="actual_cost" id="actual_cost" class="form-control" required>
+                        <label class="mb-1">Amount to Disburse (TZS)</label>
+                        <div class="form-control-plaintext font-weight-bold" id="disburseAmountLabel" style="font-size:1.15rem"></div>
+                        <small class="form-text text-muted">Fixed to the Treasurer + Head Master-approved amount — not editable here.</small>
                     </div>
                     <div class="form-group">
                         <label for="category">Expense Category <span class="text-danger">*</span></label>
@@ -151,10 +153,12 @@
 <script>
     $(document).ready(function() {
         $('.disburse-btn').click(function() {
-            let id = $(this).data('id');
-            let item = $(this).data('item');
+            let id     = $(this).data('id');
+            let item   = $(this).data('item');
+            let amount = $(this).data('amount');
             $('#disburseForm').attr('action', '{{ url("treasurer/procurement") }}/' + id + '/disburse');
             $('#disburseItemLabel').text('Item: ' + item);
+            $('#disburseAmountLabel').text(amount);
             $('#disburseModal').modal('show');
         });
     });

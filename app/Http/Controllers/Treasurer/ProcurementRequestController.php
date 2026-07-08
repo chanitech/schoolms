@@ -188,11 +188,16 @@ class ProcurementRequestController extends Controller
      * Cashier disburses the approved payment — the only role that touches
      * actual cash/bank movement — and the expense is logged for the
      * relevant accountant to reconcile.
+     *
+     * The amount is always the Treasurer+Head Master-approved
+     * estimated_cost, never a Cashier-typed figure — letting the person
+     * who moves the money also set the amount they record moving it
+     * defeats the whole point of the approval chain, so there's no
+     * "actual cost" input at all here anymore.
      */
     public function disburse(Request $request, ProcurementRequest $procurementRequest)
     {
         $validated = $request->validate([
-            'actual_cost' => 'required|numeric|min:0.01',
             'category' => 'required|string|max:255',
             'notes' => 'nullable|string|max:1000',
         ]);
@@ -201,9 +206,11 @@ class ProcurementRequestController extends Controller
             return back()->with('error', 'This request has not been fully approved (Treasurer + Head Master) yet.');
         }
 
+        $amount = $procurementRequest->estimated_cost;
+
         $procurementRequest->update([
             'status' => 'completed',
-            'actual_cost' => $validated['actual_cost'],
+            'actual_cost' => $amount,
             'disbursed_by' => Auth::id(),
             'disbursed_at' => now(),
         ]);
@@ -212,7 +219,7 @@ class ProcurementRequestController extends Controller
             'recorded_by' => Auth::id(),
             'linked_procurement_id' => $procurementRequest->id,
             'category' => $validated['category'],
-            'amount' => $validated['actual_cost'],
+            'amount' => $amount,
             'notes' => $validated['notes'] ?? null,
         ]);
 
