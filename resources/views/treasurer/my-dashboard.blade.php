@@ -98,8 +98,9 @@
                             <td>{{ number_format($request->estimated_cost, 2) }}</td>
                             <td>
                                 @switch($request->status)
-                                    @case('pending') <span class="badge badge-warning">Pending</span> @break
-                                    @case('approved') <span class="badge badge-info">Approved</span> @break
+                                    @case('pending') <span class="badge badge-warning">Awaiting Treasurer</span> @break
+                                    @case('treasurer_approved') <span class="badge badge-primary">Awaiting Head Master</span> @break
+                                    @case('approved') <span class="badge badge-info">Awaiting Cashier</span> @break
                                     @case('rejected') <span class="badge badge-danger">Rejected</span> @break
                                     @case('completed') <span class="badge badge-success">Completed</span> @break
                                 @endswitch
