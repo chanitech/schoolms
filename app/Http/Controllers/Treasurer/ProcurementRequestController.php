@@ -16,22 +16,23 @@ class ProcurementRequestController extends Controller
     {
         $this->middleware('permission:create procurement requests')->only(['create', 'store']);
         $this->middleware('permission:approve procurement requests')->only(['pending', 'approve', 'reject']);
+        $this->middleware('permission:headmaster approve procurement requests')->only(['headmasterApprove', 'headmasterReject']);
         $this->middleware('permission:disburse payments')->only(['disburse']);
     }
 
     /**
-     * Anyone who can approve (Treasurer/Admin) sees every request, for
-     * oversight. Everyone else (Procurement Officer, Storekeeper) only
-     * submits requests, so they see only their own — not the whole
-     * school's procurement activity.
+     * Anyone who can approve at either stage (Treasurer/Head Master/Admin)
+     * sees every request, for oversight. Everyone else (Procurement
+     * Officer, Storekeeper) only submits requests, so they see only their
+     * own — not the whole school's procurement activity.
      */
     public function index()
     {
         $user = Auth::user();
 
-        $query = ProcurementRequest::with(['requestedBy', 'approvedBy', 'inventoryItem'])->latest();
+        $query = ProcurementRequest::with(['requestedBy', 'approvedBy', 'headmasterApprovedBy', 'inventoryItem'])->latest();
 
-        if (! $user->can('approve procurement requests')) {
+        if (! $user->can('approve procurement requests') && ! $user->can('headmaster approve procurement requests')) {
             $query->where('requested_by', $user->id);
         }
 
@@ -99,6 +100,10 @@ class ProcurementRequestController extends Controller
         return view('treasurer.procurement.pending', compact('requests'));
     }
 
+    /**
+     * Treasurer's approval — first stage. Doesn't clear the request for
+     * disbursement yet; it now needs the Head Master's sign-off too.
+     */
     public function approve(ProcurementRequest $procurementRequest)
     {
         if ($procurementRequest->status !== 'pending') {
@@ -106,12 +111,12 @@ class ProcurementRequestController extends Controller
         }
 
         $procurementRequest->update([
-            'status' => 'approved',
+            'status' => 'treasurer_approved',
             'approved_by' => Auth::id(),
             'approved_at' => now(),
         ]);
 
-        return back()->with('success', 'Procurement request approved. Cashier can now disburse payment.');
+        return back()->with('success', 'Procurement request approved by Treasurer — awaiting Head Master approval.');
     }
 
     public function reject(Request $request, ProcurementRequest $procurementRequest)
@@ -135,6 +140,45 @@ class ProcurementRequestController extends Controller
     }
 
     /**
+     * Head Master's approval — final stage. Only after this does the
+     * request become visible to Cashier for disbursement.
+     */
+    public function headmasterApprove(ProcurementRequest $procurementRequest)
+    {
+        if ($procurementRequest->status !== 'treasurer_approved') {
+            return back()->with('error', 'This request has not been approved by the Treasurer yet.');
+        }
+
+        $procurementRequest->update([
+            'status' => 'approved',
+            'headmaster_approved_by' => Auth::id(),
+            'headmaster_approved_at' => now(),
+        ]);
+
+        return back()->with('success', 'Procurement request approved by Head Master. Cashier can now disburse payment.');
+    }
+
+    public function headmasterReject(Request $request, ProcurementRequest $procurementRequest)
+    {
+        $validated = $request->validate([
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        if ($procurementRequest->status !== 'treasurer_approved') {
+            return back()->with('error', 'This request has not been approved by the Treasurer yet.');
+        }
+
+        $procurementRequest->update([
+            'status' => 'rejected',
+            'headmaster_approved_by' => Auth::id(),
+            'headmaster_approved_at' => now(),
+            'notes' => $validated['notes'] ?? $procurementRequest->notes,
+        ]);
+
+        return back()->with('success', 'Procurement request rejected by Head Master.');
+    }
+
+    /**
      * Cashier disburses the approved payment — the only role that touches
      * actual cash/bank movement — and the expense is logged for the
      * relevant accountant to reconcile.
@@ -148,7 +192,7 @@ class ProcurementRequestController extends Controller
         ]);
 
         if ($procurementRequest->status !== 'approved') {
-            return back()->with('error', 'This request has not been approved by the Treasurer yet.');
+            return back()->with('error', 'This request has not been fully approved (Treasurer + Head Master) yet.');
         }
 
         $procurementRequest->update([

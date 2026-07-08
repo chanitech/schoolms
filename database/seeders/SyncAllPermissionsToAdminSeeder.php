@@ -94,6 +94,10 @@ class SyncAllPermissionsToAdminSeeder extends Seeder
         // permission checks — any authenticated user could reach them.
         'edit student bills',
         'delete student bills',
+
+        // New: Head Master (Principal) final-approval stage for procurement
+        // requests, between Treasurer approval and Cashier disbursement.
+        'headmaster approve procurement requests',
     ];
 
     public function run(): void

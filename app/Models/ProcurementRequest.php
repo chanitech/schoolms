@@ -13,6 +13,7 @@ class ProcurementRequest extends Model
         'school_id',
         'requested_by',
         'approved_by',
+        'headmaster_approved_by',
         'inventory_item_id',
         'item',
         'quantity',
@@ -23,6 +24,7 @@ class ProcurementRequest extends Model
         'threshold_flag',
         'notes',
         'approved_at',
+        'headmaster_approved_at',
     ];
 
     protected $casts = [
@@ -30,6 +32,7 @@ class ProcurementRequest extends Model
         'actual_cost' => 'decimal:2',
         'threshold_flag' => 'boolean',
         'approved_at' => 'datetime',
+        'headmaster_approved_at' => 'datetime',
     ];
 
     public function requestedBy()
@@ -37,9 +40,16 @@ class ProcurementRequest extends Model
         return $this->belongsTo(User::class, 'requested_by');
     }
 
+    // Treasurer's approval (first stage)
     public function approvedBy()
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    // Head Master/Principal's approval (final stage, required before disbursement)
+    public function headmasterApprovedBy()
+    {
+        return $this->belongsTo(User::class, 'headmaster_approved_by');
     }
 
     public function inventoryItem()

@@ -71,6 +71,7 @@ class RoleResponsibilityPermissionsSeeder extends Seeder
             'view fee reports', 'view payments', 'pay invoices',
             'view attendance report', 'view event report', 'view leave report',
             'export results', 'view any jobcards', 'rate jobcards',
+            'headmaster approve procurement requests',
             'view profile', 'edit profile',
         ],
 

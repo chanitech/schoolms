@@ -161,7 +161,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/{payment}/flag', [PaymentController::class, 'flag'])->name('flag');
     });
 
-    // Procurement/Expense — Storekeeper/Procurement Officer request, Treasurer approves, Cashier disburses
+    // Procurement/Expense — Storekeeper/Procurement Officer request, Treasurer
+    // approves, Head Master (Principal) gives final sign-off, Cashier disburses
     Route::prefix('treasurer/procurement')->name('treasurer.procurement.')->group(function () {
         Route::get('/', [ProcurementRequestController::class, 'index'])->name('index');
         Route::get('/create', [ProcurementRequestController::class, 'create'])->name('create');
@@ -169,6 +170,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/pending', [ProcurementRequestController::class, 'pending'])->name('pending');
         Route::post('/{procurementRequest}/approve', [ProcurementRequestController::class, 'approve'])->name('approve');
         Route::post('/{procurementRequest}/reject', [ProcurementRequestController::class, 'reject'])->name('reject');
+        Route::post('/{procurementRequest}/headmaster-approve', [ProcurementRequestController::class, 'headmasterApprove'])->name('headmaster-approve');
+        Route::post('/{procurementRequest}/headmaster-reject', [ProcurementRequestController::class, 'headmasterReject'])->name('headmaster-reject');
         Route::post('/{procurementRequest}/disburse', [ProcurementRequestController::class, 'disburse'])->name('disburse');
     });
 

@@ -54,6 +54,7 @@
                             <td>
                                 @switch($request->status)
                                     @case('pending') <span class="badge badge-warning">Pending</span> @break
+                                    @case('treasurer_approved') <span class="badge badge-primary">Awaiting Head Master</span> @break
                                     @case('approved') <span class="badge badge-info">Approved</span> @break
                                     @case('rejected') <span class="badge badge-danger">Rejected</span> @break
                                     @case('completed') <span class="badge badge-success">Completed</span> @break
@@ -67,6 +68,18 @@
                                             <button type="submit" class="btn btn-sm btn-success"><i class="fas fa-check"></i> Approve</button>
                                         </form>
                                         <form action="{{ route('treasurer.procurement.reject', $request) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-times"></i> Reject</button>
+                                        </form>
+                                    @endif
+                                @endcan
+                                @can('headmaster approve procurement requests')
+                                    @if($request->status === 'treasurer_approved')
+                                        <form action="{{ route('treasurer.procurement.headmaster-approve', $request) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-success"><i class="fas fa-check-double"></i> Head Master Approve</button>
+                                        </form>
+                                        <form action="{{ route('treasurer.procurement.headmaster-reject', $request) }}" method="POST" class="d-inline">
                                             @csrf
                                             <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-times"></i> Reject</button>
                                         </form>

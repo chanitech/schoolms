@@ -900,7 +900,8 @@ return [
         [
             'text' => 'Procurement',
             'icon' => 'fas fa-shopping-cart',
-            'can' => ['create procurement requests', 'approve procurement requests', 'disburse payments',
+            'can' => ['create procurement requests', 'approve procurement requests',
+                      'headmaster approve procurement requests', 'disburse payments',
                       'create stock requests', 'review stock requests'],
             'submenu' => [
                 [
@@ -909,7 +910,9 @@ return [
                     'icon' => 'fas fa-list',
                     // Cashier can't create/approve but still needs to see this
                     // list to find approved requests awaiting disbursement.
-                    'can' => ['create procurement requests', 'approve procurement requests', 'disburse payments'],
+                    // Head Master (Principal) needs it for their own approval stage.
+                    'can' => ['create procurement requests', 'approve procurement requests',
+                              'headmaster approve procurement requests', 'disburse payments'],
                 ],
                 [
                     'text' => 'New Request',
