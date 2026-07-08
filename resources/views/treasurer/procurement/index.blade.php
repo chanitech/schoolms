@@ -40,6 +40,7 @@
                             <th>Actual Cost</th>
                             <th>Requested By</th>
                             <th>Status</th>
+                            <th>Disbursed By</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -57,13 +58,14 @@
                                     @case('treasurer_approved') <span class="badge badge-primary">Awaiting Head Master</span> @break
                                     @case('approved') <span class="badge badge-info">Approved</span> @break
                                     @case('rejected') <span class="badge badge-danger">Rejected</span> @break
-                                    @case('completed')
-                                        <span class="badge badge-success">Completed</span>
-                                        @if($request->disbursedBy)
-                                            <div class="small text-muted mt-1">by {{ $request->disbursedBy->name }}</div>
-                                        @endif
-                                        @break
+                                    @case('completed') <span class="badge badge-success">Completed</span> @break
                                 @endswitch
+                            </td>
+                            <td>
+                                {{ $request->disbursedBy->name ?? '—' }}
+                                @if($request->disbursed_at)
+                                    <div class="small text-muted">{{ $request->disbursed_at->format('d M Y') }}</div>
+                                @endif
                             </td>
                             <td>
                                 @can('approve procurement requests')
@@ -102,7 +104,7 @@
                             </td>
                         </tr>
                         @empty
-                        <tr><td colspan="7" class="text-center text-muted">No procurement requests yet.</td></tr>
+                        <tr><td colspan="8" class="text-center text-muted">No procurement requests yet.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
