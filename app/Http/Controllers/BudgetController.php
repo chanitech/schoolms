@@ -35,8 +35,11 @@ class BudgetController extends Controller
 
         $budgetsQuery = Budget::with('staff', 'department')->latest();
 
-        // Restrict HOD to only their department
-        if ($staff && strtolower($staff->role) === 'hod') {
+        // Restrict HOD to only their department. Uses the real Spatie role
+        // on the User — staff.role is a free-text legacy field that isn't
+        // reliably kept in sync (it's what caused Head Master/DO to be
+        // silently blocked from approving invoices elsewhere in this file).
+        if ($user->hasRole('HOD')) {
             $budgetsQuery->where('department_id', $staff->department_id);
         }
 
@@ -104,7 +107,7 @@ class BudgetController extends Controller
         $staff = $user->staff;
 
         // HOD cannot see other departments
-        if ($staff && strtolower($staff->role) === 'hod' && $budget->department_id !== $staff->department_id) {
+        if ($user->hasRole('HOD') && $staff && $budget->department_id !== $staff->department_id) {
             abort(403, 'Unauthorized: You cannot access another department budget.');
         }
 
@@ -204,16 +207,20 @@ class BudgetController extends Controller
      */
     public function withdrawItem(Request $request, BudgetItem $item)
 {
-    /** @var \App\Models\Staff $staff */
-    $staff = Auth::user()->staff;
+    /** @var \App\Models\User $user */
+    $user = Auth::user();
+    $staff = $user->staff;
 
-    // Only HOD or Admin can withdraw
-    if (!$staff || !$staff->hasAnyRole(['hod', 'admin'])) {
+    // Only HOD or Admin can withdraw. Roles are assigned to the User, never
+    // to the Staff model directly — $staff->hasAnyRole(...) always checked
+    // an empty pivot and silently blocked every HOD from ever withdrawing
+    // an item (so no invoice could ever be created for DO/Finance to act on).
+    if (!$user->hasAnyRole(['HOD', 'Admin'])) {
         abort(403, 'You are not authorized to withdraw this item.');
     }
 
     // HOD can only withdraw items from their department
-    if ($staff->hasRole('hod') && $staff->department_id !== $item->budget->department_id) {
+    if ($user->hasRole('HOD') && (!$staff || $staff->department_id !== $item->budget->department_id)) {
         abort(403, 'You are not authorized to withdraw this item.');
     }
 
@@ -315,16 +322,15 @@ class BudgetController extends Controller
 
 
     /**
-     * DO approve/reject invoice
+     * Head Master (DO) approve/reject invoice. Gated entirely by the
+     * 'approve invoices' permission (constructor middleware) — this used
+     * to also require staff.role to literally equal the string 'do', a
+     * free-text field nothing keeps in sync with actual roles, which
+     * silently blocked Head Master/Principal from ever approving an
+     * invoice regardless of their real permissions.
      */
     public function approveInvoice(Request $request, Invoice $invoice)
     {
-        $staff = Auth::user()->staff;
-
-        if (!$staff || strtolower($staff->role) !== 'do') {
-            abort(403);
-        }
-
         $request->validate([
             'status' => 'required|in:approved_by_do,rejected_by_do',
         ]);
@@ -338,16 +344,11 @@ class BudgetController extends Controller
     }
 
     /**
-     * Finance pays invoice
+     * Finance/Cashier/Head Master pays invoice — gated by 'pay invoices'
+     * permission alone, same reasoning as approveInvoice() above.
      */
     public function payInvoice(Request $request, Invoice $invoice)
     {
-        $staff = Auth::user()->staff;
-
-        if (!$staff || strtolower($staff->role) !== 'finance') {
-            abort(403);
-        }
-
         if ($invoice->status !== 'approved_by_do') {
             return redirect()->back()->with('error', 'Invoice not approved by DO.');
         }
@@ -424,8 +425,14 @@ class BudgetController extends Controller
     // Base query
     $query = Budget::with('staff', 'department', 'items');
 
-    // Restrict non-admin users to their department
-    if ($staff && strtolower($staff->role) !== 'admin') {
+    // Restrict HOD to their own department — every other role holding
+    // 'view budgets' (Admin, Treasurer, Chief Accountant, Accountant,
+    // Principal) is a school-wide oversight role, not tied to one
+    // department, matching index()/show() above. The old check inverted
+    // this (restrict everyone except literal 'admin'), so Treasurer/
+    // Principal/accountants were wrongly limited to a single department
+    // here despite seeing every department everywhere else in this module.
+    if ($user->hasRole('HOD') && $staff) {
         $query->where('department_id', $staff->department_id);
     }
 
@@ -446,9 +453,9 @@ class BudgetController extends Controller
     $budgets = $query->latest()->paginate(10)->withQueryString();
 
     // Get departments for dropdown
-    $departments = ($staff && strtolower($staff->role) === 'admin')
-        ? Department::all()
-        : Department::where('id', $staff->department_id)->get();
+    $departments = ($user->hasRole('HOD') && $staff)
+        ? Department::where('id', $staff->department_id)->get()
+        : Department::all();
 
     // Months array for filter dropdown
     $months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
