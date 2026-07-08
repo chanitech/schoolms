@@ -97,7 +97,7 @@ class RoleResponsibilityPermissionsSeeder extends Seeder
         'treasurer' => [
             'view students', 'view staff',
             'view fee reports', 'view payments', 'view invoices', 'view bills',
-            'view budgets', 'view student bills', 'view inventory',
+            'view budgets', 'approve budget items', 'view student bills', 'view inventory',
             'view profile', 'edit profile',
         ],
 
@@ -123,7 +123,7 @@ class RoleResponsibilityPermissionsSeeder extends Seeder
         ],
 
         'cashier' => [
-            'view payments', 'create payments', 'pay invoices',
+            'view payments', 'create payments', 'view invoices', 'pay invoices',
             'view pocket money', 'manage pocket money',
             'view profile', 'edit profile',
         ],
