@@ -18,6 +18,7 @@ class ProcurementRequest extends Model
         'inventory_item_id',
         'item',
         'quantity',
+        'unit_cost',
         'estimated_cost',
         'actual_cost',
         'supplier',
@@ -30,6 +31,7 @@ class ProcurementRequest extends Model
     ];
 
     protected $casts = [
+        'unit_cost' => 'decimal:2',
         'estimated_cost' => 'decimal:2',
         'actual_cost' => 'decimal:2',
         'threshold_flag' => 'boolean',

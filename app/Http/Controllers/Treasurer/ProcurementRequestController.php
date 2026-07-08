@@ -68,11 +68,16 @@ class ProcurementRequestController extends Controller
             'inventory_item_id' => 'nullable|exists:inventory_items,id',
             'item' => 'required|string|max:255',
             'quantity' => 'required|integer|min:1',
-            'estimated_cost' => 'required|numeric|min:0.01',
+            'unit_cost' => 'required|numeric|min:0.01',
             'supplier' => 'nullable|string|max:255',
             'notes' => 'nullable|string|max:1000',
             'stock_request_id' => 'nullable|exists:stock_requests,id',
         ]);
+
+        // estimated_cost is always derived, never typed directly — same
+        // integrity principle as the disbursement amount: no lump-sum
+        // total that isn't traceable to a per-unit price.
+        $estimatedCost = $validated['quantity'] * $validated['unit_cost'];
 
         $threshold = (float) config('finance.procurement_approval_threshold');
         $stockRequestId = $validated['stock_request_id'] ?? null;
@@ -80,9 +85,10 @@ class ProcurementRequestController extends Controller
 
         $procurementRequest = ProcurementRequest::create([
             ...$validated,
+            'estimated_cost' => $estimatedCost,
             'requested_by' => Auth::id(),
             'status' => 'pending',
-            'threshold_flag' => $threshold > 0 && $validated['estimated_cost'] > $threshold,
+            'threshold_flag' => $threshold > 0 && $estimatedCost > $threshold,
         ]);
 
         if ($stockRequestId) {

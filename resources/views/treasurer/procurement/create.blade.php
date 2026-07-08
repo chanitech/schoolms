@@ -61,15 +61,20 @@
                 </div>
 
                 <div class="form-row">
-                    <div class="form-group col-md-6">
+                    <div class="form-group col-md-4">
                         <label for="quantity">Quantity <span class="text-danger">*</span></label>
                         <input type="number" min="1" name="quantity" id="quantity" class="form-control @error('quantity') is-invalid @enderror" value="{{ old('quantity', optional($stockRequest)->quantity) }}" required>
                         @error('quantity') <span class="invalid-feedback">{{ $message }}</span> @enderror
                     </div>
-                    <div class="form-group col-md-6">
-                        <label for="estimated_cost">Estimated Cost (TZS) <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" min="0.01" name="estimated_cost" id="estimated_cost" class="form-control @error('estimated_cost') is-invalid @enderror" value="{{ old('estimated_cost') }}" required>
-                        @error('estimated_cost') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                    <div class="form-group col-md-4">
+                        <label for="unit_cost">Unit Cost (TZS) <span class="text-danger">*</span></label>
+                        <input type="number" step="0.01" min="0.01" name="unit_cost" id="unit_cost" class="form-control @error('unit_cost') is-invalid @enderror" value="{{ old('unit_cost') }}" required>
+                        @error('unit_cost') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label>Estimated Total (TZS)</label>
+                        <div class="form-control-plaintext font-weight-bold" id="estimatedTotalLabel" style="font-size:1.1rem">—</div>
+                        <small class="form-text text-muted">Quantity × Unit Cost — calculated automatically.</small>
                     </div>
                 </div>
 
@@ -89,4 +94,28 @@
         </div>
     </div>
 </div>
+@stop
+
+@section('js')
+<script>
+    (function () {
+        const qtyInput  = document.getElementById('quantity');
+        const costInput = document.getElementById('unit_cost');
+        const totalLabel = document.getElementById('estimatedTotalLabel');
+
+        function updateTotal() {
+            const qty  = parseFloat(qtyInput.value);
+            const cost = parseFloat(costInput.value);
+            if (!isNaN(qty) && !isNaN(cost) && qty > 0 && cost > 0) {
+                totalLabel.textContent = (qty * cost).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            } else {
+                totalLabel.textContent = '—';
+            }
+        }
+
+        qtyInput.addEventListener('input', updateTotal);
+        costInput.addEventListener('input', updateTotal);
+        updateTotal();
+    })();
+</script>
 @stop
