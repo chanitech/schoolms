@@ -21,10 +21,16 @@ class ProcurementRequestController extends Controller
     }
 
     /**
-     * Anyone who can approve at either stage (Treasurer/Head Master/Admin)
-     * sees every request, for oversight. Everyone else (Procurement
-     * Officer, Storekeeper) only submits requests, so they see only their
-     * own — not the whole school's procurement activity.
+     * Every Finance Office member (Treasurer, Chief Accountant, Accountant,
+     * Class Accountant, Procurement Officer, Cashier, Storekeeper, Admin —
+     * the 'is-finance-office' Gate) sees every request and its status, for
+     * shared office-wide oversight. This also fixes a real bug: Cashier
+     * held neither approval permission, so they were being restricted to
+     * "requests I submitted" — but Cashier never submits requests, only
+     * disburses ones Procurement Officer/Storekeeper created, so they
+     * could never actually find anything to disburse. Anyone outside the
+     * Finance Office (shouldn't normally reach this page at all) still
+     * only sees their own, as a defensive fallback.
      */
     public function index()
     {
@@ -32,7 +38,7 @@ class ProcurementRequestController extends Controller
 
         $query = ProcurementRequest::with(['requestedBy', 'approvedBy', 'headmasterApprovedBy', 'inventoryItem'])->latest();
 
-        if (! $user->can('approve procurement requests') && ! $user->can('headmaster approve procurement requests')) {
+        if (! $user->can('is-finance-office')) {
             $query->where('requested_by', $user->id);
         }
 
