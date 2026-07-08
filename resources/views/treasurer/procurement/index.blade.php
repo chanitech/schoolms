@@ -57,7 +57,12 @@
                                     @case('treasurer_approved') <span class="badge badge-primary">Awaiting Head Master</span> @break
                                     @case('approved') <span class="badge badge-info">Approved</span> @break
                                     @case('rejected') <span class="badge badge-danger">Rejected</span> @break
-                                    @case('completed') <span class="badge badge-success">Completed</span> @break
+                                    @case('completed')
+                                        <span class="badge badge-success">Completed</span>
+                                        @if($request->disbursedBy)
+                                            <div class="small text-muted mt-1">by {{ $request->disbursedBy->name }}</div>
+                                        @endif
+                                        @break
                                 @endswitch
                             </td>
                             <td>

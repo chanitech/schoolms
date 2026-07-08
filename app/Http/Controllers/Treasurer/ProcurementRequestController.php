@@ -36,7 +36,7 @@ class ProcurementRequestController extends Controller
     {
         $user = Auth::user();
 
-        $query = ProcurementRequest::with(['requestedBy', 'approvedBy', 'headmasterApprovedBy', 'inventoryItem'])->latest();
+        $query = ProcurementRequest::with(['requestedBy', 'approvedBy', 'headmasterApprovedBy', 'disbursedBy', 'inventoryItem'])->latest();
 
         if (! $user->can('is-finance-office')) {
             $query->where('requested_by', $user->id);
@@ -204,6 +204,8 @@ class ProcurementRequestController extends Controller
         $procurementRequest->update([
             'status' => 'completed',
             'actual_cost' => $validated['actual_cost'],
+            'disbursed_by' => Auth::id(),
+            'disbursed_at' => now(),
         ]);
 
         ExpenseLog::create([

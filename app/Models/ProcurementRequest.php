@@ -14,6 +14,7 @@ class ProcurementRequest extends Model
         'requested_by',
         'approved_by',
         'headmaster_approved_by',
+        'disbursed_by',
         'inventory_item_id',
         'item',
         'quantity',
@@ -25,6 +26,7 @@ class ProcurementRequest extends Model
         'notes',
         'approved_at',
         'headmaster_approved_at',
+        'disbursed_at',
     ];
 
     protected $casts = [
@@ -33,6 +35,7 @@ class ProcurementRequest extends Model
         'threshold_flag' => 'boolean',
         'approved_at' => 'datetime',
         'headmaster_approved_at' => 'datetime',
+        'disbursed_at' => 'datetime',
     ];
 
     public function requestedBy()
@@ -50,6 +53,12 @@ class ProcurementRequest extends Model
     public function headmasterApprovedBy()
     {
         return $this->belongsTo(User::class, 'headmaster_approved_by');
+    }
+
+    // Cashier who actually disbursed the payment
+    public function disbursedBy()
+    {
+        return $this->belongsTo(User::class, 'disbursed_by');
     }
 
     public function inventoryItem()
