@@ -112,8 +112,8 @@ input.is-invalid { border-color: #ef4444; }
 
 <div class="card">
     <div class="card-top">
-        <img src="{{ asset('images/schoolms-icon.svg') }}" alt="SchoolMS" class="school-logo">
-        <h2>School<span class="accent">MS</span></h2>
+        <img src="{{ asset('images/shulepro-icon.svg') }}" alt="ShulePRO" class="school-logo">
+        <h2>Shule<span class="accent">PRO</span></h2>
         <p>Staff &amp; Admin Portal</p>
     </div>
 

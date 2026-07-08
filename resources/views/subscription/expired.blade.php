@@ -19,7 +19,7 @@
     <div class="box">
         <div class="icon"><i class="fas fa-lock"></i></div>
         <h1>Subscription Expired</h1>
-        <p>Your school's subscription has expired or been cancelled. Please contact your system administrator or the SchoolMS support team to renew access.</p>
+        <p>Your school's subscription has expired or been cancelled. Please contact your system administrator or the ShulePRO support team to renew access.</p>
         <a href="mailto:support@chanitech.co.tz" class="btn">
             <i class="fas fa-envelope mr-1"></i> Contact Support
         </a>

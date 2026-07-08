@@ -14,7 +14,7 @@ return [
     |
     */
 
-    'title' => 'SchoolMS',
+    'title' => 'ShulePRO',
     'title_prefix' => '',
     'title_postfix' => '',
 
@@ -63,12 +63,12 @@ return [
     |
     */
 
-    'logo' => '<b>School</b>MS',
-    'logo_img' => 'images/schoolms-icon.svg',
+    'logo' => '<b>Shule</b>PRO',
+    'logo_img' => 'images/shulepro-icon.svg',
     'logo_img_class' => 'brand-image img-circle elevation-3',
     'logo_img_xl' => null,
     'logo_img_xl_class' => 'brand-image-xs',
-    'logo_img_alt' => 'SchoolMS Logo',
+    'logo_img_alt' => 'ShulePRO Logo',
 
     /*
     |--------------------------------------------------------------------------
@@ -86,8 +86,8 @@ return [
     'auth_logo' => [
         'enabled' => true,
         'img' => [
-            'path' => 'images/schoolms-icon.svg',
-            'alt' => 'SchoolMS Logo',
+            'path' => 'images/shulepro-icon.svg',
+            'alt' => 'ShulePRO Logo',
             'class' => '',
             'width' => 50,
             'height' => 50,
@@ -113,8 +113,8 @@ return [
         'enabled' => true,
         'mode' => 'fullscreen',
         'img' => [
-            'path' => 'images/schoolms-icon.svg',
-            'alt' => 'SchoolMS Preloader Image',
+            'path' => 'images/shulepro-icon.svg',
+            'alt' => 'ShulePRO Preloader Image',
             'effect' => 'animation__shake',
             'width' => 50,
             'height' => 50,

@@ -73,10 +73,10 @@
     {{-- Custom Stylesheets (post AdminLTE) --}}
     @yield('adminlte_css')
 
-    {{-- Favicon (SchoolMS brand — SVG, with a PNG fallback for older browsers/iOS) --}}
-    <link rel="icon" type="image/svg+xml" href="{{ asset('images/schoolms-icon.svg') }}">
-    <link rel="alternate icon" href="{{ asset('vendor/adminlte/dist/img/schoolms-icon.png') }}">
-    <link rel="apple-touch-icon" href="{{ asset('vendor/adminlte/dist/img/schoolms-icon.png') }}">
+    {{-- Favicon (ShulePRO brand — SVG, with a PNG fallback for older browsers/iOS) --}}
+    <link rel="icon" type="image/svg+xml" href="{{ asset('images/shulepro-icon.svg') }}">
+    <link rel="alternate icon" href="{{ asset('vendor/adminlte/dist/img/shulepro-icon.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('vendor/adminlte/dist/img/shulepro-icon.png') }}">
     <meta name="theme-color" content="#0f2942">
 
 </head>

@@ -41,7 +41,7 @@
                                 $logoLPath = $school->logo_left ?? null;
                                 $logoL = $logoLPath && file_exists(public_path($logoLPath))
                                     ? 'data:image/png;base64,' . base64_encode(file_get_contents(public_path($logoLPath)))
-                                    : asset('vendor/adminlte/dist/img/schoolms-icon.png');
+                                    : asset('vendor/adminlte/dist/img/shulepro-icon.png');
                             @endphp
                             <img src="{{ $logoL }}" alt="School Logo" style="height:80px; margin-right:15px;">
                             <div>

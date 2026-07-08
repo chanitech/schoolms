@@ -194,7 +194,7 @@
             ? 'data:image/png;base64,' . base64_encode(file_get_contents(public_path('vendor/adminlte/dist/img/MEMA.png')))
             : null;
     }
-    $logoRPath = public_path('vendor/adminlte/dist/img/schoolms-icon.png');
+    $logoRPath = public_path('vendor/adminlte/dist/img/shulepro-icon.png');
     $logoR     = file_exists($logoRPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoRPath)) : null;
 @endphp
 @if($wmB64)
