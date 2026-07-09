@@ -19,6 +19,17 @@ class AIAnalysisController extends Controller
     public function __construct(AIAnalysisService $ai)
     {
         $this->ai = $ai;
+
+        // These routes have no permission gate and expose whole-school data
+        // (any student, class, or finance figures) — guardians only get a
+        // menu-hiding middleware elsewhere, which doesn't stop direct URL
+        // access, so block the role explicitly here.
+        $this->middleware(function ($request, $next) {
+            if (auth()->user()?->hasRole('guardian')) {
+                abort(403);
+            }
+            return $next($request);
+        });
     }
 
     /**
@@ -39,18 +50,9 @@ class AIAnalysisController extends Controller
 {
     $request->validate(['student_id' => 'required|exists:students,id']);
     
-    $student = Student::with(['marks.subject', 'class'])->findOrFail($request->student_id);
+    $student = Student::with(['marks.subject', 'marks.grade', 'class'])->findOrFail($request->student_id);
     
-    $data = [
-        'id'    => $student->id,  // For caching
-        'name'  => $student->first_name . ' ' . $student->last_name,
-        'class' => $student->class->name ?? 'N/A',
-        'marks' => $student->marks->map(fn($m) => [
-            'subject' => $m->subject->name ?? 'N/A',
-            'score'   => $m->score,
-            'grade'   => $m->grade,
-        ])->toArray(),
-    ];
+    $data = $this->ai->buildStudentPayload($student);
 
     try {
         $analysis = $this->ai->analyzeStudentPerformance($data);

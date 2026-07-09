@@ -322,6 +322,29 @@ public function paymentReceipt(Payment $payment)
     return view('guardian.payment_receipt', compact('payment'));
 }
 
+ /**
+  * AI performance insight for one of the guardian's own children only.
+  */
+ public function aiInsight(Student $student, \App\Services\AIAnalysisService $ai)
+ {
+    $user = Auth::user();
+    $guardian = Guardian::where('user_id', $user->id)->first();
+
+    if (!$guardian || $student->guardian_id !== $guardian->id) {
+        abort(403, 'Unauthorized – this is not your child.');
+    }
+
+    $student->load(['marks.subject', 'marks.grade', 'class']);
+
+    try {
+        $analysis = $ai->analyzeStudentPerformance($ai->buildStudentPayload($student));
+    } catch (\Exception $e) {
+        $analysis = "Error: " . $e->getMessage();
+    }
+
+    return response()->json(['analysis' => $analysis]);
+ }
+
  public function showResult(Student $student, Request $request)
 {
     $user = Auth::user();

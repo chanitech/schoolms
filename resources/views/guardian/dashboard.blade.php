@@ -186,11 +186,17 @@ body{font-family:'DM Sans',sans-serif;background:#f0f4f8;color:var(--sl-700);}
                                     <a href="{{ route('guardian.result.show', $student) }}" class="btn-em">
                                         <i class="fas fa-chart-bar"></i> View Results
                                     </a>
+                                    <button type="button" class="btn-ghost ai-insight-btn" data-student="{{ $student->id }}"
+                                            data-url="{{ route('guardian.child.ai.insight', $student) }}">
+                                        <i class="fas fa-robot"></i> AI Insight
+                                    </button>
                                 @endif
                                 <a href="{{ route('guardian.fees') }}" class="btn-ghost">
                                     <i class="fas fa-list-alt"></i> All Financials
                                 </a>
                             </div>
+
+                            <div class="ai-insight-box" id="ai-insight-{{ $student->id }}" style="display:none; margin-top:12px; padding:14px; border-radius:8px; background:#f8f9fc; border:1px solid #e3e6f0;"></div>
                         </div>
                     </div>
                 </div>
@@ -201,9 +207,26 @@ body{font-family:'DM Sans',sans-serif;background:#f0f4f8;color:var(--sl-700);}
 @stop
 
 @push('js')
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
     $(function () {
         $('[data-toggle="tooltip"]').tooltip();
+
+        marked.setOptions({ breaks: true, gfm: true });
+
+        $('.ai-insight-btn').on('click', function () {
+            const btn = $(this);
+            const box = $('#ai-insight-' + btn.data('student'));
+
+            box.show().html('<em>Analyzing performance&hellip;</em>');
+            btn.prop('disabled', true);
+
+            $.post(btn.data('url'), { _token: '{{ csrf_token() }}' })
+                .done(r => box.html(marked.parse(r.analysis || '*No response generated.*')))
+                .fail(x => box.html('<span class="text-danger">' +
+                    (x.responseJSON?.message || 'Request failed. Please try again.') + '</span>'))
+                .always(() => btn.prop('disabled', false));
+        });
     });
 </script>
 @endpush

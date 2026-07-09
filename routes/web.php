@@ -465,6 +465,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/dashboard', [GuardianController::class, 'dashboard'])->name('dashboard');
         Route::get('/fees', [GuardianController::class, 'fees'])->name('fees');
         Route::get('/result/{student}', [GuardianController::class, 'showResult'])->name('result.show');
+        Route::post('/child/{student}/ai-insight', [GuardianController::class, 'aiInsight'])->name('child.ai.insight');
         // NEW: receipt route
     Route::get('/payment/{payment}/receipt', [GuardianController::class, 'paymentReceipt'])->name('payment.receipt');
     });

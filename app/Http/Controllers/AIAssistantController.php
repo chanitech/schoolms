@@ -18,6 +18,17 @@ class AIAssistantController extends Controller
     public function __construct(AIAssistantService $ai)
     {
         $this->ai = $ai;
+
+        // Same reasoning as AIAnalysisController — this assistant's tool
+        // belt includes staff/finance/loan data with no permission gate,
+        // and the menu-hiding middleware for guardians doesn't stop direct
+        // URL access.
+        $this->middleware(function ($request, $next) {
+            if (auth()->user()?->hasRole('guardian')) {
+                abort(403);
+            }
+            return $next($request);
+        });
     }
 
     /**

@@ -2,12 +2,34 @@
 
 namespace App\Services;
 
+use App\Models\Student;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class AIAnalysisService
 {
+    /**
+     * Build the student payload used by analyzeStudentPerformance(). Expects
+     * $student->marks (with subject and grade) already eager-loaded.
+     */
+    public function buildStudentPayload(Student $student): array
+    {
+        return [
+            'id'    => $student->id,
+            'name'  => $student->first_name . ' ' . $student->last_name,
+            'class' => $student->class->name ?? 'N/A',
+            'marks' => $student->marks->map(fn ($m) => [
+                'subject' => $m->subject->name ?? 'N/A',
+                // Mark's actual column is `mark`, not `score`; `grade` is a
+                // belongsTo relation, not a scalar — using either directly
+                // silently sent null/whole-object noise to the AI before.
+                'score'   => $m->mark,
+                'grade'   => $m->grade->name ?? 'N/A',
+            ])->toArray(),
+        ];
+    }
+
     /** @var string */
     protected $apiKey;
 
