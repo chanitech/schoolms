@@ -21,7 +21,10 @@ echo "▶ Pulling latest code..."
 git pull origin main
 
 echo "▶ Installing PHP dependencies (no dev, optimized)..."
-"$PHP_BIN" "$(command -v composer)" install --no-dev --optimize-autoloader --no-interaction
+# composer only installs already-locked packages here; it doesn't execute
+# app code, so it's fine under whatever PHP it naturally resolves to — no
+# need to route it through $PHP_BIN like the artisan calls below.
+composer install --no-dev --optimize-autoloader --no-interaction
 
 echo "▶ Maintenance mode ON..."
 "$PHP_BIN" artisan down --retry=60
