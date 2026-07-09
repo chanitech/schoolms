@@ -35,10 +35,11 @@ class AptitudeQuestionController extends Controller
     ]);
 
     $data = $request->only(['section','question_text','type','correct_answer','marks']);
+    $schoolId = app()->bound('currentSchool') ? app('currentSchool')->id : 'unassigned';
 
     // Store main question image
     if ($request->hasFile('image')) {
-        $data['image'] = $request->file('image')->store('aptitude_questions', 'public');
+        $data['image'] = $request->file('image')->store("schools/{$schoolId}/aptitude_questions", 'public');
     }
 
     // Handle MCQ Option Images
@@ -52,7 +53,7 @@ class AptitudeQuestionController extends Controller
             if (isset($opt['image']) && $opt['image'] instanceof \Illuminate\Http\UploadedFile) {
 
                 // Store option image
-                $path = $opt['image']->store('aptitude_options', 'public');
+                $path = $opt['image']->store("schools/{$schoolId}/aptitude_options", 'public');
 
                 $options[$key]['image'] = $path;
             } else {
@@ -102,7 +103,8 @@ class AptitudeQuestionController extends Controller
             if($aptitudeQuestion->image) {
                 Storage::disk('public')->delete($aptitudeQuestion->image);
             }
-            $data['image'] = $request->file('image')->store('aptitude_questions','public');
+            $schoolId = $aptitudeQuestion->school_id ?? 'unassigned';
+            $data['image'] = $request->file('image')->store("schools/{$schoolId}/aptitude_questions", 'public');
         }
 
         if($request->type == 'mcq') {

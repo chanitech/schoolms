@@ -40,8 +40,9 @@ class BankStatementController extends Controller
             return back()->with('error', 'Statement for this month already uploaded.');
         }
 
+        $schoolId = app()->bound('currentSchool') ? app('currentSchool')->id : 'unassigned';
         $file = $request->file('file');
-        $path = $file->store('bank_statements', 'public');
+        $path = $file->store("schools/{$schoolId}/bank_statements", 'public');
         
         BankStatement::create([
             'staff_id' => $request->staff_id,

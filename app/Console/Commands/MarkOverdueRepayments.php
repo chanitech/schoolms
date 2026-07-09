@@ -13,7 +13,10 @@ class MarkOverdueRepayments extends Command
 
     public function handle()
     {
-        $count = LoanRepayment::where('status', 'pending')
+        // Runs from the console (no tenant bound) — sweep every school
+        // explicitly rather than relying on the (absent) currentSchool scope.
+        $count = LoanRepayment::withoutSchoolScope()
+            ->where('status', 'pending')
             ->where('due_date', '<', now())
             ->update(['status' => 'overdue']);
 

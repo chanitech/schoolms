@@ -109,8 +109,9 @@ class DocumentController extends Controller
             'file'                => 'required|file|max:20480|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png,gif,zip,rar,txt',
         ]);
 
+        $schoolId = app()->bound('currentSchool') ? app('currentSchool')->id : 'unassigned';
         $file = $request->file('file');
-        $path = $file->store('documents', 'public');
+        $path = $file->store("schools/{$schoolId}/documents", 'public');
 
         /** @var \App\Models\User $user */
         $user = Auth::user();

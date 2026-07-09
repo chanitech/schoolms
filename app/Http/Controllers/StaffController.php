@@ -66,7 +66,8 @@ class StaffController extends Controller
         $user->syncRoles($request->roles);
 
         // Handle photo
-        $photoPath = $request->hasFile('photo') ? $request->file('photo')->store('staff', 'public') : null;
+        $schoolId = app()->bound('currentSchool') ? app('currentSchool')->id : 'unassigned';
+        $photoPath = $request->hasFile('photo') ? $request->file('photo')->store("schools/{$schoolId}/staff", 'public') : null;
 
         // Create staff record
         Staff::create([
@@ -141,7 +142,7 @@ class StaffController extends Controller
         // Handle photo
         $photoPath = $staff->photo;
         if ($request->hasFile('photo')) {
-            $photoPath = $request->file('photo')->store('staff', 'public');
+            $photoPath = $request->file('photo')->store("schools/{$staff->school_id}/staff", 'public');
         }
 
         // Update staff record

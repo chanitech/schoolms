@@ -25,9 +25,25 @@ class ResolveTenant
         }
 
         if (!$school) {
-            // No tenant resolved — allow the request through unscoped
-            // (handles the case of the very first setup, or public landing pages)
-            return $next($request);
+            if ($this->isBypassable($request)) {
+                return $next($request);
+            }
+
+            // Genuine unresolved-tenant state on a tenant-data route: do NOT
+            // let this through unscoped — that's exactly what orphaned rows
+            // with school_id=null before (see BelongsToSchool::bootBelongsToSchool).
+            // Force back to a known state instead of serving/creating unscoped data.
+            if (auth()->check()) {
+                auth()->logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                return redirect()->route('login')->withErrors([
+                    'school_code' => 'Your school session could not be verified. Please log in again.',
+                ]);
+            }
+
+            abort(403, 'No school context could be resolved for this request.');
         }
 
         // Gate: expired/cancelled subscriptions
@@ -85,5 +101,22 @@ class ResolveTenant
         }
 
         return null;
+    }
+
+    // Routes that legitimately have no resolved tenant yet: guest auth pages
+    // (the School Code is validated inline by LoginRequest, not by this
+    // middleware), the super-admin panel (operates across all schools by
+    // design), guardian auth, the subscription-expired page, the root
+    // redirect, and the framework health check.
+    private function isBypassable(Request $request): bool
+    {
+        return $request->is(
+            '/', 'up',
+            'login', 'register', 'logout',
+            'forgot-password', 'reset-password', 'reset-password/*',
+            'confirm-password', 'verify-email', 'verify-email/*',
+            'email/verification-notification', 'password',
+            'guardian/*', 'super/*', 'subscription/*'
+        );
     }
 }

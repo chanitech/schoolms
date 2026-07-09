@@ -96,7 +96,7 @@ class StudentController extends Controller
         }
 
         if ($request->hasFile('photo')) {
-            $data['photo'] = $request->file('photo')->store('students/photos', 'public');
+            $data['photo'] = $request->file('photo')->store("schools/{$schoolId}/students/photos", 'public');
         }
 
         $student = Student::create($data);
@@ -156,7 +156,7 @@ class StudentController extends Controller
             if ($student->photo && Storage::disk('public')->exists($student->photo)) {
                 Storage::disk('public')->delete($student->photo);
             }
-            $data['photo'] = $request->file('photo')->store('students/photos', 'public');
+            $data['photo'] = $request->file('photo')->store("schools/{$student->school_id}/students/photos", 'public');
         }
 
         $student->update($data);

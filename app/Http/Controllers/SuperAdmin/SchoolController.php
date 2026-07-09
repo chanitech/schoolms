@@ -51,12 +51,8 @@ class SchoolController extends Controller
             'admin_password'   => 'required|string|min:8|confirmed',
         ]);
 
-        // 1. Create the school
-        $logoPath = null;
-        if ($request->hasFile('logo')) {
-            $logoPath = $request->file('logo')->store('logos', 'public');
-        }
-
+        // 1. Create the school (logo, if any, is stored right after since the
+        // path needs the school's own id, which doesn't exist yet here).
         $school = School::create([
             'name'                    => $request->name,
             'slug'                    => Str::lower($request->slug),
@@ -68,8 +64,13 @@ class SchoolController extends Controller
             'plan'                    => $request->plan,
             'subscription_status'     => $request->subscription_status,
             'subscription_expires_at' => $request->subscription_expires_at,
-            'logo'                    => $logoPath,
         ]);
+
+        if ($request->hasFile('logo')) {
+            $school->update([
+                'logo' => $request->file('logo')->store("schools/{$school->id}/logos", 'public'),
+            ]);
+        }
 
         // 2. Also create a school_infos record so SchoolInfo::first() works for this tenant
         \DB::table('school_infos')->insert([
@@ -146,7 +147,7 @@ class SchoolController extends Controller
 
         if ($request->hasFile('logo')) {
             if ($school->logo) Storage::disk('public')->delete($school->logo);
-            $data['logo'] = $request->file('logo')->store('logos', 'public');
+            $data['logo'] = $request->file('logo')->store("schools/{$school->id}/logos", 'public');
         }
 
         $school->update($data);

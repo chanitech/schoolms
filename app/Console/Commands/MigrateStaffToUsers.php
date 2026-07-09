@@ -14,7 +14,9 @@ class MigrateStaffToUsers extends Command
 
     public function handle(): int
     {
-        $staffMembers = Staff::all();
+        // Runs from the console, so no tenant is bound — sweep every school
+        // explicitly rather than relying on the (absent) currentSchool scope.
+        $staffMembers = Staff::withoutSchoolScope()->get();
 
         if ($staffMembers->isEmpty()) {
             $this->info('No staff records found.');
@@ -23,13 +25,14 @@ class MigrateStaffToUsers extends Command
 
         foreach ($staffMembers as $staff) {
             // Check if user already exists
-            $existing = User::where('email', $staff->email)->first();
+            $existing = User::withoutSchoolScope()->where('email', $staff->email)->first();
             if ($existing) {
                 $this->warn("User already exists: {$staff->email}");
                 continue;
             }
 
             User::create([
+                'school_id' => $staff->school_id,
                 'name' => $staff->first_name . ' ' . $staff->last_name,
                 'first_name' => $staff->first_name,
                 'last_name' => $staff->last_name,

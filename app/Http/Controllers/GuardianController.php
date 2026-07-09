@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 use Spatie\Permission\Models\Role;
 use App\Models\Payment;
 use App\Models\SchoolInfo;
@@ -45,16 +46,18 @@ class GuardianController extends Controller
 
     public function store(Request $request)
     {
+        $schoolId = app()->bound('currentSchool') ? app('currentSchool')->id : null;
+
         $request->validate([
             'first_name'          => 'required|string|max:100',
             'last_name'           => 'required|string|max:100',
             'gender'              => 'required|in:male,female',
             'relation_to_student' => 'required|string|max:50',
-            'phone'               => 'required|string|max:20|unique:guardians',
+            'phone'               => ['required', 'string', 'max:20', Rule::unique('guardians', 'phone')->where('school_id', $schoolId)],
             'email'               => 'required|email|unique:users,email',
             'address'             => 'nullable|string|max:255',
             'occupation'          => 'nullable|string|max:100',
-            'national_id'         => 'nullable|string|max:50|unique:guardians',
+            'national_id'         => ['nullable', 'string', 'max:50', Rule::unique('guardians', 'national_id')->where('school_id', $schoolId)],
             'student_ids'         => 'nullable|array',
             'student_ids.*'       => 'exists:students,id',
         ]);
@@ -128,16 +131,18 @@ class GuardianController extends Controller
 
     public function update(Request $request, Guardian $guardian)
     {
+        $schoolId = app()->bound('currentSchool') ? app('currentSchool')->id : null;
+
         $request->validate([
             'first_name'          => 'required|string|max:100',
             'last_name'           => 'required|string|max:100',
             'gender'              => 'required|in:male,female',
             'relation_to_student' => 'required|string|max:50',
-            'phone'               => 'required|string|max:20|unique:guardians,phone,'.$guardian->id,
+            'phone'               => ['required', 'string', 'max:20', Rule::unique('guardians', 'phone')->ignore($guardian->id)->where('school_id', $schoolId)],
             'email'               => 'required|email|unique:users,email,'.$guardian->user_id,
             'address'             => 'nullable|string|max:255',
             'occupation'          => 'nullable|string|max:100',
-            'national_id'         => 'nullable|string|max:50|unique:guardians,national_id,'.$guardian->id,
+            'national_id'         => ['nullable', 'string', 'max:50', Rule::unique('guardians', 'national_id')->ignore($guardian->id)->where('school_id', $schoolId)],
             'student_ids'         => 'nullable|array',
             'student_ids.*'       => 'exists:students,id',
         ]);

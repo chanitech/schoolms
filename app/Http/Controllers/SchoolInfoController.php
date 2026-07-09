@@ -68,7 +68,8 @@ public function update(Request $request)
         if ($school->logo) {
             Storage::disk('public')->delete($school->logo);
         }
-        $data['logo'] = $request->file('logo')->store('logos', 'public');
+        $schoolId = $school->school_id ?? (app()->bound('currentSchool') ? app('currentSchool')->id : 'unassigned');
+        $data['logo'] = $request->file('logo')->store("schools/{$schoolId}/logos", 'public');
     } else {
         $data['logo'] = $school->logo;
     }

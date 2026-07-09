@@ -35,7 +35,7 @@ class AIAssistantService
     public function __construct()
     {
         $this->apiKey = config('services.deepseek.key', env('DEEPSEEK_API_KEY'));
-        $this->model  = config('services.deepseek.model', env('DEEPSEEK_MODEL', 'deepseek-chat'));
+        $this->model  = config('services.deepseek.model', env('DEEPSEEK_MODEL', 'deepseek-v4-flash'));
     }
 
     // ─────────────────────────────────────────────────────────────
