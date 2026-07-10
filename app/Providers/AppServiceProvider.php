@@ -39,7 +39,7 @@ class AppServiceProvider extends ServiceProvider
         // Teacher — could reach them. This is the boundary for both those
         // routes and the 'Performance & Tasks' menu section.
         Gate::define('is-finance-office', fn ($user) => $user->hasAnyRole([
-            'treasurer', 'chief-accountant', 'accountant', 'class_accountant',
+            'Principal', 'treasurer', 'chief-accountant', 'accountant', 'class_accountant',
             'procurement_officer', 'cashier', 'storekeeper', 'Admin',
         ]));
 

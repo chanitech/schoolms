@@ -145,12 +145,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('loans/{loan}/reject', [LoanApprovalController::class, 'reject'])->name('loans.reject');
         Route::get('loans/{loan}/disburse', [LoanApprovalController::class, 'disburseForm'])->name('loans.disburse.form');
         Route::post('loans/{loan}/disburse', [LoanApprovalController::class, 'disburse'])->name('loans.disburse');
-        Route::get('loans', [LoanApprovalController::class, 'index'])->name('loans.index');
-        Route::get('loans/active', [LoanApprovalController::class, 'activeLoans'])->name('loans.active');
-        Route::get('loans/{loan}/statement', [LoanApprovalController::class, 'treasurerStatement'])->name('loans.statement');
         Route::post('loans/{loan}/repayments/{repayment}/pay', [LoanApprovalController::class, 'recordRepayment'])->name('loans.repayments.pay');
         Route::resource('loan-categories', LoanCategoryController::class)->middleware('role:treasurer|Admin');
         Route::resource('bank-statements', BankStatementController::class)->except(['show', 'edit', 'update']);
+    });
+
+    // View-only loan history — same finance-office roles, plus Head Master
+    // (Principal), who can see approvals/disbursements but not perform them
+    // (approve/reject/disburse stay treasurer-office-only above).
+    Route::middleware(['auth', 'role:chief-accountant|accountant|treasurer|Admin|Principal'])->prefix('treasurer')->name('treasurer.')->group(function () {
+        Route::get('loans', [LoanApprovalController::class, 'index'])->name('loans.index');
+        Route::get('loans/active', [LoanApprovalController::class, 'activeLoans'])->name('loans.active');
+        Route::get('loans/{loan}/statement', [LoanApprovalController::class, 'treasurerStatement'])->name('loans.statement');
     });
 
     // ==================== FINANCE OFFICE ====================
