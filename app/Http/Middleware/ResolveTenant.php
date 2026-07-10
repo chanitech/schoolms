@@ -29,9 +29,9 @@ class ResolveTenant
                 return $next($request);
             }
 
-            // Genuine unresolved-tenant state on a tenant-data route: do NOT
-            // let this through unscoped — that's exactly what orphaned rows
-            // with school_id=null before (see BelongsToSchool::bootBelongsToSchool).
+            // Genuine unresolved-tenant state for a LOGGED-IN user: do NOT let
+            // this through unscoped — that's exactly what orphaned rows with
+            // school_id=null before (see BelongsToSchool::bootBelongsToSchool).
             // Force back to a known state instead of serving/creating unscoped data.
             if (auth()->check()) {
                 auth()->logout();
@@ -43,7 +43,12 @@ class ResolveTenant
                 ]);
             }
 
-            abort(403, 'No school context could be resolved for this request.');
+            // A guest with no tenant resolved yet is not a broken-tenant
+            // case — it's just someone not logged in. Let it through so the
+            // route's own 'auth' middleware (which runs after this, as a
+            // route-level middleware) redirects to login normally, instead
+            // of showing a raw 403 before they ever get the chance to log in.
+            return $next($request);
         }
 
         // Gate: expired/cancelled subscriptions
