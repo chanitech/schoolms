@@ -28,6 +28,8 @@ class ProcurementRequest extends Model
         'approved_at',
         'headmaster_approved_at',
         'disbursed_at',
+        'returned_by',
+        'returned_at',
     ];
 
     protected $casts = [
@@ -38,6 +40,7 @@ class ProcurementRequest extends Model
         'approved_at' => 'datetime',
         'headmaster_approved_at' => 'datetime',
         'disbursed_at' => 'datetime',
+        'returned_at' => 'datetime',
     ];
 
     public function requestedBy()
@@ -61,6 +64,12 @@ class ProcurementRequest extends Model
     public function disbursedBy()
     {
         return $this->belongsTo(User::class, 'disbursed_by');
+    }
+
+    // Cashier who returned the request because the approved amount was insufficient
+    public function returnedBy()
+    {
+        return $this->belongsTo(User::class, 'returned_by');
     }
 
     public function inventoryItem()

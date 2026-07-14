@@ -96,6 +96,7 @@
 @endsection
 
 @section('content')
+@include('partials.flash')
 <div class="container-fluid">
 
 @php

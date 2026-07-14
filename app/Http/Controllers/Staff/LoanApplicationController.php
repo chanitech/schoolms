@@ -16,7 +16,7 @@ class LoanApplicationController extends Controller
     {
         $staff = Auth::user()->staff;
         if (!$staff) {
-            return redirect()->route('dashboard')->with('error', 'Staff profile not found.');
+            return redirect()->route('dashboard')->with('error', 'Your user account is not linked to a staff profile, so it has no loan records. Ask the Admin to open your staff record (HR → Staff) and link it to your user account.');
         }
         $loans = $staff->loans()->latest()->get();
         return view('staff.loans.index', compact('loans'));
@@ -26,7 +26,7 @@ class LoanApplicationController extends Controller
     {
         $staff = Auth::user()->staff;
         if (!$staff) {
-            return redirect()->route('dashboard')->with('error', 'Staff profile not found.');
+            return redirect()->route('dashboard')->with('error', 'Your user account is not linked to a staff profile, so it has no loan records. Ask the Admin to open your staff record (HR → Staff) and link it to your user account.');
         }
         $categories = LoanCategory::where('is_active', true)->get();
         return view('staff.loans.apply', compact('categories', 'staff'));

@@ -17,7 +17,7 @@ class ProcurementRequestController extends Controller
         $this->middleware('permission:create procurement requests')->only(['create', 'store']);
         $this->middleware('permission:approve procurement requests')->only(['pending', 'approve', 'reject']);
         $this->middleware('permission:headmaster approve procurement requests')->only(['headmasterApprove', 'headmasterReject']);
-        $this->middleware('permission:disburse payments')->only(['disburse']);
+        $this->middleware('permission:disburse payments')->only(['disburse', 'returnInsufficient']);
     }
 
     /**
@@ -134,7 +134,9 @@ class ProcurementRequestController extends Controller
     public function reject(Request $request, ProcurementRequest $procurementRequest)
     {
         $validated = $request->validate([
-            'notes' => 'nullable|string|max:1000',
+            'notes' => 'required|string|max:1000',
+        ], [
+            'notes.required' => 'Please write the reason for rejecting this request.',
         ]);
 
         if ($procurementRequest->status !== 'pending') {
@@ -145,7 +147,7 @@ class ProcurementRequestController extends Controller
             'status' => 'rejected',
             'approved_by' => Auth::id(),
             'approved_at' => now(),
-            'notes' => $validated['notes'] ?? $procurementRequest->notes,
+            'notes' => $validated['notes'],
         ]);
 
         return back()->with('success', 'Procurement request rejected.');
@@ -173,7 +175,9 @@ class ProcurementRequestController extends Controller
     public function headmasterReject(Request $request, ProcurementRequest $procurementRequest)
     {
         $validated = $request->validate([
-            'notes' => 'nullable|string|max:1000',
+            'notes' => 'required|string|max:1000',
+        ], [
+            'notes.required' => 'Please write the reason for rejecting this request.',
         ]);
 
         if ($procurementRequest->status !== 'treasurer_approved') {
@@ -184,7 +188,7 @@ class ProcurementRequestController extends Controller
             'status' => 'rejected',
             'headmaster_approved_by' => Auth::id(),
             'headmaster_approved_at' => now(),
-            'notes' => $validated['notes'] ?? $procurementRequest->notes,
+            'notes' => $validated['notes'],
         ]);
 
         return back()->with('success', 'Procurement request rejected by Head Master.');
@@ -231,5 +235,34 @@ class ProcurementRequestController extends Controller
 
         return redirect()->route('treasurer.procurement.index')
             ->with('success', 'Payment disbursed and expense recorded.');
+    }
+
+    /**
+     * Cashier returns an approved request without paying — used when the
+     * approved amount no longer covers the real cost (price changed,
+     * costs were missed). Keeping the Cashier unable to type an amount,
+     * the request goes back with a mandatory reason; the requester submits
+     * a corrected request through the Treasurer → Head Master chain again.
+     */
+    public function returnInsufficient(Request $request, ProcurementRequest $procurementRequest)
+    {
+        $validated = $request->validate([
+            'notes' => 'required|string|max:1000',
+        ], [
+            'notes.required' => 'Please explain why the approved amount is not enough.',
+        ]);
+
+        if ($procurementRequest->status !== 'approved') {
+            return back()->with('error', 'Only fully approved requests awaiting disbursement can be returned.');
+        }
+
+        $procurementRequest->update([
+            'status' => 'returned',
+            'returned_by' => Auth::id(),
+            'returned_at' => now(),
+            'notes' => $validated['notes'],
+        ]);
+
+        return back()->with('success', 'Request returned to the requester — a corrected request can now be submitted for approval.');
     }
 }

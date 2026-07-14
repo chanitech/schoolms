@@ -6,6 +6,7 @@
 @stop
 
 @section('content')
+@include('partials.flash')
 @php
     $hour = now()->hour;
     $greeting = $hour < 12 ? 'Good Morning' : ($hour < 17 ? 'Good Afternoon' : 'Good Evening');

@@ -182,6 +182,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/{procurementRequest}/headmaster-approve', [ProcurementRequestController::class, 'headmasterApprove'])->name('headmaster-approve');
         Route::post('/{procurementRequest}/headmaster-reject', [ProcurementRequestController::class, 'headmasterReject'])->name('headmaster-reject');
         Route::post('/{procurementRequest}/disburse', [ProcurementRequestController::class, 'disburse'])->name('disburse');
+        Route::post('/{procurementRequest}/return', [ProcurementRequestController::class, 'returnInsufficient'])->name('return');
     });
 
     // Stock Requests — Storekeeper flags a need to the Procurement Officer,

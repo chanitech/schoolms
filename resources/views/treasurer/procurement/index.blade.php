@@ -29,6 +29,12 @@
                     <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
                 </div>
             @endif
+            @if($errors->any())
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-triangle"></i> {{ $errors->first() }}
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                </div>
+            @endif
 
             <div class="table-responsive">
                 <table class="table table-bordered table-hover">
@@ -59,7 +65,13 @@
                                     @case('approved') <span class="badge badge-info">Awaiting Cashier</span> @break
                                     @case('rejected') <span class="badge badge-danger">Rejected</span> @break
                                     @case('completed') <span class="badge badge-success">Completed</span> @break
+                                    @case('returned') <span class="badge badge-secondary">Returned — amount insufficient</span> @break
                                 @endswitch
+                                @if($request->notes && in_array($request->status, ['rejected', 'returned']))
+                                    <div class="small text-muted mt-1" style="max-width: 220px;">
+                                        <i class="fas fa-comment-alt"></i> {{ $request->notes }}
+                                    </div>
+                                @endif
                             </td>
                             <td>
                                 {{ $request->disbursedBy->name ?? '—' }}
@@ -74,10 +86,11 @@
                                             @csrf
                                             <button type="submit" class="btn btn-sm btn-success"><i class="fas fa-check"></i> Approve</button>
                                         </form>
-                                        <form action="{{ route('treasurer.procurement.reject', $request) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-times"></i> Reject</button>
-                                        </form>
+                                        <button type="button" class="btn btn-sm btn-danger reject-btn"
+                                            data-action="{{ route('treasurer.procurement.reject', $request) }}"
+                                            data-item="{{ $request->item }}">
+                                            <i class="fas fa-times"></i> Reject
+                                        </button>
                                     @endif
                                 @endcan
                                 @can('headmaster approve procurement requests')
@@ -86,10 +99,11 @@
                                             @csrf
                                             <button type="submit" class="btn btn-sm btn-success"><i class="fas fa-check-double"></i> Head Master Approve</button>
                                         </form>
-                                        <form action="{{ route('treasurer.procurement.headmaster-reject', $request) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-times"></i> Reject</button>
-                                        </form>
+                                        <button type="button" class="btn btn-sm btn-danger reject-btn"
+                                            data-action="{{ route('treasurer.procurement.headmaster-reject', $request) }}"
+                                            data-item="{{ $request->item }}">
+                                            <i class="fas fa-times"></i> Reject
+                                        </button>
                                     @endif
                                 @endcan
                                 @can('disburse payments')
@@ -98,6 +112,12 @@
                                             data-id="{{ $request->id }}" data-item="{{ $request->item }}"
                                             data-amount="{{ number_format($request->estimated_cost, 2) }}">
                                             <i class="fas fa-money-bill-wave"></i> Disburse
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-warning return-btn"
+                                            data-action="{{ route('treasurer.procurement.return', $request) }}"
+                                            data-item="{{ $request->item }}"
+                                            data-amount="{{ number_format($request->estimated_cost, 2) }}">
+                                            <i class="fas fa-undo"></i> Amount not enough
                                         </button>
                                     @endif
                                 @endcan
@@ -138,12 +158,75 @@
                     </div>
                     <div class="form-group">
                         <label for="notes">Notes</label>
-                        <textarea name="notes" id="notes" rows="2" class="form-control"></textarea>
+                        <textarea name="notes" id="notes" rows="2" class="form-control"
+                            placeholder="Optional remarks for the expense log — e.g. receipt/reference number, supplier paid, payment method…"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary">Disburse</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- Reject with reason (Treasurer & Head Master stages) --}}
+<div class="modal fade" id="rejectModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="fas fa-times-circle"></i> Reject Request</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="rejectForm" method="POST">
+                @csrf
+                <div class="modal-body">
+                    <p id="rejectItemLabel" class="font-weight-bold"></p>
+                    <div class="form-group">
+                        <label for="reject-notes">Reason for rejection <span class="text-danger">*</span></label>
+                        <textarea name="notes" id="reject-notes" rows="3" class="form-control" required maxlength="1000"
+                            placeholder="Write the reason for rejecting this request — it will be visible to the requester and the Finance Office…"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Reject Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- Cashier: return because the approved amount is insufficient --}}
+<div class="modal fade" id="returnModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title"><i class="fas fa-undo"></i> Return — Amount Not Enough</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="returnForm" method="POST">
+                @csrf
+                <div class="modal-body">
+                    <p id="returnItemLabel" class="font-weight-bold"></p>
+                    <p class="text-muted small mb-3">
+                        The approved amount cannot be changed at disbursement. Returning sends the request
+                        back so a corrected request can be submitted and re-approved by the Treasurer and Head Master.
+                    </p>
+                    <div class="form-group">
+                        <label for="return-notes">Why is the approved amount not enough? <span class="text-danger">*</span></label>
+                        <textarea name="notes" id="return-notes" rows="3" class="form-control" required maxlength="1000"
+                            placeholder="e.g. Supplier price has increased to TZS …, transport cost was not included, quantity quoted no longer available at this price…"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning">Return Request</button>
                 </div>
             </form>
         </div>
@@ -162,6 +245,18 @@
             $('#disburseItemLabel').text('Item: ' + item);
             $('#disburseAmountLabel').text(amount);
             $('#disburseModal').modal('show');
+        });
+
+        $('.reject-btn').click(function() {
+            $('#rejectForm').attr('action', $(this).data('action'));
+            $('#rejectItemLabel').text('Item: ' + $(this).data('item'));
+            $('#rejectModal').modal('show');
+        });
+
+        $('.return-btn').click(function() {
+            $('#returnForm').attr('action', $(this).data('action'));
+            $('#returnItemLabel').text('Item: ' + $(this).data('item') + ' — approved amount: TZS ' + $(this).data('amount'));
+            $('#returnModal').modal('show');
         });
     });
 </script>
