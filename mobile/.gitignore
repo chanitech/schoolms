@@ -1,4 +1,7 @@
 node_modules/
+android/shulepro-release.jks
+android/key.properties
+android/keystore-password.txt
 ios/App/Pods/
 ios/App/output/
 ios/App/App/public/
