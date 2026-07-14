@@ -177,10 +177,10 @@
                 </form>
                 @endif
 
-                {{-- Edit (only when draft) --}}
+                {{-- Edit (locked only while published — unpublish to edit) --}}
                 @can('edit exams')
-                @if($exam->isDraft())
-                <a href="{{ route('exams.edit', $exam) }}" class="btn btn-outline-primary action-btn">
+                @if(!$exam->isPublished())
+                <a href="{{ route('exams.edit', $exam) }}" class="btn btn-outline-primary action-btn" title="Edit exam">
                     <i class="fas fa-edit"></i>
                 </a>
                 @endif

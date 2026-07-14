@@ -292,16 +292,22 @@
                             </td>
                             <td>{{ $mark->grade->name ?? '-' }}</td>
                             <td>
-                                <a href="{{ route('marks.edit', $mark->id) }}" class="btn btn-sm btn-warning">
-                                    <i class="fas fa-edit"></i> Edit
-                                </a>
-                                <form action="{{ route('marks.destroy', $mark->id) }}" method="POST" style="display:inline-block;">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button class="btn btn-sm btn-danger" onclick="return confirm('Delete this mark?')">
-                                        <i class="fas fa-trash"></i> Delete
-                                    </button>
-                                </form>
+                                @if($mark->exam?->isPublished())
+                                    <span class="badge badge-secondary" title="Results are published — unpublish the exam to edit marks">
+                                        <i class="fas fa-lock mr-1"></i> Locked (published)
+                                    </span>
+                                @else
+                                    <a href="{{ route('marks.edit', $mark->id) }}" class="btn btn-sm btn-warning">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </a>
+                                    <form action="{{ route('marks.destroy', $mark->id) }}" method="POST" style="display:inline-block;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button class="btn btn-sm btn-danger" onclick="return confirm('Delete this mark?')">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </button>
+                                    </form>
+                                @endif
                             </td>
                         </tr>
                     @empty

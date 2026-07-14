@@ -277,6 +277,12 @@ class MarkController extends Controller
             'marks' => 'required|array',
         ]);
 
+        // Published results are locked — the exam must be unpublished first.
+        if (Exam::find($request->exam_id)?->isPublished()) {
+            return redirect()->back()->withInput()
+                ->with('error', 'This exam\'s results are published and locked. Ask the Admin to unpublish it before entering or changing marks.');
+        }
+
         // Convert empty strings to null and validate numeric values manually
         $marks = $request->input('marks', []);
         foreach ($marks as $student_id => $markValue) {
@@ -496,6 +502,12 @@ public function getExamsBySession(Request $request)
     }
     // If no exam_type or any other value, return all exams (backward compatible)
 
+    // Mark-entry pages exclude published exams (their marks are locked);
+    // the index filter still lists them for viewing.
+    if ($request->boolean('exclude_published')) {
+        $query->where('status', '!=', 'published');
+    }
+
     $exams = $query->orderBy('name', 'asc')
                    ->get(['id', 'name']);
 
@@ -529,8 +541,14 @@ public function getExamsBySession(Request $request)
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
+        if (Exam::find($mark->exam_id)?->isPublished()) {
+            return redirect()->route('marks.index')
+                ->with('error', 'This mark belongs to a published exam and is locked. Ask the Admin to unpublish the exam first.');
+        }
+
         $sessions = AcademicSession::all();
-        $exams = Exam::all();
+        // Published exams are locked, so they can't be an edit target either.
+        $exams = Exam::where('status', '!=', 'published')->get();
 
         // Teacher: only subjects assigned to them
         if ($user->hasRole('Teacher')) {
@@ -571,6 +589,14 @@ public function getExamsBySession(Request $request)
             'exam_id' => 'required|exists:exams,id',
             'mark' => 'required|numeric|min:0|max:100',
         ]);
+
+        // Locked both ways: can't change a published exam's mark, and can't
+        // move a mark onto a published exam. Fresh lookups — the exam's
+        // status may have changed after the relation was loaded.
+        if (Exam::find($mark->exam_id)?->isPublished() || Exam::find($request->exam_id)?->isPublished()) {
+            return redirect()->route('marks.index')
+                ->with('error', 'This exam\'s results are published and locked. Ask the Admin to unpublish it before changing marks.');
+        }
 
         if ($user->hasRole('Teacher')) {
             // Get the class_id from the mark
@@ -623,6 +649,11 @@ public function getExamsBySession(Request $request)
      */
     public function destroy(Mark $mark)
     {
+        if (Exam::find($mark->exam_id)?->isPublished()) {
+            return redirect()->route('marks.index')
+                ->with('error', 'This mark belongs to a published exam and is locked. Ask the Admin to unpublish the exam first.');
+        }
+
         $mark->delete();
         return redirect()->route('marks.index')->with('success', 'Mark deleted successfully!');
     }
@@ -718,6 +749,12 @@ public function getExamsBySession(Request $request)
             'exam_id'             => 'required|exists:exams,id',
             'scores'              => 'required|array',
         ]);
+
+        // Published results are locked — the exam must be unpublished first.
+        if (Exam::find($request->exam_id)?->isPublished()) {
+            return redirect()->back()->withInput()
+                ->with('error', 'This exam\'s results are published and locked. Ask the Admin to unpublish it before entering or changing marks.');
+        }
 
         /** @var \App\Models\User $user */
         $user = Auth::user();

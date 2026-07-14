@@ -81,6 +81,11 @@ class ExamController extends Controller
      */
     public function edit(Exam $exam)
     {
+        if ($exam->isPublished()) {
+            return redirect()->route('exams.index')
+                ->with('error', 'Published exams are locked. Unpublish first to edit.');
+        }
+
         $sessions = AcademicSession::all();
         return view('exams.edit', compact('exam', 'sessions'));
     }
@@ -90,6 +95,11 @@ class ExamController extends Controller
      */
     public function update(Request $request, Exam $exam)
     {
+        if ($exam->isPublished()) {
+            return redirect()->route('exams.index')
+                ->with('error', 'Published exams are locked. Unpublish first to edit.');
+        }
+
         $request->validate([
             'name' => 'required|string|max:255',
             'term' => 'required|string|max:50',
@@ -114,6 +124,12 @@ class ExamController extends Controller
      */
     public function destroy(Exam $exam)
     {
+        // Match the UI rule: only draft exams can be deleted.
+        if (!$exam->isDraft()) {
+            return redirect()->route('exams.index')
+                ->with('error', 'Only draft exams can be deleted.');
+        }
+
         $exam->delete();
         return redirect()->route('exams.index')->with('success', 'Exam deleted successfully.');
     }

@@ -413,7 +413,7 @@ $(function () {
             return;
         }
         examSel.html('<option value="">Loading…</option>');
-        $.get("{{ route('marks.exams.by.session') }}", { session_id: sessionId })
+        $.get("{{ route('marks.exams.by.session') }}", { session_id: sessionId, exclude_published: 1 })
             .done(function (exams) {
                 let opts = '<option value="">— Select Exam —</option>';
                 exams.forEach(e => {
