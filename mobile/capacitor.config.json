@@ -1,0 +1,19 @@
+{
+  "appId": "tz.co.chanitech.shulepro",
+  "appName": "ShulePRO",
+  "webDir": "www",
+  "server": {
+    "url": "https://schoolms.chanitech.co.tz/guardian/login",
+    "allowNavigation": [
+      "schoolms.chanitech.co.tz",
+      "schoolms.ac.tz",
+      "*.schoolms.ac.tz"
+    ]
+  },
+  "ios": {
+    "contentInset": "always"
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}
