@@ -82,6 +82,9 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+// Public privacy policy — required by the Google Play / App Store listings
+Route::view('/privacy', 'privacy')->name('privacy');
+
 // Subscription expired — shown when school's subscription is inactive
 Route::get('/subscription/expired', function () {
     return view('subscription.expired');
