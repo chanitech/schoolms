@@ -3,7 +3,12 @@
 @section('title', 'Class Attendance')
 
 @section('content_header')
-    <h1 class="m-0 text-dark"><i class="fas fa-clipboard-check mr-2"></i>Class Attendance — {{ $class->name }}</h1>
+    <div class="d-flex justify-content-between align-items-center">
+        <h1 class="m-0 text-dark"><i class="fas fa-clipboard-check mr-2"></i>Class Attendance — {{ $class->name }}</h1>
+        <a href="{{ route('timetables.class-attendance.report', ['class_id' => $class->id]) }}" class="btn btn-outline-primary btn-sm">
+            <i class="fas fa-file-alt mr-1"></i> View / Print Report
+        </a>
+    </div>
 @stop
 
 @section('content')

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AcademicSession;
 use App\Models\SchoolClass;
+use App\Notifications\ClassAttendanceReportNotification;
 use App\Models\Subject;
 use App\Models\Timetable;
 use App\Models\TimetableEntry;
@@ -865,6 +866,120 @@ class TimetableController extends Controller
         return view('timetables.class-attendance', compact(
             'classes', 'class', 'date', 'entries', 'logs', 'isManagement'
         ));
+    }
+
+    /**
+     * Shared filter resolution for the class attendance report + sending.
+     * Returns [allowed classes, selected class (null = all allowed), from,
+     * to, teacher_id, status, filtered logs query].
+     */
+    private function attendanceReportContext(Request $request): array
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        $isManagement = $user->hasAnyRole(['Admin', 'Academic', 'HOD', 'HR']);
+
+        $coordinatedClasses = $user->staff
+            ? SchoolClass::where('class_teacher_id', $user->staff->id)->orderBy('name')->get()
+            : collect();
+
+        abort_unless($isManagement || $coordinatedClasses->isNotEmpty(), 403,
+            'Only class teachers/coordinators and academic management can view attendance reports.');
+
+        $classes = $isManagement ? SchoolClass::orderBy('name')->get() : $coordinatedClasses;
+
+        $class = null;
+        if ($request->filled('class_id')) {
+            $class = $classes->firstWhere('id', (int) $request->class_id);
+            abort_unless($class, 403, 'You do not coordinate this class.');
+        }
+
+        $from = $request->filled('from') ? Carbon::parse($request->from) : Carbon::now()->startOfWeek(Carbon::MONDAY);
+        $to   = $request->filled('to')   ? Carbon::parse($request->to)   : Carbon::today();
+        if ($from->gt($to)) [$from, $to] = [$to, $from];
+
+        $teacherId = $request->filled('teacher_id') ? (int) $request->teacher_id : null;
+        $status    = in_array($request->status, ['attended', 'late', 'absent', 'other']) ? $request->status : null;
+
+        $query = TimetableSessionLog::with(['teacher', 'subject', 'period', 'schoolClass', 'recorder'])
+            ->whereBetween('session_date', [$from->toDateString(), $to->toDateString()])
+            ->whereIn('class_id', ($class ? collect([$class]) : $classes)->pluck('id'))
+            ->when($teacherId, fn($q) => $q->where('teacher_id', $teacherId))
+            ->when($status, fn($q) => $q->where('status', $status))
+            ->orderBy('session_date')
+            ->orderBy('period_id');
+
+        return [$classes, $class, $from, $to, $teacherId, $status, $query];
+    }
+
+    // ── Class Attendance report: filterable + printable ───────────────────
+    public function classAttendanceReport(Request $request)
+    {
+        [$classes, $class, $from, $to, $teacherId, $status, $query] = $this->attendanceReportContext($request);
+
+        $logs = $query->get();
+
+        // Per-teacher summary
+        $teacherSummary = $logs->groupBy('teacher_id')->map(fn($rows) => [
+            'teacher'  => $rows->first()->teacher,
+            'total'    => $rows->count(),
+            'attended' => $rows->where('status', 'attended')->count(),
+            'late'     => $rows->where('status', 'late')->count(),
+            'absent'   => $rows->where('status', 'absent')->count(),
+            'other'    => $rows->where('status', 'other')->count(),
+            'unmarked' => $rows->whereNull('status')->count(),
+        ])->sortBy(fn($row) => $row['teacher']?->name)->values();
+
+        $teachers = User::role('Teacher')->orderBy('name')->get(['id', 'name']);
+
+        return view('timetables.class-attendance-report', compact(
+            'classes', 'class', 'from', 'to', 'teacherId', 'status',
+            'logs', 'teacherSummary', 'teachers'
+        ));
+    }
+
+    // ── Send the filtered report to HOD / Head Master as a notification ───
+    public function sendClassAttendanceReport(Request $request)
+    {
+        [, $class, $from, $to, $teacherId, $status, $query] = $this->attendanceReportContext($request);
+
+        $request->validate(['recipients' => 'required|array|min:1', 'recipients.*' => 'in:hod,do']);
+
+        $logs = $query->get();
+        if ($logs->isEmpty()) {
+            return back()->with('error', 'Nothing to send — no attendance records match the current filters.');
+        }
+
+        $summary = $logs->where('status', 'attended')->count() . ' attended · '
+            . $logs->where('status', 'late')->count() . ' late · '
+            . $logs->where('status', 'absent')->count() . ' absent'
+            . (($u = $logs->whereNull('status')->count()) ? " · {$u} unmarked" : '');
+
+        $filters = array_filter([
+            'class_id'   => $class?->id,
+            'from'       => $from->toDateString(),
+            'to'         => $to->toDateString(),
+            'teacher_id' => $teacherId,
+            'status'     => $status,
+        ]);
+
+        $notification = new ClassAttendanceReportNotification(
+            $class?->name ?? 'All my classes',
+            $from->format('d M') . ' – ' . $to->format('d M Y'),
+            $summary,
+            Auth::user()->name,
+            route('timetables.class-attendance.report', $filters)
+        );
+
+        $roles = collect($request->recipients)
+            ->map(fn($r) => $r === 'do' ? 'Principal' : 'HOD')
+            ->unique()->values()->all();
+
+        $recipients = User::role($roles)->where('id', '!=', Auth::id())->get();
+        $recipients->each(fn($u) => $u->notify($notification));
+
+        return back()->with('success', 'Report sent to ' . $recipients->count() . ' recipient(s) ('
+            . collect($roles)->map(fn($r) => $r === 'Principal' ? 'Head Master' : $r)->implode(', ') . ').');
     }
 
     /**
