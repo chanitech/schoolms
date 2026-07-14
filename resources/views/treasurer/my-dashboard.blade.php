@@ -61,6 +61,109 @@
         </div>
     </div>
 
+    {{-- Quick Actions — shortcuts matched to the user's permissions/job description --}}
+    <div class="card card-outline card-primary shadow-sm">
+        <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-bolt mr-2"></i> Quick Actions</h3>
+        </div>
+        <div class="card-body pb-2">
+            {{-- Storekeeper / stock management --}}
+            @can('manage stock')
+                <a href="{{ route('inventory.transactions.create') }}" class="btn btn-outline-primary mb-2 mr-1">
+                    <i class="fas fa-exchange-alt"></i> Record Stock In / Out
+                </a>
+                <a href="{{ route('inventory.items') }}" class="btn btn-outline-primary mb-2 mr-1">
+                    <i class="fas fa-boxes"></i> Stock Items
+                </a>
+                <a href="{{ route('inventory.items', ['stock' => 'low']) }}" class="btn btn-outline-danger mb-2 mr-1">
+                    <i class="fas fa-battery-quarter"></i> Low Stock
+                    @if($lowStockCount) <span class="badge badge-danger">{{ $lowStockCount }}</span> @endif
+                </a>
+                <a href="{{ route('inventory.transactions') }}" class="btn btn-outline-primary mb-2 mr-1">
+                    <i class="fas fa-history"></i> Stock Ledger
+                </a>
+            @endcan
+            @can('create stock requests')
+                <a href="{{ route('treasurer.stock-requests.create') }}" class="btn btn-outline-info mb-2 mr-1">
+                    <i class="fas fa-hand-paper"></i> Flag Stock Need
+                </a>
+                <a href="{{ route('treasurer.stock-requests.index') }}" class="btn btn-outline-info mb-2 mr-1">
+                    <i class="fas fa-list"></i> My Stock Requests
+                    @if($queues['my_stock_requests']) <span class="badge badge-info">{{ $queues['my_stock_requests'] }}</span> @endif
+                </a>
+            @endcan
+
+            {{-- Procurement Officer --}}
+            @can('review stock requests')
+                <a href="{{ route('treasurer.stock-requests.index') }}" class="btn btn-outline-warning mb-2 mr-1">
+                    <i class="fas fa-inbox"></i> Stock Requests to Review
+                    @if($queues['stock_requests_pending']) <span class="badge badge-warning">{{ $queues['stock_requests_pending'] }}</span> @endif
+                </a>
+            @endcan
+            @can('create procurement requests')
+                <a href="{{ route('treasurer.procurement.create') }}" class="btn btn-outline-primary mb-2 mr-1">
+                    <i class="fas fa-cart-plus"></i> New Procurement Request
+                </a>
+            @endcan
+
+            {{-- Treasurer --}}
+            @can('approve procurement requests')
+                <a href="{{ route('treasurer.procurement.pending') }}" class="btn btn-outline-success mb-2 mr-1">
+                    <i class="fas fa-stamp"></i> Procurement Approvals
+                    @if($queues['procurement_pending']) <span class="badge badge-success">{{ $queues['procurement_pending'] }}</span> @endif
+                </a>
+            @endcan
+            @can('approve loans')
+                <a href="{{ route('treasurer.loans.pending') }}" class="btn btn-outline-success mb-2 mr-1">
+                    <i class="fas fa-hand-holding-usd"></i> Loan Approvals
+                    @if($queues['loans_pending']) <span class="badge badge-success">{{ $queues['loans_pending'] }}</span> @endif
+                </a>
+            @endcan
+
+            {{-- Head Master (DO) --}}
+            @can('approve budget items')
+                <a href="{{ route('finance.budgets.pending') }}" class="btn btn-outline-success mb-2 mr-1">
+                    <i class="fas fa-file-signature"></i> Budget Approvals
+                    @if($queues['budgets_pending']) <span class="badge badge-success">{{ $queues['budgets_pending'] }}</span> @endif
+                </a>
+            @endcan
+            @can('approve invoices')
+                <a href="{{ route('finance.invoices.do') }}" class="btn btn-outline-success mb-2 mr-1">
+                    <i class="fas fa-file-invoice"></i> Invoice Approvals
+                    @if($queues['invoices_to_approve']) <span class="badge badge-success">{{ $queues['invoices_to_approve'] }}</span> @endif
+                </a>
+            @endcan
+
+            {{-- Cashier --}}
+            @can('pay invoices')
+                <a href="{{ route('finance.invoices.finance') }}" class="btn btn-outline-primary mb-2 mr-1">
+                    <i class="fas fa-money-check-alt"></i> Invoices to Pay
+                    @if($queues['invoices_to_pay']) <span class="badge badge-primary">{{ $queues['invoices_to_pay'] }}</span> @endif
+                </a>
+            @endcan
+            @can('record payments')
+                <a href="{{ route('finance.pocket.transactions.create') }}" class="btn btn-outline-primary mb-2 mr-1">
+                    <i class="fas fa-wallet"></i> Pocket Money Entry
+                </a>
+            @endcan
+
+            {{-- Class accountants --}}
+            @if(!is_null($pendingClassPayments))
+                <a href="{{ route('finance.payments.review') }}" class="btn btn-outline-warning mb-2 mr-1">
+                    <i class="fas fa-check-double"></i> Verify Payments
+                    @if($pendingClassPayments) <span class="badge badge-warning">{{ $pendingClassPayments }}</span> @endif
+                </a>
+            @endif
+
+            {{-- Treasurer office-wide overview --}}
+            @can('view finance dashboard')
+                <a href="{{ route('treasurer.dashboard') }}" class="btn btn-outline-dark mb-2 mr-1">
+                    <i class="fas fa-chart-line"></i> Office Overview
+                </a>
+            @endcan
+        </div>
+    </div>
+
     @if($assignedClasses->isNotEmpty())
     <div class="card card-outline card-info shadow-sm">
         <div class="card-header">

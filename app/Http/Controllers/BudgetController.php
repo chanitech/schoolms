@@ -21,8 +21,6 @@ class BudgetController extends Controller
     $this->middleware('permission:view pending approvals')->only(['pending']);
     $this->middleware('permission:withdraw budget items')->only(['withdrawItem']);
     $this->middleware('permission:view hod dashboard')->only(['hodBudgets']);
-    $this->middleware('permission:approve invoices')->only(['approveInvoice']);
-    $this->middleware('permission:pay invoices')->only(['payInvoice', 'pay']);
 }
 
     /**
@@ -183,6 +181,12 @@ class BudgetController extends Controller
         ]);
 
         foreach ($budget->items as $item) {
+            // Skip items the form didn't submit a decision for, instead of
+            // crashing on the missing array key.
+            if (!isset($validated['items'][$item->id]['status'])) {
+                continue;
+            }
+
             $item->update([
                 'status' => $validated['items'][$item->id]['status'],
                 'note' => $validated['items'][$item->id]['note'] ?? null,
@@ -283,107 +287,6 @@ class BudgetController extends Controller
 
     return view('finance.budgets.hod', compact('budgets'));
 }
-    /**
-     * HOD view budgets waiting for their action
-     
-  public function hodBudgets()
-{
-    $user = Auth::user();
-
-    // Only HOD or Admin can access
-    if (!$user->hasRole(['HOD', 'Admin'])) {
-        abort(403, 'Unauthorized');
-    }
-
-    $staff = $user->staff;
-
-    // Base query: budgets at HOD step
-    $budgetsQuery = Budget::with('staff', 'department', 'items')
-        ->where('current_step', 'hod');
-
-    // Restrict to HOD's department
-    if ($staff && $user->hasRole('HOD')) {
-        $budgetsQuery->where('department_id', $staff->department_id);
-    }
-
-    $budgets = $budgetsQuery->latest()->get();
-
-    return view('finance.budgets.hod', compact('budgets'));
-}
-*/
-
-
-
-
-
-
-
-
-
-
-    /**
-     * Head Master (DO) approve/reject invoice. Gated entirely by the
-     * 'approve invoices' permission (constructor middleware) — this used
-     * to also require staff.role to literally equal the string 'do', a
-     * free-text field nothing keeps in sync with actual roles, which
-     * silently blocked Head Master/Principal from ever approving an
-     * invoice regardless of their real permissions.
-     */
-    public function approveInvoice(Request $request, Invoice $invoice)
-    {
-        $request->validate([
-            'status' => 'required|in:approved_by_do,rejected_by_do',
-        ]);
-
-        $invoice->update([
-            'status' => $request->status,
-            'approved_by_do_id' => Auth::id(),
-        ]);
-
-        return redirect()->back()->with('success', 'Invoice processed successfully.');
-    }
-
-    /**
-     * Finance/Cashier/Head Master pays invoice — gated by 'pay invoices'
-     * permission alone, same reasoning as approveInvoice() above.
-     */
-    public function payInvoice(Request $request, Invoice $invoice)
-    {
-        if ($invoice->status !== 'approved_by_do') {
-            return redirect()->back()->with('error', 'Invoice not approved by DO.');
-        }
-
-        $invoice->update([
-            'status' => 'paid',
-            'paid_by_finance_id' => Auth::id(),
-            'payment_date' => now(),
-        ]);
-
-        $invoice->budgetItem->update(['status' => 'used']);
-
-        return redirect()->back()->with('success', 'Invoice paid successfully.');
-    }
-
-    /**
-     * Pay invoice (alternative)
-     */
-    public function pay(Request $request, Invoice $invoice)
-    {
-        if ($invoice->status !== 'approved_by_do') {
-            return redirect()->back()->with('error', 'Invoice not approved by DO yet.');
-        }
-
-        $invoice->update([
-            'status' => 'paid',
-            'paid_by' => Auth::id(),
-            'paid_at' => now(),
-        ]);
-
-        $invoice->budgetItem->update(['status' => 'used']);
-
-        return redirect()->back()->with('success', 'Invoice marked as paid.');
-    }
-
     /**
      * Show edit form
      */

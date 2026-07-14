@@ -27,12 +27,15 @@ class InvoiceController extends Controller
 {
     $user = auth()->user();
 
-    if ($user->hasRole('hod')) {
+    // Role name is 'HOD' (Spatie roles are case-sensitive — 'hod' never
+    // matched, so HODs were seeing every department's invoices), and the
+    // department lives on the linked staff record, not the user.
+    if ($user->hasRole('HOD')) {
 
         // HOD sees invoices only from budgets in his department
         $invoices = Invoice::whereHas('budgetItem', function ($q) use ($user) {
             $q->whereHas('budget', function ($q2) use ($user) {
-                $q2->where('department_id', $user->department_id);
+                $q2->where('department_id', $user->staff?->department_id);
             });
         })
         ->with('budgetItem.budget', 'approvedBy')
@@ -85,10 +88,10 @@ class InvoiceController extends Controller
     $user = auth()->user();
 
     // Prevent HOD from viewing other department’s invoice
-    if ($user->hasRole('hod')) {
+    if ($user->hasRole('HOD')) {
         $invoiceDept = $invoice->budgetItem->budget->department_id;
 
-        if ($invoiceDept != $user->department_id) {
+        if ($invoiceDept != $user->staff?->department_id) {
             abort(403, 'Unauthorized: You cannot access another department invoice.');
         }
     }
@@ -127,6 +130,9 @@ class InvoiceController extends Controller
 {
     $request->validate([
         'status' => 'required|in:approved_by_do,rejected_by_do',
+        'notes'  => 'required_if:status,rejected_by_do|nullable|string|max:1000',
+    ], [
+        'notes.required_if' => 'Please write the reason for rejecting this invoice.',
     ]);
 
     if ($invoice->status !== 'pending') {
@@ -136,6 +142,7 @@ class InvoiceController extends Controller
     // Correct column name
     $invoice->status = $request->status;
     $invoice->approved_by_do_id = Auth::id();
+    $invoice->notes = $request->notes;
     $invoice->save();
 
     // Update related BudgetItem status if rejected

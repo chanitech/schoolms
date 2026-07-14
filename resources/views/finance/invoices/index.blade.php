@@ -76,6 +76,11 @@
                             <span class="badge badge-{{ $statusColors[$invoice->status] ?? 'secondary' }}">
                                 {{ ucfirst(str_replace('_',' ',$invoice->status)) }}
                             </span>
+                            @if($invoice->notes && $invoice->status === 'rejected_by_do')
+                                <div class="small text-muted mt-1" style="max-width: 220px;">
+                                    <i class="fas fa-comment-alt"></i> {{ $invoice->notes }}
+                                </div>
+                            @endif
                         </td>
                         <td>{{ $invoice->approvedBy->name ?? '-' }}</td>
                         <td>{{ optional($invoice->paidBy)->name ?? '-' }}</td>

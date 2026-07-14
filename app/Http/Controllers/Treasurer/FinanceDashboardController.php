@@ -11,6 +11,7 @@ use App\Models\JobDescription;
 use App\Models\Loan;
 use App\Models\Payment;
 use App\Models\ProcurementRequest;
+use App\Models\StockRequest;
 use App\Models\TaskLog;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -124,12 +125,32 @@ class FinanceDashboardController extends Controller
             : null;
 
         $lowStockCount = $user->can('manage stock')
-            ? InventoryItem::all()->filter(fn (InventoryItem $item) => $item->isLowStock())->count()
+            ? InventoryItem::whereColumn('quantity_in_stock', '<=', 'minimum_stock')
+                ->where('minimum_stock', '>', 0)->count()
             : null;
+
+        // Per-role work queues for the Quick Actions shortcuts — each count
+        // only computed when the user actually holds the matching permission.
+        $queues = [
+            'procurement_pending' => $user->can('approve procurement requests')
+                ? ProcurementRequest::where('status', 'pending')->count() : null,
+            'loans_pending' => $user->can('approve loans')
+                ? Loan::where('status', 'pending')->count() : null,
+            'budgets_pending' => $user->can('approve budget items')
+                ? Budget::where('status', 'pending')->where('current_step', 'do')->count() : null,
+            'invoices_to_approve' => $user->can('approve invoices')
+                ? Invoice::where('status', 'pending')->count() : null,
+            'invoices_to_pay' => $user->can('pay invoices')
+                ? Invoice::where('status', 'approved_by_do')->count() : null,
+            'stock_requests_pending' => $user->can('review stock requests')
+                ? StockRequest::where('status', 'pending')->count() : null,
+            'my_stock_requests' => $user->can('create stock requests')
+                ? StockRequest::where('requested_by', $user->id)->count() : null,
+        ];
 
         return view('treasurer.my-dashboard', compact(
             'tasks', 'jobDescriptions', 'assignedClasses', 'pendingClassPayments',
-            'myProcurementRequests', 'awaitingDisbursement', 'lowStockCount'
+            'myProcurementRequests', 'awaitingDisbursement', 'lowStockCount', 'queues'
         ));
     }
 }

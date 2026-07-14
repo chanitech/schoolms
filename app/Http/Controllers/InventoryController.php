@@ -254,7 +254,8 @@ class InventoryController extends Controller
             'transaction_date' => 'required|date',
         ]);
 
-        DB::transaction(function () use ($data) {
+        try {
+            DB::transaction(function () use ($data) {
             $item = InventoryItem::lockForUpdate()->find($data['item_id']);
 
             $deduction = in_array($data['type'], ['issue', 'damage', 'disposal']);
@@ -262,7 +263,8 @@ class InventoryController extends Controller
 
             if ($deduction) {
                 if ($item->quantity_in_stock < $data['quantity']) {
-                    throw new \Exception("Insufficient stock. Available: {$item->quantity_in_stock}");
+                    // Friendly failure instead of a 500 page
+                    throw new \RuntimeException("Insufficient stock for {$item->name}. Available: {$item->quantity_in_stock} {$item->unit}.");
                 }
                 $newBalance = $item->quantity_in_stock - $data['quantity'];
             } else {
@@ -282,7 +284,10 @@ class InventoryController extends Controller
                 'user_id'          => Auth::id(),
                 'transaction_date' => $data['transaction_date'],
             ]);
-        });
+            });
+        } catch (\RuntimeException $e) {
+            return back()->withInput()->with('error', $e->getMessage());
+        }
 
         return redirect()->route('inventory.transactions')->with('success', 'Transaction recorded.');
     }
