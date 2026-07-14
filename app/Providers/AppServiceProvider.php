@@ -47,6 +47,20 @@ class AppServiceProvider extends ServiceProvider
         // edit/update and TimetablePeriodController's constructor gate.
         Gate::define('is-timetable-admin', fn ($user) => $user->hasAnyRole(['Admin', 'Academic']));
 
+        // Class coordinator: the staff member set as class_teacher of at
+        // least one class (plus academic management). Controls who can mark
+        // teacher attendance (attended/late/absent) on session logs and who
+        // sees the Class Attendance page.
+        Gate::define('is-class-coordinator', function ($user) {
+            if ($user->hasAnyRole(['Admin', 'Academic', 'HOD', 'HR'])) {
+                return true;
+            }
+            $staffId = $user->staff?->id;
+
+            return $staffId
+                && \App\Models\SchoolClass::where('class_teacher_id', $staffId)->exists();
+        });
+
         // Share unread notification count with every view.
         // View::composer('*') fires once per rendered view/partial, not once
         // per page — a single AdminLTE page composes 20-30+ partials (sidebar,

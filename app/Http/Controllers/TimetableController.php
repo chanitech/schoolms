@@ -566,7 +566,12 @@ class TimetableController extends Controller
                 });
         }
 
-        $canLog = $user->hasRole('Teacher');
+        // Status marking from the dashboard is coordinator/management-only
+        // now (subject teachers log topic coverage from My Sessions instead).
+        $isManagement = $user->hasAnyRole(['Admin', 'Academic', 'HOD', 'HR']);
+        $coordinatedIds = $user->staff
+            ? SchoolClass::where('class_teacher_id', $user->staff->id)->pluck('id')->all()
+            : [];
 
         $rows = $entries->map(fn($e) => [
             // Prefer stored computed times (set during generation), fall back to period DB times
@@ -582,7 +587,7 @@ class TimetableController extends Controller
             'is_special' => false,
             'type'       => 'class',
             'log_status' => $logsToday[$e->id] ?? null,
-            'can_log'    => $canLog,
+            'can_log'    => $isManagement || in_array($e->class_id, $coordinatedIds),
         ])->values()->toArray();
 
         // Merge special sessions (Prayer, Assembly, Self Study…) from published timetables
@@ -654,19 +659,26 @@ class TimetableController extends Controller
         return response()->json(['topics' => $topics, 'plan_id' => $plan->id, 'no_plan' => false]);
     }
 
-    // ── API: log session status (AJAX, used from dashboard) ──────────────
+    // ── API: log session status (AJAX, used from dashboards) ─────────────
+    // Setting the attendance status is coordinator/management-only; the
+    // subject teacher may still save notes on their own session.
     public function logSessionAjax(Request $request, TimetableEntry $entry): JsonResponse
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
-        $canLog = $user->hasAnyRole(['Admin', 'Academic', 'HOD', 'HR']) || $user->id === $entry->teacher_id;
+        $canMarkAttendance = $this->canMarkAttendance($user, $entry);
+        $canLog = $canMarkAttendance || $user->id === $entry->teacher_id;
         if (!$canLog) return response()->json(['error' => 'Forbidden'], 403);
 
         $data = $request->validate([
             'session_date' => 'required|date',
-            'status'       => 'required|in:attended,late,absent,other',
+            'status'       => ($canMarkAttendance ? 'required' : 'nullable') . '|in:attended,late,absent,other',
             'notes'        => 'nullable|string|max:500',
         ]);
+
+        $existing = TimetableSessionLog::where('timetable_entry_id', $entry->id)
+            ->where('session_date', $data['session_date'])->first();
+        $status = $canMarkAttendance ? $data['status'] : ($existing->status ?? null);
 
         $log = TimetableSessionLog::updateOrCreate(
             ['timetable_entry_id' => $entry->id, 'session_date' => $data['session_date']],
@@ -675,7 +687,7 @@ class TimetableController extends Controller
                 'class_id'    => $entry->class_id,
                 'subject_id'  => $entry->subject_id,
                 'period_id'   => $entry->period_id,
-                'status'      => $data['status'],
+                'status'      => $status,
                 'notes'       => $data['notes'] ?? null,
                 'recorded_by' => $user->id,
             ]
@@ -717,6 +729,12 @@ class TimetableController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
         $isHR = $user->hasAnyRole(['Admin', 'Academic', 'HOD', 'HR']);
+
+        // Classes this user coordinates (is class teacher of) — attendance
+        // statuses are only markable for those; other entries are read-only.
+        $coordinatedClassIds = $user->staff
+            ? SchoolClass::where('class_teacher_id', $user->staff->id)->pluck('id')->all()
+            : [];
 
         // For HR: allow viewing any teacher's sessions
         $teacherId = $user->id;
@@ -796,30 +814,101 @@ class TimetableController extends Controller
             'dayEntries', 'weekDates', 'logsMap',
             'weekStart', 'weekEnd', 'weekOffset',
             'activeTab', 'teachers', 'viewingTeacher',
-            'isHR', 'teacherId', 'lessonPlans'
+            'isHR', 'teacherId', 'lessonPlans', 'coordinatedClassIds'
         ));
     }
 
-    // ── Log a session (teacher marks taught / absent) ─────────────────────
+    // ── Class Attendance: coordinator marks each period of their class ────
+    public function classAttendance(Request $request)
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        $isManagement = $user->hasAnyRole(['Admin', 'Academic', 'HOD', 'HR']);
+
+        $coordinatedClasses = $user->staff
+            ? SchoolClass::where('class_teacher_id', $user->staff->id)->orderBy('name')->get()
+            : collect();
+
+        abort_unless($isManagement || $coordinatedClasses->isNotEmpty(), 403,
+            'Only class teachers/coordinators and academic management can mark class attendance.');
+
+        $classes = $isManagement
+            ? SchoolClass::orderBy('name')->get()
+            : $coordinatedClasses;
+
+        $classId = (int) $request->input('class_id', $classes->first()?->id);
+        $class   = $classes->firstWhere('id', $classId);
+        abort_unless($class, 403, 'You do not coordinate this class.');
+
+        $date = $request->filled('date')
+            ? Carbon::parse($request->input('date'))
+            : Carbon::today();
+        $dow = $date->dayOfWeekIso;
+
+        $entries = collect();
+        if ($dow >= 1 && $dow <= 5) {
+            $entries = TimetableEntry::with(['subject', 'teacher', 'period'])
+                ->where('class_id', $class->id)
+                ->where('day_of_week', $dow)
+                ->whereNotNull('period_id')
+                ->whereHas('timetable', fn($q) => $q->where('status', 'published')->where('type', 'class'))
+                ->get()
+                ->sortBy(fn($e) => $e->start_time ?? $e->period?->start_time ?? '99:99')
+                ->values();
+        }
+
+        $logs = TimetableSessionLog::whereIn('timetable_entry_id', $entries->pluck('id'))
+            ->whereDate('session_date', $date->toDateString())
+            ->get()
+            ->keyBy('timetable_entry_id');
+
+        return view('timetables.class-attendance', compact(
+            'classes', 'class', 'date', 'entries', 'logs', 'isManagement'
+        ));
+    }
+
+    /**
+     * Attendance status (attended/late/absent) is the class coordinator's
+     * call — the class teacher of the entry's class, or academic management.
+     * The subject teacher self-reporting their own attendance was weak
+     * control; they keep logging topic coverage and notes only.
+     */
+    private function canMarkAttendance($user, TimetableEntry $entry): bool
+    {
+        if ($user->hasAnyRole(['Admin', 'Academic', 'HOD', 'HR'])) {
+            return true;
+        }
+        $staffId = $user->staff?->id;
+
+        return $staffId && SchoolClass::where('id', $entry->class_id)
+            ->where('class_teacher_id', $staffId)->exists();
+    }
+
+    // ── Log a session (coordinator marks attendance, teacher logs coverage) ──
     public function logSession(Request $request, TimetableEntry $entry)
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        // Only the assigned teacher or admin/HR can log
-        $canLog = $user->hasAnyRole(['Admin', 'Academic', 'HOD', 'HR'])
-            || $user->id === $entry->teacher_id;
+        $canMarkAttendance = $this->canMarkAttendance($user, $entry);
+        $canLog = $canMarkAttendance || $user->id === $entry->teacher_id;
 
         if (!$canLog) abort(403, 'You are not assigned to this session.');
 
         $data = $request->validate([
             'session_date'         => 'required|date',
-            'status'               => 'required|in:attended,late,absent,other',
+            'status'               => ($canMarkAttendance ? 'required' : 'nullable') . '|in:attended,late,absent,other',
             'notes'                => 'nullable|string|max:500',
             'lesson_topic_id'      => 'nullable|integer|exists:lesson_topics,id',
             'covered_subtopic_ids' => 'nullable|array',
             'covered_subtopic_ids.*' => 'integer|exists:lesson_subtopics,id',
         ]);
+
+        // Subject teachers can't set/change the attendance status — whatever
+        // the coordinator recorded (or null = not yet marked) is preserved.
+        $existing = TimetableSessionLog::where('timetable_entry_id', $entry->id)
+            ->where('session_date', $data['session_date'])->first();
+        $status = $canMarkAttendance ? $data['status'] : ($existing->status ?? null);
 
         $log = TimetableSessionLog::updateOrCreate(
             ['timetable_entry_id' => $entry->id, 'session_date' => $data['session_date']],
@@ -828,7 +917,7 @@ class TimetableController extends Controller
                 'class_id'         => $entry->class_id,
                 'subject_id'       => $entry->subject_id,
                 'period_id'        => $entry->period_id,
-                'status'           => $data['status'],
+                'status'           => $status,
                 'notes'            => $data['notes'] ?? null,
                 'recorded_by'      => $user->id,
                 'lesson_topic_id'  => $data['lesson_topic_id'] ?? null,
@@ -847,6 +936,15 @@ class TimetableController extends Controller
             ]);
         }
 
+        $message = $canMarkAttendance && $status
+            ? 'Session marked as ' . ucfirst($status) . '.'
+            : 'Session coverage saved.';
+
+        // Posted from the Class Attendance page — return there
+        if ($request->input('from') === 'class-attendance') {
+            return redirect()->back()->with('success', $message);
+        }
+
         $weekOffset = $request->input('week', 0);
         $teacherId  = $request->input('teacher_id');
 
@@ -856,7 +954,7 @@ class TimetableController extends Controller
         ]));
 
         return redirect($redirect . '#day-' . now()->dayOfWeekIso)
-            ->with('success', 'Session marked as ' . ucfirst($data['status']) . '.');
+            ->with('success', $message);
     }
 
     // ── Helper: published timetables relevant to the logged-in user ───────

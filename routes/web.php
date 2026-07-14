@@ -369,6 +369,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/today-schedule',      [TimetableController::class, 'todaySchedule'])->name('today-schedule');
         Route::get('/subjects-by-classes', [TimetableController::class, 'subjectsByClasses'])->name('subjects-by-classes');
         Route::get('/my-sessions',         [TimetableController::class, 'mySessionsDashboard'])->name('my-sessions');
+        Route::get('/class-attendance',    [TimetableController::class, 'classAttendance'])->name('class-attendance');
         Route::post('/entries/{entry}/log',         [TimetableController::class, 'logSession'])->name('log-session');
         Route::post('/entries/{entry}/log-ajax',    [TimetableController::class, 'logSessionAjax'])->name('log-session-ajax');
         Route::get('/entries/{entry}/topics',       [TimetableController::class, 'topicsForEntry'])->name('entry-topics');

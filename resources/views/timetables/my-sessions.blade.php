@@ -307,25 +307,32 @@ $statusCfg = [
                                                             <i class="far fa-calendar mr-1"></i> Upcoming
                                                         </span>
                                                     @else
+                                                        @php
+                                                            // Attendance is marked by the class coordinator/management,
+                                                            // not self-reported by the subject teacher.
+                                                            $canMark = $isHR || in_array($entry->class_id, $coordinatedClassIds ?? []);
+                                                        @endphp
                                                         {{-- Status buttons / badge --}}
-                                                        @if($log)
+                                                        @if($log && $log->status)
                                                             @php $sc = $statusCfg[$log->status]; @endphp
                                                             <div class="d-flex align-items-center justify-content-center flex-wrap" style="gap:.3rem">
                                                                 <span class="badge badge-{{ $sc['badge'] }} px-3 py-1" style="font-size:.82rem">
                                                                     <i class="fas {{ $sc['icon'] }} mr-1"></i>{{ $sc['label'] }}
                                                                 </span>
+                                                                @if($canMark)
                                                                 <button class="btn btn-xs btn-outline-secondary"
                                                                         data-toggle="collapse"
                                                                         data-target="#form-{{ $entry->id }}-{{ $dow }}">
                                                                     <i class="fas fa-pencil-alt"></i>
                                                                 </button>
+                                                                @endif
                                                             </div>
                                                             @if($log->notes)
                                                                 <small class="text-muted d-block mt-1">
                                                                     <i class="fas fa-comment-alt mr-1"></i>{{ $log->notes }}
                                                                 </small>
                                                             @endif
-                                                        @else
+                                                        @elseif($canMark)
                                                             <div class="d-flex flex-wrap justify-content-center" style="gap:.25rem">
                                                                 @foreach($statusCfg as $statusKey => $scfg)
                                                                     <button type="button"
@@ -338,6 +345,15 @@ $statusCfg = [
                                                                     </button>
                                                                 @endforeach
                                                             </div>
+                                                        @else
+                                                            <span class="badge badge-light text-muted border px-3 py-1">
+                                                                <i class="far fa-hourglass mr-1"></i> Awaiting coordinator
+                                                            </span>
+                                                            @if($log?->notes)
+                                                                <small class="text-muted d-block mt-1">
+                                                                    <i class="fas fa-comment-alt mr-1"></i>{{ $log->notes }}
+                                                                </small>
+                                                            @endif
                                                         @endif
 
                                                         {{-- Collapsible log form --}}

@@ -608,6 +608,12 @@ return [
                         ],
                     ],
                     [
+                        'text' => 'Class Attendance',
+                        'url'  => 'timetables/class-attendance',
+                        'icon' => 'fas fa-clipboard-check',
+                        'can'  => 'is-class-coordinator',
+                    ],
+                    [
                         'text'  => 'Period Settings',
                         'route' => 'timetable-periods.index',
                         'icon'  => 'fas fa-clock',
