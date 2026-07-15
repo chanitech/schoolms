@@ -324,12 +324,16 @@ $(document).ready(function () {
         const examSelect = $('#exam');
         if (session_id) {
             examSelect.html('<option value="">Loading…</option>');
-            $.get("{{ route('marks.exams.by.session') }}", { session_id, exclude_published: 1 })
+            $.get("{{ route('marks.exams.by.session') }}", { session_id })
                 .done(function (exams) {
                     let opts = '<option value="">Select Exam</option>';
                     exams.forEach(e => {
-                        const sel = ({{ $selectedExam ?? 'null' }} == e.id) ? 'selected' : '';
-                        opts += `<option value="${e.id}" ${sel}>${e.name}</option>`;
+                        if (e.status === 'published') {
+                            opts += `<option value="" disabled>${e.name} (Published — locked)</option>`;
+                        } else {
+                            const sel = ({{ $selectedExam ?? 'null' }} == e.id) ? 'selected' : '';
+                            opts += `<option value="${e.id}" ${sel}>${e.name}</option>`;
+                        }
                     });
                     examSelect.html(opts.length > 1 ? opts : '<option value="">No exams for this session</option>');
                     if ($('#exam').val()) loadStudents();

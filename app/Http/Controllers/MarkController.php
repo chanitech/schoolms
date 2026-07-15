@@ -508,8 +508,9 @@ public function getExamsBySession(Request $request)
         $query->where('status', '!=', 'published');
     }
 
+    // status included so entry forms can show published exams as locked
     $exams = $query->orderBy('name', 'asc')
-                   ->get(['id', 'name']);
+                   ->get(['id', 'name', 'status']);
 
     return response()->json($exams);
 }

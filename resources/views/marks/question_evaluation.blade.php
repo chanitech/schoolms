@@ -413,10 +413,14 @@ $(function () {
             return;
         }
         examSel.html('<option value="">Loading…</option>');
-        $.get("{{ route('marks.exams.by.session') }}", { session_id: sessionId, exclude_published: 1 })
+        $.get("{{ route('marks.exams.by.session') }}", { session_id: sessionId })
             .done(function (exams) {
                 let opts = '<option value="">— Select Exam —</option>';
                 exams.forEach(e => {
+                    if (e.status === 'published') {
+                        opts += `<option value="" disabled>${e.name} (Published — locked)</option>`;
+                        return;
+                    }
                     const sel = (current == e.id) ? 'selected' : '';
                     opts += `<option value="${e.id}" ${sel}>${e.name}</option>`;
                 });
