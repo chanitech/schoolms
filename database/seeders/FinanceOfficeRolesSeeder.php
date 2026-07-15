@@ -57,10 +57,15 @@ class FinanceOfficeRolesSeeder extends Seeder
         $treasurer->givePermissionTo([...$permissions, ...$legacyApprovalPermissions]);
 
         $chiefAccountant = Role::firstOrCreate(['name' => 'chief-accountant']);
-        $chiefAccountant->givePermissionTo(['view payments', 'view fee reports']);
+        $chiefAccountant->givePermissionTo([
+            'view payments', 'view fee reports',
+            // Senior accounting oversight
+            'view finance dashboard', 'verify payments', 'flag payments',
+            'manage tasks', 'submit task justification',
+        ]);
 
         $accountant = Role::firstOrCreate(['name' => 'accountant']);
-        $accountant->givePermissionTo(['view payments', 'view fee reports']);
+        $accountant->givePermissionTo(['view payments', 'view fee reports', 'manage tasks', 'submit task justification']);
 
         $classAccountant = Role::firstOrCreate(['name' => 'class_accountant']);
         $classAccountant->givePermissionTo(['view payments', 'verify payments', 'flag payments']);

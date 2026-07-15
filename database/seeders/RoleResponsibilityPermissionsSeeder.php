@@ -106,6 +106,10 @@ class RoleResponsibilityPermissionsSeeder extends Seeder
             'create bills', 'create student bills',
             'view payments', 'record payments',
             'approve loans', 'view pending approvals',
+            // Senior accounting oversight — see 2026_07_15 grant migration
+            'view finance dashboard', 'verify payments', 'flag payments',
+            'view fees', 'view pocket money', 'view students', 'view staff',
+            'manage tasks', 'submit task justification',
             'view profile', 'edit profile',
         ],
 
@@ -114,6 +118,7 @@ class RoleResponsibilityPermissionsSeeder extends Seeder
             'create bills', 'create student bills',
             'view payments', 'record payments',
             'view pending approvals',
+            'manage tasks', 'submit task justification',
             'view profile', 'edit profile',
         ],
 
