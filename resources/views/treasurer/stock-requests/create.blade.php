@@ -27,7 +27,7 @@
                     <select name="inventory_item_id" id="inventory_item_id" class="form-control">
                         <option value="">— None / not yet in inventory —</option>
                         @foreach($inventoryItems as $item)
-                            <option value="{{ $item->id }}">
+                            <option value="{{ $item->id }}" data-name="{{ $item->name }}">
                                 {{ $item->name }} ({{ $item->category->name ?? 'Uncategorized' }}) — in stock: {{ $item->quantity_in_stock }}{{ $item->isLowStock() ? ' ⚠️ LOW' : '' }}
                             </option>
                         @endforeach
@@ -36,7 +36,10 @@
 
                 <div class="form-group">
                     <label for="item">Item <span class="text-danger">*</span></label>
-                    <input type="text" name="item" id="item" class="form-control @error('item') is-invalid @enderror" value="{{ old('item') }}" required>
+                    <input type="text" name="item" id="item" list="common-items" autocomplete="off"
+                           placeholder="Start typing — pick a suggestion or write your own…"
+                           class="form-control @error('item') is-invalid @enderror" value="{{ old('item') }}" required>
+                    @include('partials.common-items-datalist')
                     @error('item') <span class="invalid-feedback">{{ $message }}</span> @enderror
                 </div>
 
@@ -58,4 +61,15 @@
         </div>
     </div>
 </div>
+@stop
+
+@section('js')
+{{-- Auto-fill the item name when a linked inventory item is selected --}}
+<script>
+document.getElementById('inventory_item_id')?.addEventListener('change', function () {
+    const name = this.selectedOptions[0]?.dataset.name;
+    const itemInput = document.getElementById('item');
+    if (name && itemInput && !itemInput.value.trim()) itemInput.value = name;
+});
+</script>
 @stop
