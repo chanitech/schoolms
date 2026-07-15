@@ -296,6 +296,73 @@
 </div>
 
 {{-- ══════════════════════════════════════════════════════════════════════
+     ANALYTICS — permission-gated smart charts
+══════════════════════════════════════════════════════════════════════ --}}
+@if($canViewPayments || $canViewStudents || $canViewClasses || $canViewStaff)
+<div class="row">
+    @if($canViewPayments && array_sum($feeTrend['values']))
+    <div class="col-lg-6 mb-3">
+        <div class="card shadow-sm border-0 h-100" style="border-radius:12px;overflow:hidden">
+            <div class="card-header" style="background:linear-gradient(135deg,#1b5e20,#2e7d32);color:#fff">
+                <i class="fas fa-chart-line mr-2"></i><strong>Fee Collection — Last 6 Months</strong>
+            </div>
+            <div class="card-body"><canvas id="feeTrendChart" style="max-height:240px"></canvas></div>
+        </div>
+    </div>
+    @endif
+
+    @if($canViewClasses && count($examPerformance['labels']))
+    <div class="col-lg-6 mb-3">
+        <div class="card shadow-sm border-0 h-100" style="border-radius:12px;overflow:hidden">
+            <div class="card-header" style="background:linear-gradient(135deg,#4527a0,#5e35b1);color:#fff">
+                <i class="fas fa-graduation-cap mr-2"></i><strong>Average Mark per Class — {{ $examPerformance['exam'] }}</strong>
+            </div>
+            <div class="card-body"><canvas id="examPerformanceChart" style="max-height:240px"></canvas></div>
+        </div>
+    </div>
+    @endif
+
+    @if($canViewStudents && count($classDistribution['labels']))
+    <div class="col-lg-5 mb-3">
+        <div class="card shadow-sm border-0 h-100" style="border-radius:12px;overflow:hidden">
+            <div class="card-header" style="background:linear-gradient(135deg,#0d47a1,#1976d2);color:#fff">
+                <i class="fas fa-users mr-2"></i><strong>Students per Class</strong>
+            </div>
+            <div class="card-body"><canvas id="classDistChart" style="max-height:230px"></canvas></div>
+        </div>
+    </div>
+    @endif
+
+    @if($canViewStudents && count($genderSplit['labels']))
+    <div class="col-lg-3 mb-3">
+        <div class="card shadow-sm border-0 h-100" style="border-radius:12px;overflow:hidden">
+            <div class="card-header" style="background:linear-gradient(135deg,#00695c,#00897b);color:#fff">
+                <i class="fas fa-venus-mars mr-2"></i><strong>Gender</strong>
+            </div>
+            <div class="card-body"><canvas id="genderChart" style="max-height:230px"></canvas></div>
+        </div>
+    </div>
+    @endif
+
+    @if($canViewStaff && array_sum($sessionWeek))
+    <div class="col-lg-4 mb-3">
+        <div class="card shadow-sm border-0 h-100" style="border-radius:12px;overflow:hidden">
+            <div class="card-header" style="background:linear-gradient(135deg,#e65100,#ef6c00);color:#fff">
+                <i class="fas fa-chalkboard-teacher mr-2"></i><strong>Teacher Sessions This Week</strong>
+            </div>
+            <div class="card-body">
+                <canvas id="sessionWeekChart" style="max-height:200px"></canvas>
+                <div class="text-center mt-2">
+                    <a href="{{ route('timetables.class-attendance.report') }}" class="btn btn-xs btn-outline-secondary">Full report</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+</div>
+@endif
+
+{{-- ══════════════════════════════════════════════════════════════════════
      EVENTS + RECENT STUDENTS + CALENDAR
 ══════════════════════════════════════════════════════════════════════ --}}
 <div class="row">
@@ -575,6 +642,87 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+
+    // ── Analytics charts ────────────────────────────────────────────
+    const mkChart = (id, cfg) => {
+        const el = document.getElementById(id);
+        if (el) new Chart(el, cfg);
+    };
+
+    mkChart('feeTrendChart', {
+        type: 'line',
+        data: {
+            labels: @json($feeTrend['labels'] ?? []),
+            datasets: [{
+                label: 'TZS collected',
+                data: @json($feeTrend['values'] ?? []),
+                borderColor: '#2e7d32',
+                backgroundColor: 'rgba(46,125,50,.12)',
+                fill: true, tension: .35, pointRadius: 4,
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { ticks: { callback: v => v >= 1000000 ? (v/1000000)+'M' : (v >= 1000 ? (v/1000)+'K' : v) } } }
+        }
+    });
+
+    mkChart('examPerformanceChart', {
+        type: 'bar',
+        data: {
+            labels: @json($examPerformance['labels'] ?? []),
+            datasets: [{
+                label: 'Average mark',
+                data: @json($examPerformance['values'] ?? []),
+                backgroundColor: '#5e35b1', borderRadius: 6,
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { min: 0, max: 100 } }
+        }
+    });
+
+    mkChart('classDistChart', {
+        type: 'bar',
+        data: {
+            labels: @json($classDistribution['labels'] ?? []),
+            datasets: [{
+                label: 'Students',
+                data: @json($classDistribution['values'] ?? []),
+                backgroundColor: '#1976d2', borderRadius: 6,
+            }]
+        },
+        options: { responsive: true, plugins: { legend: { display: false } } }
+    });
+
+    mkChart('genderChart', {
+        type: 'doughnut',
+        data: {
+            labels: @json($genderSplit['labels'] ?? []),
+            datasets: [{
+                data: @json($genderSplit['values'] ?? []),
+                backgroundColor: ['#1976d2', '#e91e63', '#6c757d'],
+                borderWidth: 0,
+            }]
+        },
+        options: { responsive: true, cutout: '60%', plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } } }
+    });
+
+    mkChart('sessionWeekChart', {
+        type: 'doughnut',
+        data: {
+            labels: ['Attended', 'Late', 'Absent', 'Not marked'],
+            datasets: [{
+                data: @json(array_values($sessionWeek)),
+                backgroundColor: ['#2e7d32', '#f9a825', '#c62828', '#9e9e9e'],
+                borderWidth: 0,
+            }]
+        },
+        options: { responsive: true, cutout: '60%', plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } } }
+    });
 
     // ── FullCalendar ────────────────────────────────────────────────
     const calendarEl = document.getElementById('dashboardCalendar');

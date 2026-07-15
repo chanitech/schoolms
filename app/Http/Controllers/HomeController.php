@@ -36,8 +36,34 @@ class HomeController extends Controller
             return redirect()->route('guardian.dashboard');
         }
 
-        // Staff-only users get a personal performance dashboard
-        if ($user->hasAnyRole(['Teacher', 'HOD']) && !$user->hasAnyRole(['Admin', 'Academic', 'HR'])) {
+        $isManagement = $user->hasAnyRole(['Admin', 'Academic', 'HR']);
+
+        // Finance Office members land on their finance dashboard (own tasks,
+        // job description, role-matched quick actions), not the school-wide one.
+        if (!$isManagement && $user->hasAnyRole([
+            'treasurer', 'chief-accountant', 'accountant', 'class_accountant',
+            'cashier', 'storekeeper', 'procurement_officer',
+        ])) {
+            return redirect()->route('treasurer.my-dashboard');
+        }
+
+        // Dorm Masters get the dormitory dashboard
+        if (!$isManagement && $user->hasRole('Dorm Master') && !$user->hasAnyRole(['Teacher', 'HOD'])) {
+            return redirect()->route('dormitories.dashboard');
+        }
+
+        // HODs with a department get their department analytics dashboard;
+        // without one they fall through to the personal staff dashboard
+        // (hod.dashboard would bounce them straight back here otherwise).
+        if (!$isManagement && $user->hasRole('HOD')) {
+            $hodStaff = Staff::where('user_id', $user->id)->first();
+            if ($hodStaff?->department_id) {
+                return redirect()->route('hod.dashboard');
+            }
+        }
+
+        // Teachers and other staff get a personal performance dashboard
+        if (!$isManagement && $user->hasAnyRole(['Teacher', 'HOD', 'Staff'])) {
             return $this->staffDashboard($user, $today, $month);
         }
         $lastMonth = Carbon::now()->subMonth()->startOfMonth();
@@ -135,6 +161,66 @@ class HomeController extends Controller
         // ── Recent students ──────────────────────────────────────────────────
         $recentStudents = $canViewStudents ? Student::latest()->take(5)->get() : collect();
 
+        // ── Analytics charts (each behind its permission flag) ──────────────
+
+        // Fee collection, last 6 months (one grouped query)
+        $feeTrend = ['labels' => [], 'values' => []];
+        if ($canViewPayments) {
+            $rows = Payment::whereDate('payment_date', '>=', now()->subMonths(5)->startOfMonth())
+                ->selectRaw("DATE_FORMAT(payment_date, '%Y-%m') as ym, SUM(amount) as total")
+                ->groupBy('ym')->pluck('total', 'ym');
+            for ($i = 5; $i >= 0; $i--) {
+                $m = now()->subMonths($i);
+                $feeTrend['labels'][] = $m->format('M Y');
+                $feeTrend['values'][] = (float) ($rows[$m->format('Y-m')] ?? 0);
+            }
+        }
+
+        // Students per class + gender split
+        $classDistribution = ['labels' => [], 'values' => []];
+        $genderSplit = ['labels' => [], 'values' => []];
+        if ($canViewStudents) {
+            SchoolClass::withCount('students')->orderBy('name')->get()
+                ->each(function ($c) use (&$classDistribution) {
+                    $classDistribution['labels'][] = $c->name;
+                    $classDistribution['values'][] = $c->students_count;
+                });
+            Student::selectRaw('gender, COUNT(*) as cnt')->groupBy('gender')->pluck('cnt', 'gender')
+                ->each(function ($cnt, $gender) use (&$genderSplit) {
+                    $genderSplit['labels'][] = ucfirst($gender ?: 'Unknown');
+                    $genderSplit['values'][] = $cnt;
+                });
+        }
+
+        // Latest published exam: average mark per class (one grouped query)
+        $examPerformance = ['exam' => null, 'labels' => [], 'values' => []];
+        if ($canViewClasses) {
+            $latestExam = \App\Models\Exam::where('status', 'published')->latest('published_at')->first();
+            if ($latestExam) {
+                $examPerformance['exam'] = $latestExam->name;
+                \App\Models\Mark::where('exam_id', $latestExam->id)
+                    ->join('school_classes', 'school_classes.id', '=', 'marks.class_id')
+                    ->selectRaw('school_classes.name as class_name, ROUND(AVG(marks.mark), 1) as avg_mark')
+                    ->groupBy('school_classes.name')->orderBy('school_classes.name')
+                    ->get()->each(function ($r) use (&$examPerformance) {
+                        $examPerformance['labels'][] = $r->class_name;
+                        $examPerformance['values'][] = (float) $r->avg_mark;
+                    });
+            }
+        }
+
+        // Teacher session attendance this week (coordinator-marked logs)
+        $sessionWeek = ['attended' => 0, 'late' => 0, 'absent' => 0, 'unmarked' => 0];
+        if ($canViewStaff) {
+            TimetableSessionLog::whereDate('session_date', '>=', now()->startOfWeek(Carbon::MONDAY))
+                ->selectRaw("COALESCE(status, 'unmarked') as s, COUNT(*) as cnt")
+                ->groupBy('s')->pluck('cnt', 's')
+                ->each(function ($cnt, $s) use (&$sessionWeek) {
+                    if ($s === 'other') return;
+                    $sessionWeek[$s] = $cnt;
+                });
+        }
+
         return view('home', compact(
             'canViewStudents', 'canViewStaff', 'canViewClasses', 'canViewPayments',
             'canViewTimetables', 'canViewLeaves', 'canViewDorms', 'canViewLibrary', 'canViewEvents',
@@ -147,6 +233,7 @@ class HomeController extends Controller
             'eventStats', 'upcomingEvents', 'calendarEvents',
             'libraryStats',
             'recentStudents',
+            'feeTrend', 'classDistribution', 'genderSplit', 'examPerformance', 'sessionWeek',
         ));
     }
 

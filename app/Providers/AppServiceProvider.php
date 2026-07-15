@@ -52,7 +52,7 @@ class AppServiceProvider extends ServiceProvider
         // teacher attendance (attended/late/absent) on session logs and who
         // sees the Class Attendance page.
         Gate::define('is-class-coordinator', function ($user) {
-            if ($user->hasAnyRole(['Admin', 'Academic', 'HOD', 'HR'])) {
+            if ($user->hasAnyRole(['Admin', 'Academic', 'HOD', 'HR', 'Principal'])) {
                 return true;
             }
             $staffId = $user->staff?->id;

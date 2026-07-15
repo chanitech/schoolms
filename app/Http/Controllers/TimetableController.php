@@ -569,7 +569,7 @@ class TimetableController extends Controller
 
         // Status marking from the dashboard is coordinator/management-only
         // now (subject teachers log topic coverage from My Sessions instead).
-        $isManagement = $user->hasAnyRole(['Admin', 'Academic', 'HOD', 'HR']);
+        $isManagement = $user->hasAnyRole(['Admin', 'Academic', 'HOD', 'HR', 'Principal']);
         $coordinatedIds = $user->staff
             ? SchoolClass::where('class_teacher_id', $user->staff->id)->pluck('id')->all()
             : [];
@@ -824,7 +824,7 @@ class TimetableController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
-        $isManagement = $user->hasAnyRole(['Admin', 'Academic', 'HOD', 'HR']);
+        $isManagement = $user->hasAnyRole(['Admin', 'Academic', 'HOD', 'HR', 'Principal']);
 
         $coordinatedClasses = $user->staff
             ? SchoolClass::where('class_teacher_id', $user->staff->id)->orderBy('name')->get()
@@ -877,7 +877,7 @@ class TimetableController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
-        $isManagement = $user->hasAnyRole(['Admin', 'Academic', 'HOD', 'HR']);
+        $isManagement = $user->hasAnyRole(['Admin', 'Academic', 'HOD', 'HR', 'Principal']);
 
         $coordinatedClasses = $user->staff
             ? SchoolClass::where('class_teacher_id', $user->staff->id)->orderBy('name')->get()
@@ -990,7 +990,7 @@ class TimetableController extends Controller
      */
     private function canMarkAttendance($user, TimetableEntry $entry): bool
     {
-        if ($user->hasAnyRole(['Admin', 'Academic', 'HOD', 'HR'])) {
+        if ($user->hasAnyRole(['Admin', 'Academic', 'HOD', 'HR', 'Principal'])) {
             return true;
         }
         $staffId = $user->staff?->id;
