@@ -104,6 +104,7 @@
         </div>
     </div>
 </div>
+@include('partials.print-powered-by')
 @stop
 
 @section('css')

@@ -120,6 +120,7 @@
                     <div class="text-center mt-3">
                         <small>Thank you!</small>
                     </div>
+                    @include('partials.print-powered-by')
                 </div>
             </div>
         </div>

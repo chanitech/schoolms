@@ -30,5 +30,6 @@
             @endforeach
         </tbody>
     </table>
+@include('partials.pdf-powered-by')
 </body>
 </html>

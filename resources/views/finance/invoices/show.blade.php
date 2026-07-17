@@ -160,6 +160,7 @@
         <div class="text-center mt-3">
             <small>Thank you for your payment!</small>
         </div>
+        @include('partials.print-powered-by')
     </div>
 </div>
 @stop

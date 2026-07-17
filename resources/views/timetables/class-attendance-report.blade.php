@@ -193,6 +193,8 @@
             </form>
         </div>
     </div>
+
+    @include('partials.print-powered-by')
 </div>
 @stop
 

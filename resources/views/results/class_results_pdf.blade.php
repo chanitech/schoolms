@@ -605,7 +605,7 @@
     &nbsp;|&nbsp; OFFICIAL RESULTS REPORT
     &nbsp;|&nbsp; EXAM: {{ strtoupper($exam->name ?? '') }}
     &nbsp;|&nbsp; GENERATED: {{ \Carbon\Carbon::now()->format('d F Y, H:i') }}
-    &nbsp;|&nbsp; AUTHORISED SCHOOL DOCUMENT — DO NOT ALTER
+    &nbsp;|&nbsp; AUTHORISED SCHOOL DOCUMENT — DO NOT ALTER<br>Powered by ShulePRO — a Chani Technologies product · +255 713 209 535 · www.chanitech.co.tz · info@chanitech.co.tz
 </div>
 
 </body>
