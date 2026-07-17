@@ -89,7 +89,7 @@
         </div>
 
         <div class="card-footer">
-            {{ $enrollments->links('pagination::bootstrap-5') }}
+            {{ $enrollments->links() }}
         </div>
     </div>
 @stop

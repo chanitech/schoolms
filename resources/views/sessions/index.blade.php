@@ -72,7 +72,7 @@
         </div>
 
         <div class="card-footer">
-            {{ $sessions->links('pagination::bootstrap-5') }}
+            {{ $sessions->links() }}
         </div>
     </div>
 @stop

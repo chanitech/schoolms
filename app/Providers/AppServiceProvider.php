@@ -13,6 +13,11 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Laravel's default pagination template targets Tailwind; this app
+        // is AdminLTE/Bootstrap 4 — without this, the prev/next arrows
+        // render as giant unstyled SVGs under every table.
+        \Illuminate\Pagination\Paginator::useBootstrapFour();
+
         // Gate for super-admin menu visibility (used by AdminLTE `can` key)
         Gate::define('is-super-admin', fn ($user) => $user->isSuperAdmin());
 

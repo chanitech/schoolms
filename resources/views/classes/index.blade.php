@@ -68,7 +68,7 @@
     </div>
 
     <div class="card-footer">
-        {{ $classes->links('pagination::bootstrap-5') }}
+        {{ $classes->links() }}
     </div>
 </div>
 @stop

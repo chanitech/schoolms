@@ -100,7 +100,7 @@
     </div>
 
     <div class="card-footer">
-        {{ $staffs->links('pagination::bootstrap-5') }}
+        {{ $staffs->links() }}
     </div>
 </div>
 @stop

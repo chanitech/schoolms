@@ -149,7 +149,7 @@
 
                 {{-- Pagination --}}
                 <div class="mt-3 d-flex justify-content-center">
-                    {{ $attendances->links('pagination::bootstrap-5') }}
+                    {{ $attendances->links() }}
                 </div>
             @else
                 <p class="text-center text-muted">No attendance records found.</p>
