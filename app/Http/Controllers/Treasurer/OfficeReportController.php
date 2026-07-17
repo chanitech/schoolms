@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Treasurer;
 use App\Http\Controllers\Controller;
 use App\Models\Budget;
 use App\Models\ExpenseLog;
+use App\Models\InventoryCategory;
+use App\Models\InventoryItem;
+use App\Models\InventoryTransaction;
 use App\Models\Invoice;
 use App\Models\Loan;
 use App\Models\Payment;
@@ -22,8 +25,18 @@ class OfficeReportController extends Controller
         $this->middleware('permission:view payments')->only('payments');
         $this->middleware('permission:view invoices')->only('invoices');
         $this->middleware('permission:view budgets')->only('budgets');
-        // loans / procurement / stock / expenses are gated by the treasurer
-        // route group's role middleware (see routes/web.php)
+        $this->middleware('permission:manage settings|manage stock|view inventory')
+            ->only(['inventoryItems', 'inventoryTransactions']);
+        // loans / procurement / stock / expenses are gated by the route
+        // group's is-finance-office gate (see routes/web.php)
+    }
+
+    /** Reports Center — filter forms for every signed report. */
+    public function index()
+    {
+        return view('treasurer.reports.index', [
+            'categories' => InventoryCategory::orderBy('name')->get(['id', 'name']),
+        ]);
     }
 
     /**
@@ -262,5 +275,62 @@ class OfficeReportController extends Controller
              'Decided By (Head Master)', 'Decision Note'],
             $rows,
             $budgets->count() . ' budgets / ' . $rows->count() . ' items, ' . $this->rangeLabel($from, $to));
+    }
+
+    public function inventoryItems(Request $request)
+    {
+        $query = InventoryItem::with('category')->orderBy('name');
+        if ($request->filled('category_id')) $query->where('category_id', $request->category_id);
+        if ($request->input('stock') === 'low') {
+            $query->whereColumn('quantity_in_stock', '<=', 'minimum_stock')->where('minimum_stock', '>', 0);
+        } elseif ($request->input('stock') === 'out') {
+            $query->where('quantity_in_stock', 0);
+        }
+        $items = $query->get();
+
+        $rows = $items->map(fn($i) => [
+            $i->name . ($i->code ? ' (' . $i->code . ')' : ''),
+            $i->category->name ?? '—',
+            $i->unit,
+            number_format($i->quantity_in_stock),
+            number_format($i->minimum_stock),
+            number_format($i->unit_cost, 2),
+            number_format($i->quantity_in_stock * $i->unit_cost),
+            ucfirst($i->condition ?? '—'),
+            $i->location ?: '—',
+        ]);
+
+        return $this->export($request, 'inventory_items', 'Stock Items Report',
+            ['Item', 'Category', 'Unit', 'In Stock', 'Min Level', 'Unit Cost (TZS)', 'Stock Value (TZS)', 'Condition', 'Location'],
+            $rows,
+            $items->count() . ' items, total stock value ' . number_format($items->sum(fn($i) => $i->quantity_in_stock * $i->unit_cost)) . ' TZS'
+                . ($request->input('stock') ? ', filter: ' . $request->input('stock') . ' stock' : ''));
+    }
+
+    public function inventoryTransactions(Request $request)
+    {
+        $query = InventoryTransaction::with(['item.category', 'user'])
+            ->orderByDesc('transaction_date')->orderByDesc('id');
+        if ($request->filled('type')) $query->where('type', $request->type);
+        [$from, $to] = $this->dateRange($request, $query, 'transaction_date');
+        $txns = $query->get();
+
+        $rows = $txns->map(fn($t) => [
+            $t->transaction_date->format('d.m.Y'),
+            $t->item->name ?? '—',
+            ucfirst($t->type),
+            number_format($t->quantity),
+            number_format($t->balance_after),
+            $t->issued_to ?: '—',
+            $t->reference_no ?: '—',
+            \Illuminate\Support\Str::limit($t->remarks ?? '', 50) ?: '—',
+            ($t->user->name ?? '—'),
+        ]);
+
+        return $this->export($request, 'inventory_transactions', 'Stock Transactions Report',
+            ['Date', 'Item', 'Type', 'Qty', 'Balance After', 'Issued To', 'Reference', 'Remarks', 'Recorded By'],
+            $rows,
+            $txns->count() . ' transactions, ' . $this->rangeLabel($from, $to)
+                . ($request->filled('type') ? ', type: ' . $request->type : ''));
     }
 }

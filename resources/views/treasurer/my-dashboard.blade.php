@@ -185,7 +185,15 @@
             @can('view budgets')
                 <a href="{{ route('treasurer.reports.budgets') }}" class="btn btn-sm btn-outline-dark mb-2 mr-1"><i class="fas fa-file-signature"></i> Budgets</a>
             @endcan
-            <div class="text-muted small mt-1">Tip: add <code>?status=…&amp;from=YYYY-MM-DD&amp;to=YYYY-MM-DD</code> to any report link to filter it — the filters are recorded on the signed document.</div>
+            @can('manage stock')
+                <a href="{{ route('treasurer.reports.inventory-items') }}" class="btn btn-sm btn-outline-dark mb-2 mr-1"><i class="fas fa-warehouse"></i> Stock Items</a>
+                <a href="{{ route('treasurer.reports.inventory-transactions') }}" class="btn btn-sm btn-outline-dark mb-2 mr-1"><i class="fas fa-exchange-alt"></i> Stock Ledger</a>
+            @endcan
+            <div class="mt-1">
+                <a href="{{ route('treasurer.reports.index') }}" class="btn btn-sm btn-dark">
+                    <i class="fas fa-sliders-h mr-1"></i> Open Reports Center (with filters)
+                </a>
+            </div>
         </div>
     </div>
 

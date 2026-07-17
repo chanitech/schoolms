@@ -175,6 +175,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Treasurer Office signed reports — exportable PDFs with approval
     // trails and a digital-signature verification code
     Route::middleware('can:is-finance-office')->prefix('treasurer/reports')->name('treasurer.reports.')->group(function () {
+        Route::get('/',              [\App\Http\Controllers\Treasurer\OfficeReportController::class, 'index'])->name('index');
+        Route::get('inventory-items',        [\App\Http\Controllers\Treasurer\OfficeReportController::class, 'inventoryItems'])->name('inventory-items');
+        Route::get('inventory-transactions', [\App\Http\Controllers\Treasurer\OfficeReportController::class, 'inventoryTransactions'])->name('inventory-transactions');
         Route::get('loans',          [\App\Http\Controllers\Treasurer\OfficeReportController::class, 'loans'])->name('loans');
         Route::get('procurement',    [\App\Http\Controllers\Treasurer\OfficeReportController::class, 'procurement'])->name('procurement');
         Route::get('stock-requests', [\App\Http\Controllers\Treasurer\OfficeReportController::class, 'stockRequests'])->name('stock-requests');

@@ -67,7 +67,8 @@
     </div>
 
     <div class="footer">
-        {{ $title }} · {{ $signature->code }} · Powered by ShulePRO — unauthorised alteration invalidates this document
+        {{ $title }} · {{ $signature->code }} · unauthorised alteration invalidates this document<br>
+        Powered by <strong>ShulePRO</strong> — a Chani Technologies product · +255 713 209 535 · www.chanitech.co.tz · info@chanitech.co.tz
     </div>
 </body>
 </html>
