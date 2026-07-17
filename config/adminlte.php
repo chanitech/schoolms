@@ -742,6 +742,14 @@ return [
     'icon' => 'fas fa-university',
     'submenu' => [
 
+        // ========== SIGNED REPORTS ==========
+        [
+            'text'  => 'Reports Center',
+            'route' => 'treasurer.reports.index',
+            'icon'  => 'fas fa-file-signature',
+            'can'   => 'is-finance-office',
+        ],
+
         // ========== LOAN MANAGEMENT ==========
         [
             'text' => 'Loan Management',
