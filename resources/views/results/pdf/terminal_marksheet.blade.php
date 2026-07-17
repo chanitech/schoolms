@@ -48,7 +48,7 @@
 
     {{-- Watermark --}}
     <div class="watermark">
-        <img src="{{ public_path($school->logo ?? 'vendor/adminlte/dist/img/shulepro-icon.png') }}" alt="School Logo">
+        @if(!empty($school?->logo) && file_exists(storage_path('app/public/' . $school->logo)))<img src="{{ storage_path('app/public/' . $school->logo) }}" alt="School Logo">@endif
     </div>
 
     {{-- Header --}}
@@ -154,7 +154,7 @@
         </tr>
         <tr>
             <td colspan="2" class="stamp">
-                <img src="{{ public_path($school->logo ?? 'vendor/adminlte/dist/img/shulepro-icon.png') }}" alt="School Stamp">
+                @if(!empty($school?->logo) && file_exists(storage_path('app/public/' . $school->logo)))<img src="{{ storage_path('app/public/' . $school->logo) }}" alt="School Stamp">@endif
             </td>
         </tr>
     </table>

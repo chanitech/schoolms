@@ -22,13 +22,9 @@
             {{-- Receipt Card --}}
             <div class="card shadow-lg" style="position: relative;">
 
-                {{-- Watermark --}}
-                @php
-                    $wmPath = public_path('vendor/adminlte/dist/img/MEMA.png');
-                    $wmB64  = file_exists($wmPath) ? base64_encode(file_get_contents($wmPath)) : null;
-                @endphp
-                @if($wmB64)
-                    <img src="data:image/png;base64,{{ $wmB64 }}"
+                {{-- Watermark — the school's own logo (from School Info settings) --}}
+                @if(!empty($school->logo))
+                    <img src="{{ asset('storage/' . $school->logo) }}"
                          style="position:absolute; top:30%; left:25%; width:50%; opacity:0.04; z-index:0;"
                          alt="Watermark">
                 @endif
@@ -37,23 +33,15 @@
                     {{-- Header --}}
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <div class="d-flex align-items-center">
-                            @php
-                                $logoLPath = $school->logo_left ?? null;
-                                $logoL = $logoLPath && file_exists(public_path($logoLPath))
-                                    ? 'data:image/png;base64,' . base64_encode(file_get_contents(public_path($logoLPath)))
-                                    : asset('vendor/adminlte/dist/img/shulepro-icon.png');
-                            @endphp
-                            <img src="{{ $logoL }}" alt="School Logo" style="height:80px; margin-right:15px;">
+                            @if(!empty($school->logo))
+                            <img src="{{ asset('storage/' . $school->logo) }}" alt="School Logo" style="height:80px; margin-right:15px;">
+                            @endif
                             <div>
                                 <h3 class="mb-0">{{ $school->name ?? config('app.name', 'School Name') }}</h3>
                                 @if(!empty($school->motto))
                                     <p class="mb-0 font-italic">{{ $school->motto }}</p>
                                 @endif
-                                <small>
-                                    {{ $school->address ?? '123 Main St, City' }} |
-                                    {{ $school->phone ?? '+255 000 000 000' }} |
-                                    {{ $school->email ?? 'info@school.ac.tz' }}
-                                </small>
+                                <small>{{ collect([$school->address ?? null, $school->phone ?? null, $school->email ?? null])->filter()->implode(' | ') }}</small>
                             </div>
                         </div>
                         <div class="text-right">

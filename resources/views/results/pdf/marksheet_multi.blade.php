@@ -180,26 +180,27 @@
 </head>
 <body>
 
-{{-- Watermark --}}
+{{-- Watermark + logos — always the CURRENT school's own branding (from
+     School Info settings), never another school's. No hardcoded fallbacks. --}}
 @php
-    $wmPath    = public_path('vendor/adminlte/dist/img/MEMA.png');
-    $wmB64     = file_exists($wmPath) ? base64_encode(file_get_contents($wmPath)) : null;
-
-    // Dynamic left logo from school info, fallback to MEMA.png
-    $logoLPath = $school->logo_left ?? null;
-    if ($logoLPath && file_exists(public_path($logoLPath))) {
-        $logoL = 'data:image/png;base64,' . base64_encode(file_get_contents(public_path($logoLPath)));
-    } else {
-        $logoL = file_exists(public_path('vendor/adminlte/dist/img/MEMA.png'))
-            ? 'data:image/png;base64,' . base64_encode(file_get_contents(public_path('vendor/adminlte/dist/img/MEMA.png')))
-            : null;
+    $schoolLogoB64 = null;
+    if (!empty($school?->logo)) {
+        $logoPath = storage_path('app/public/' . $school->logo);
+        if (file_exists($logoPath)) {
+            $ext  = strtolower(pathinfo($logoPath, PATHINFO_EXTENSION));
+            $mime = in_array($ext, ['jpg', 'jpeg']) ? 'image/jpeg' : 'image/' . $ext;
+            $schoolLogoB64 = base64_encode(file_get_contents($logoPath));
+            $logoL = "data:{$mime};base64,{$schoolLogoB64}";
+        }
     }
+    $logoL ??= null;
+
     $logoRPath = public_path('vendor/adminlte/dist/img/shulepro-icon.png');
     $logoR     = file_exists($logoRPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoRPath)) : null;
 @endphp
-@if($wmB64)
+@if($logoL)
 <div class="watermark">
-    <img src="data:image/png;base64,{{ $wmB64 }}" alt="Watermark">
+    <img src="{{ $logoL }}" alt="Watermark">
 </div>
 @endif
 
@@ -235,14 +236,9 @@
     @if($logoR)<img src="{{ $logoR }}" class="logo-right" alt="Logo">@endif
 
     <div class="school-details">
-        <h1>{{ $school->name ?? 'MEMA ASEP Learning Centre' }}</h1>
-        <h2>{{ $school->motto ?? 'Motto: Maadili, Elimu, Maendeleo, Amani' }}</h2>
-        <div>
-            {{ $school->address ?? 'Kisarawe, Pwani' }} |
-            {{ $school->phone ?? '+255' }} |
-            {{ $school->email ?? 'info@mema.or.tz' }} |
-            {{ $school->website ?? 'www.mema.ac.tz' }}
-        </div>
+        <h1>{{ $school->name ?? config('app.name') }}</h1>
+        @if($school?->motto)<h2>{{ $school->motto }}</h2>@endif
+        <div>{{ collect([$school->address ?? null, $school->phone ?? null, $school->email ?? null, $school->website ?? null])->filter()->implode(' | ') }}</div>
     </div>
 
     <h3 class="class-session">{{ $class->name ?? '' }} - {{ $session->name ?? '' }} Results Report</h3>

@@ -11,7 +11,7 @@
     </style>
 </head>
 <body>
-    <h3>Attendance Report</h3>
+    @include('partials.pdf-letterhead', ['documentTitle' => 'STAFF ATTENDANCE REPORT'])
     <table>
         <thead>
             <tr>

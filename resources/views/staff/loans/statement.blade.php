@@ -5,6 +5,7 @@
 @section('content_header')
     <div class="d-flex justify-content-between align-items-center">
         <h1 class="m-0 text-dark">Loan Repayment Statement</h1>
+        {{-- printed copies carry the school letterhead --}}
         <div>
             <a href="{{ route('staff.loans.show', $loan) }}" class="btn btn-info">
                 <i class="fas fa-arrow-left"></i> Loan Details

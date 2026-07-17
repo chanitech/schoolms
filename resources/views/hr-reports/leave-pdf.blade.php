@@ -10,7 +10,7 @@
     </style>
 </head>
 <body>
-    <h2>Leave Report</h2>
+    @include('partials.pdf-letterhead', ['documentTitle' => 'LEAVE REPORT'])
     <table>
         <thead>
             <tr>

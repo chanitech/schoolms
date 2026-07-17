@@ -14,21 +14,26 @@
 @section('content')
 <div class="card shadow-lg p-3" style="position: relative;">
 
-    {{-- Watermark --}}
-    <img src="{{ asset('vendor/adminlte/dist/img/shulepro-icon.png') }}" 
-         style="position:absolute; top:30%; left:25%; width:50%; opacity:0.05; z-index:0;" 
+    {{-- Watermark — the school's own logo (from School Info settings) --}}
+    @php $li = \App\Models\SchoolInfo::first(); @endphp
+    @if($li?->logo)
+    <img src="{{ asset('storage/' . $li->logo) }}"
+         style="position:absolute; top:30%; left:25%; width:50%; opacity:0.05; z-index:0;"
          alt="Watermark">
+    @endif
 
     <div class="card-body" style="position: relative; z-index: 1;">
         {{-- Header --}}
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div class="d-flex align-items-center">
-                <img src="{{ asset('vendor/adminlte/dist/img/shulepro-icon.png') }}" 
+                @if($li?->logo)
+                <img src="{{ asset('storage/' . $li->logo) }}"
                      alt="School Logo" style="height:80px; margin-right:15px;">
+                @endif
                 <div>
-                    <h3 class="mb-0">{{ config('app.name', 'ShulePRO') }}</h3>
+                    <h3 class="mb-0">{{ $li->name ?? config('app.name') }}</h3>
                     <p class="mb-0">Official Payment Receipt</p>
-                    <small>{{ config('school.address', 'Kisarawe, Pwani') }} | {{ config('school.phone', '+255 000 000 000') }}</small>
+                    <small>{{ collect([$li->address ?? null, $li->phone ?? null, $li->email ?? null])->filter()->implode(' | ') }}</small>
                 </div>
             </div>
             <div class="text-right">

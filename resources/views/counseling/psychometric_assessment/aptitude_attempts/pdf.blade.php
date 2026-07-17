@@ -15,6 +15,7 @@
     </style>
 </head>
 <body>
+    @include('partials.pdf-letterhead')
     <div class="header">
         <h2>Aptitude Test Report</h2>
         <h3>{{ $aptitudeAttempt->student->name }} ({{ $aptitudeAttempt->student->admission_no }})</h3>

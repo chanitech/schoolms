@@ -10,7 +10,7 @@
     </style>
 </head>
 <body>
-    <h3>School Events</h3>
+    @include('partials.pdf-letterhead', ['documentTitle' => 'SCHOOL EVENTS'])
     <table>
         <thead>
             <tr>

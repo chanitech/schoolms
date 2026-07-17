@@ -193,14 +193,8 @@
 <body>
 
 @php
-    $school = $school ?? (object)[
-        'name' => 'MEMA ASEP Learning Centre',
-        'motto'=> 'Maadili, Elimu, Maendeleo, Amani',
-        'address' => 'Kisarawe, Pwani',
-        'phone' => '+255', 'email' => 'info@mema.or.tz', 'website' => 'www.mema.ac.tz',
-        'logo_left' => 'vendor/adminlte/dist/img/MEMA.png',
-        'logo_right' => 'vendor/adminlte/dist/img/shulepro-icon.png',
-    ];
+    // Always the current school's own info — never another school's branding
+    $school = $school ?? \App\Models\SchoolInfo::first();
     $grades = $grades ?? collect([
         (object)['name'=>'A','min_mark'=>75,'max_mark'=>100],
         (object)['name'=>'B','min_mark'=>60,'max_mark'=>74],
@@ -209,9 +203,9 @@
         (object)['name'=>'F','min_mark'=>0,'max_mark'=>39],
     ]);
 
-    $logoLeftPath  = public_path($school->logo_left  ?? 'vendor/adminlte/dist/img/MEMA.png');
-    $logoRightPath = public_path($school->logo_right ?? 'vendor/adminlte/dist/img/shulepro-icon.png');
-    $logoLeft  = file_exists($logoLeftPath)  ? base64_encode(file_get_contents($logoLeftPath))  : '';
+    $logoLeftPath  = !empty($school?->logo) ? storage_path('app/public/' . $school->logo) : null;
+    $logoRightPath = public_path('vendor/adminlte/dist/img/shulepro-icon.png');
+    $logoLeft  = $logoLeftPath && file_exists($logoLeftPath) ? base64_encode(file_get_contents($logoLeftPath)) : '';
     $logoRight = file_exists($logoRightPath) ? base64_encode(file_get_contents($logoRightPath)) : '';
 
     $studentsCollection = collect($studentsData);
@@ -292,7 +286,7 @@
             @endif
         </td>
         <td style="text-align:center">
-            <div class="school-name">{{ $school->name ?? 'MEMA ASEP Learning Centre' }}</div>
+            <div class="school-name">{{ $school->name ?? config('app.name') }}</div>
             @if(!empty($school->motto))
             <div style="font-size:12px;color:#a7f3d0;font-style:italic;margin-top:3px">"{{ $school->motto }}"</div>
             @endif
@@ -607,7 +601,7 @@
 
 {{-- ═══ FOOTER ═══ --}}
 <div class="footer">
-    <strong>{{ $school->name ?? 'MEMA ASEP Learning Centre' }}</strong>
+    <strong>{{ $school->name ?? config('app.name') }}</strong>
     &nbsp;|&nbsp; OFFICIAL RESULTS REPORT
     &nbsp;|&nbsp; EXAM: {{ strtoupper($exam->name ?? '') }}
     &nbsp;|&nbsp; GENERATED: {{ \Carbon\Carbon::now()->format('d F Y, H:i') }}

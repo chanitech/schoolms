@@ -59,6 +59,7 @@
 
     {{-- Print header --}}
     <div class="d-none print-only mb-3">
+        @include('partials.print-letterhead')
         <h4 class="mb-0">Class Attendance Report — {{ $class?->name ?? 'All Classes' }}</h4>
         <p class="text-muted mb-0">
             {{ $from->format('d M Y') }} – {{ $to->format('d M Y') }}
