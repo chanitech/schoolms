@@ -13,12 +13,13 @@ use Illuminate\Support\Facades\DB;
 class ImportOpeningInventory extends Command
 {
     protected $signature = 'inventory:import-opening
-        {file : Path to the import CSV (category,name,unit,quantity,unit_cost,notes)}
-        {--date=2026-06-30 : Opening balance date recorded on the stock transactions}
+        {file : Path to the import CSV (category,name,unit,opening_qty,received_qty,issued_qty,quantity,unit_cost,notes)}
+        {--period-start=2026-06-01 : Date for the opening-stock transactions}
+        {--period-end=2026-06-30 : Date for the issued/closing transactions}
         {--school= : School slug (defaults to the first school)}
         {--dry-run : Parse and report without saving anything}';
 
-    protected $description = 'Import opening inventory balances from a CSV prepared from the school\'s Excel inventory workbook. Idempotent — re-running updates items instead of duplicating them.';
+    protected $description = 'Import inventory history from a CSV prepared from the school\'s Excel inventory workbook: items plus a full ledger (opening stock, goods received, issued/sold) per period. Idempotent — re-running updates items and never duplicates transactions.';
 
     private const CATEGORY_ICONS = [
         'Stationery'  => 'fas fa-pen',
@@ -47,7 +48,7 @@ class ImportOpeningInventory extends Command
 
         $handle = fopen($path, 'r');
         $header = fgetcsv($handle);
-        $expected = ['category', 'name', 'unit', 'quantity', 'unit_cost', 'notes'];
+        $expected = ['category', 'name', 'unit', 'opening_qty', 'received_qty', 'issued_qty', 'quantity', 'unit_cost', 'notes'];
         if ($header !== $expected) {
             $this->error('Unexpected CSV header: ' . implode(',', $header ?: []));
             $this->line('Expected: ' . implode(',', $expected));
@@ -56,7 +57,7 @@ class ImportOpeningInventory extends Command
 
         $rows = [];
         while (($r = fgetcsv($handle)) !== false) {
-            if (count($r) < 6 || trim($r[1]) === '') continue;
+            if (count($r) < 9 || trim($r[1]) === '') continue;
             $rows[] = array_combine($expected, $r);
         }
         fclose($handle);
@@ -90,19 +91,39 @@ class ImportOpeningInventory extends Command
                     'notes'             => $row['notes'],
                 ])->save();
 
-                // One opening transaction per stocked item, never duplicated
-                if ((int) $row['quantity'] > 0) {
-                    $exists = InventoryTransaction::where('item_id', $item->id)
-                        ->where('remarks', 'like', 'Opening balance import%')->exists();
-                    if (! $exists) {
+                // Full period ledger, never duplicated: opening stock at the
+                // period start, goods received during the period, and
+                // issued/sold at the period end — running balance intact.
+                $alreadyImported = InventoryTransaction::where('item_id', $item->id)
+                    ->where('remarks', 'like', 'Excel import:%')->exists();
+
+                if (! $alreadyImported) {
+                    $opening  = (int) $row['opening_qty'];
+                    $received = (int) $row['received_qty'];
+                    $issued   = (int) $row['issued_qty'];
+                    $running  = 0;
+
+                    $movements = [
+                        [$opening,  'purchase', $this->option('period-start'), 'Excel import: opening stock as at ' . $this->option('period-start')],
+                        [$received, 'purchase', $this->option('period-end'),   'Excel import: goods received during the period (aggregated)'],
+                    ];
+                    // A negative "issued" in the workbook is stock coming back
+                    // (a return/correction), not a sale.
+                    $movements[] = $issued >= 0
+                        ? [$issued,       'issue',  $this->option('period-end'), 'Excel import: issued/sold during the period (aggregated)']
+                        : [abs($issued),  'return', $this->option('period-end'), 'Excel import: stock returned during the period (negative issue in workbook)'];
+
+                    foreach ($movements as [$qty, $type, $date, $remarks]) {
+                        if ($qty <= 0) continue;
+                        $running += $type === 'issue' ? -$qty : $qty;
                         InventoryTransaction::create([
                             'item_id'          => $item->id,
-                            'type'             => 'purchase',
-                            'quantity'         => (int) $row['quantity'],
-                            'balance_after'    => (int) $row['quantity'],
-                            'remarks'          => 'Opening balance import — Excel inventory workbook (closing 30.06.2026)',
+                            'type'             => $type,
+                            'quantity'         => $qty,
+                            'balance_after'    => $running,
+                            'remarks'          => $remarks,
                             'user_id'          => $recorder?->id,
-                            'transaction_date' => $this->option('date'),
+                            'transaction_date' => $date,
                         ]);
                         $transactions++;
                     }
