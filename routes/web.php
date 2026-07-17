@@ -85,6 +85,16 @@ Route::get('/', function () {
 // Public privacy policy — required by the Google Play / App Store listings
 Route::view('/privacy', 'privacy')->name('privacy');
 
+// Public document verification — checks the digital-signature code printed
+// on exported treasurer-office reports
+Route::get('/verify-document', function (\Illuminate\Http\Request $request) {
+    $signature = $request->filled('code')
+        ? app(\App\Services\DocumentSignatureService::class)->verify($request->code)
+        : null;
+
+    return view('verify-document', compact('signature'));
+})->name('verify.document');
+
 // Subscription expired — shown when school's subscription is inactive
 Route::get('/subscription/expired', function () {
     return view('subscription.expired');
@@ -160,6 +170,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('loans', [LoanApprovalController::class, 'index'])->name('loans.index');
         Route::get('loans/active', [LoanApprovalController::class, 'activeLoans'])->name('loans.active');
         Route::get('loans/{loan}/statement', [LoanApprovalController::class, 'treasurerStatement'])->name('loans.statement');
+    });
+
+    // Treasurer Office signed reports — exportable PDFs with approval
+    // trails and a digital-signature verification code
+    Route::middleware('can:is-finance-office')->prefix('treasurer/reports')->name('treasurer.reports.')->group(function () {
+        Route::get('loans',          [\App\Http\Controllers\Treasurer\OfficeReportController::class, 'loans'])->name('loans');
+        Route::get('procurement',    [\App\Http\Controllers\Treasurer\OfficeReportController::class, 'procurement'])->name('procurement');
+        Route::get('stock-requests', [\App\Http\Controllers\Treasurer\OfficeReportController::class, 'stockRequests'])->name('stock-requests');
+        Route::get('expenses',       [\App\Http\Controllers\Treasurer\OfficeReportController::class, 'expenses'])->name('expenses');
+        Route::get('payments',       [\App\Http\Controllers\Treasurer\OfficeReportController::class, 'payments'])->name('payments');
+        Route::get('invoices',       [\App\Http\Controllers\Treasurer\OfficeReportController::class, 'invoices'])->name('invoices');
+        Route::get('budgets',        [\App\Http\Controllers\Treasurer\OfficeReportController::class, 'budgets'])->name('budgets');
     });
 
     // ==================== FINANCE OFFICE ====================

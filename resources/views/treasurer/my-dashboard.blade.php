@@ -164,6 +164,31 @@
         </div>
     </div>
 
+    {{-- Signed reports — exportable PDFs with approval trails and a
+         digital-signature verification code for integrity --}}
+    <div class="card card-outline card-dark shadow-sm">
+        <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-file-signature mr-2"></i> Signed Reports (PDF Export)</h3>
+            <div class="card-tools"><small class="text-muted">Each export carries a verification code — check any copy at <code>/verify-document</code></small></div>
+        </div>
+        <div class="card-body pb-2">
+            <a href="{{ route('treasurer.reports.loans') }}" class="btn btn-sm btn-outline-dark mb-2 mr-1"><i class="fas fa-hand-holding-usd"></i> Staff Loans</a>
+            <a href="{{ route('treasurer.reports.procurement') }}" class="btn btn-sm btn-outline-dark mb-2 mr-1"><i class="fas fa-shopping-cart"></i> Procurement</a>
+            <a href="{{ route('treasurer.reports.stock-requests') }}" class="btn btn-sm btn-outline-dark mb-2 mr-1"><i class="fas fa-boxes"></i> Stock Requests</a>
+            <a href="{{ route('treasurer.reports.expenses') }}" class="btn btn-sm btn-outline-dark mb-2 mr-1"><i class="fas fa-receipt"></i> Expenses</a>
+            @can('view payments')
+                <a href="{{ route('treasurer.reports.payments') }}" class="btn btn-sm btn-outline-dark mb-2 mr-1"><i class="fas fa-money-check-alt"></i> Payments</a>
+            @endcan
+            @can('view invoices')
+                <a href="{{ route('treasurer.reports.invoices') }}" class="btn btn-sm btn-outline-dark mb-2 mr-1"><i class="fas fa-file-invoice"></i> Invoices</a>
+            @endcan
+            @can('view budgets')
+                <a href="{{ route('treasurer.reports.budgets') }}" class="btn btn-sm btn-outline-dark mb-2 mr-1"><i class="fas fa-file-signature"></i> Budgets</a>
+            @endcan
+            <div class="text-muted small mt-1">Tip: add <code>?status=…&amp;from=YYYY-MM-DD&amp;to=YYYY-MM-DD</code> to any report link to filter it — the filters are recorded on the signed document.</div>
+        </div>
+    </div>
+
     @if($assignedClasses->isNotEmpty())
     <div class="card card-outline card-info shadow-sm">
         <div class="card-header">

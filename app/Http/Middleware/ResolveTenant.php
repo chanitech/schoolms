@@ -121,7 +121,8 @@ class ResolveTenant
             'forgot-password', 'reset-password', 'reset-password/*',
             'confirm-password', 'verify-email', 'verify-email/*',
             'email/verification-notification', 'password',
-            'guardian/*', 'super/*', 'subscription/*'
+            'guardian/*', 'super/*', 'subscription/*',
+            'privacy', 'verify-document'
         );
     }
 }

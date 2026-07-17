@@ -5,6 +5,9 @@
 @section('content_header')
     <div class="d-flex justify-content-between align-items-center">
         <h1 class="m-0 text-dark">Procurement Requests</h1>
+        <a href="{{ route('treasurer.reports.procurement', request()->query()) }}" class="btn btn-outline-dark btn-sm">
+            <i class="fas fa-file-signature mr-1"></i> Export Signed PDF
+        </a>
         @can('create procurement requests')
         <a href="{{ route('treasurer.procurement.create') }}" class="btn btn-primary">
             <i class="fas fa-plus"></i> New Request

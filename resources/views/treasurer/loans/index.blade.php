@@ -5,6 +5,9 @@
 @section('content_header')
     <div class="d-flex justify-content-between align-items-center">
         <h1 class="m-0 text-dark">All Loan Applications</h1>
+        <a href="{{ route('treasurer.reports.loans', request()->query()) }}" class="btn btn-outline-dark btn-sm">
+            <i class="fas fa-file-signature mr-1"></i> Export Signed PDF
+        </a>
         <div>
             <a href="{{ route('treasurer.loans.pending') }}" class="btn btn-warning">
                 <i class="fas fa-clock"></i> Pending Approvals
