@@ -80,9 +80,14 @@ class BillController extends Controller
         // Get all students in that class
         $students = Student::where('class_id', $validated['class_id'])->get();
 
-        // Prepare student bills for batch insert
+        // Prepare student bills for batch insert. insert() is a raw bulk
+        // query — it doesn't fire Eloquent's `creating` event, so
+        // BelongsToSchool's auto-fill never runs; school_id must be set
+        // explicitly here or every row is created invisible to every
+        // tenant-scoped query (e.g. the Record Payment student-bill lookup).
         $studentBills = $students->map(function ($student) use ($bill) {
             return [
+                'school_id'    => $bill->school_id,
                 'bill_id'      => $bill->id,
                 'student_id'   => $student->id,
                 'total_amount' => $bill->amount,
