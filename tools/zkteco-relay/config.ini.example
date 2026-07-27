@@ -1,0 +1,35 @@
+; Copy this file to config.ini and fill in the real values.
+; config.ini is gitignored — it holds your school's device key, keep it private.
+
+[device]
+; The K40's IP address, set via its own menu: Menu > Comm > Ethernet.
+; Give it a static IP (or a DHCP reservation on the router) so it doesn't
+; change and silently break the relay.
+ip = 192.168.1.201
+port = 4370
+; Comm key / password set on the device. 0 = none (the K40 default).
+password = 0
+timeout = 5
+
+[server]
+; The school's slug in SchoolMS (visible on Settings > Biometric Devices).
+school_slug = kitungwa
+; SchoolMS base URL, no trailing slash.
+base_url = https://schoolms.chanitech.co.tz
+; Shared global key (same one used by other public API integrations).
+api_key = REPLACE_WITH_PUBLIC_API_KEY
+; Per-school secret from Settings > Biometric Devices > Device Key.
+device_key = REPLACE_WITH_SCHOOL_BIOMETRIC_API_KEY
+
+[relay]
+; Where this script remembers how far it has synced, and its run-lock —
+; both live next to the script and are safe to delete to force a resync.
+state_file = state.json
+lock_file = relay.lock
+; If a lock file older than this is found, assume the previous run crashed
+; and proceed anyway rather than blocking forever.
+lock_max_age_minutes = 10
+; Matches the server's per-request cap (see BiometricScanController).
+batch_size = 500
+max_retries = 3
+retry_backoff_seconds = 5

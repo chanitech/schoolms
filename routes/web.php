@@ -23,6 +23,7 @@ use App\Http\Controllers\{
     LeaveController,
     EventController,
     SchoolInfoController,
+    BiometricSettingsController,
     AcademicYearController,
     RoleController,
     SystemLogController,
@@ -141,6 +142,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('permissions', PermissionController::class);
         Route::get('school-info', [SchoolInfoController::class, 'index'])->name('school.info.index');
         Route::post('school-info', [SchoolInfoController::class, 'update'])->name('school.info.update');
+
+        Route::get('biometric-devices', [BiometricSettingsController::class, 'index'])->name('biometric-devices.index');
+        Route::post('biometric-devices/regenerate-key', [BiometricSettingsController::class, 'regenerateKey'])->name('biometric-devices.regenerate-key');
+        Route::post('biometric-devices/map-unmatched', [BiometricSettingsController::class, 'mapUnmatched'])->name('biometric-devices.map-unmatched');
     });
 
     // ==================== STAFF LOAN ROUTES ====================

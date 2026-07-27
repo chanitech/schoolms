@@ -15,14 +15,18 @@ return new class extends Migration
             $table->enum('status', ['pending', 'verified', 'flagged'])->default('pending')->after('verified_by');
         });
 
-        // Backfill class_id for existing rows from student_bill -> bill -> class_id
-        DB::statement('
-            UPDATE payments p
-            INNER JOIN student_bills sb ON sb.id = p.student_bill_id
-            INNER JOIN bills b ON b.id = sb.bill_id
-            SET p.class_id = b.class_id
-            WHERE p.class_id IS NULL AND b.class_id IS NOT NULL
-        ');
+        // Backfill class_id for existing rows from student_bill -> bill -> class_id.
+        // Multi-table UPDATE...JOIN is MySQL-only syntax; skip on other drivers
+        // (same guard convention used elsewhere in this migration set).
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('
+                UPDATE payments p
+                INNER JOIN student_bills sb ON sb.id = p.student_bill_id
+                INNER JOIN bills b ON b.id = sb.bill_id
+                SET p.class_id = b.class_id
+                WHERE p.class_id IS NULL AND b.class_id IS NOT NULL
+            ');
+        }
     }
 
     public function down(): void

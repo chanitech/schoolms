@@ -13,6 +13,16 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Raw `MODIFY` is MySQL-only syntax. This migration exists solely to
+        // prep the production MySQL database for the (also MySQL-only)
+        // legacy import command, so it's a no-op on other drivers rather
+        // than failing migrate:fresh in the sqlite-backed test suite (same
+        // guard convention used elsewhere in this file set, e.g.
+        // update_session_logs_status_enum).
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
+
         DB::statement("ALTER TABLE `budgets` MODIFY `status` ENUM('pending','partially_approved','approved','declined','in_use','completed') NOT NULL DEFAULT 'pending'");
 
         DB::statement("ALTER TABLE `budget_items` MODIFY `status` ENUM('pending','approved','declined','rejected','withdrawn','used') NOT NULL DEFAULT 'pending'");
@@ -22,6 +32,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
+
         DB::statement("ALTER TABLE `budgets` MODIFY `status` ENUM('pending','approved','declined') NOT NULL DEFAULT 'pending'");
 
         DB::statement("ALTER TABLE `budget_items` MODIFY `status` ENUM('pending','approved','declined') NOT NULL DEFAULT 'pending'");

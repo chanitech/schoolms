@@ -109,6 +109,8 @@
                             <th>Staff</th>
                             <th>Date</th>
                             <th>Status</th>
+                            <th>Check-in</th>
+                            <th>Check-out</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -125,7 +127,12 @@
                                     @else
                                         <span class="badge bg-warning text-dark">Leave</span>
                                     @endif
+                                    @if($attendance->source === 'biometric')
+                                        <i class="fas fa-fingerprint text-muted ml-1" title="Recorded via fingerprint scan"></i>
+                                    @endif
                                 </td>
+                                <td>{{ $attendance->check_in_at?->format('H:i') ?? '–' }}</td>
+                                <td>{{ $attendance->check_out_at?->format('H:i') ?? '–' }}</td>
                                 <td>
                                     @can('edit attendance')
                                     <a href="{{ route('attendance.edit', $attendance) }}" class="btn btn-sm btn-warning">

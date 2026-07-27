@@ -17,7 +17,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        DB::statement("ALTER TABLE procurement_requests MODIFY status ENUM('pending', 'treasurer_approved', 'approved', 'rejected', 'completed') NOT NULL DEFAULT 'pending'");
+        // Raw `MODIFY` is MySQL-only syntax; skip on other drivers (same
+        // guard convention used elsewhere in this migration set).
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE procurement_requests MODIFY status ENUM('pending', 'treasurer_approved', 'approved', 'rejected', 'completed') NOT NULL DEFAULT 'pending'");
+        }
 
         Schema::table('procurement_requests', function (Blueprint $table) {
             $table->foreignId('headmaster_approved_by')->nullable()->after('approved_by')
@@ -33,6 +37,8 @@ return new class extends Migration
             $table->dropColumn(['headmaster_approved_by', 'headmaster_approved_at']);
         });
 
-        DB::statement("ALTER TABLE procurement_requests MODIFY status ENUM('pending', 'approved', 'rejected', 'completed') NOT NULL DEFAULT 'pending'");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE procurement_requests MODIFY status ENUM('pending', 'approved', 'rejected', 'completed') NOT NULL DEFAULT 'pending'");
+        }
     }
 };

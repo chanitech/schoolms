@@ -98,6 +98,10 @@ class SyncAllPermissionsToAdminSeeder extends Seeder
         // New: Head Master (Principal) final-approval stage for procurement
         // requests, between Treasurer approval and Cashier disbursement.
         'headmaster approve procurement requests',
+
+        // New: ZKTeco fingerprint attendance integration - Settings >
+        // Biometric Devices page (view/regenerate key, map unmatched scans).
+        'manage biometric devices',
     ];
 
     public function run(): void

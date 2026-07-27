@@ -13,10 +13,13 @@ class Attendance extends Model
     use HasFactory;
 
     protected $fillable = [
-        'school_id','staff_id', 'date', 'status'];
+        'school_id','staff_id', 'date', 'status',
+        'check_in_at', 'check_out_at', 'source'];
 
     protected $casts = [
         'date' => 'date', // Cast 'date' column to Carbon instance
+        'check_in_at' => 'datetime',
+        'check_out_at' => 'datetime',
     ];
 
     public function staff()

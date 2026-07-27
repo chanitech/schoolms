@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Department;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Spatie\Permission\Models\Role;
 
 class StaffController extends Controller
@@ -37,6 +38,8 @@ class StaffController extends Controller
     // Store new staff
     public function store(Request $request)
     {
+        $schoolId = app()->bound('currentSchool') ? app('currentSchool')->id : null;
+
         $request->validate([
             'first_name'    => 'required|string',
             'last_name'     => 'required|string',
@@ -49,6 +52,7 @@ class StaffController extends Controller
             'roles.*'       => 'exists:roles,name',
             'basic_salary'  => 'required|numeric|min:0',
             'hire_date'     => 'required|date|before_or_equal:today',
+            'biometric_id'  => ['nullable', 'string', 'max:50', Rule::unique('staff', 'biometric_id')->where('school_id', $schoolId)],
         ]);
 
         // Create user — default password is the staff member's own phone
@@ -66,8 +70,7 @@ class StaffController extends Controller
         $user->syncRoles($request->roles);
 
         // Handle photo
-        $schoolId = app()->bound('currentSchool') ? app('currentSchool')->id : 'unassigned';
-        $photoPath = $request->hasFile('photo') ? $request->file('photo')->store("schools/{$schoolId}/staff", 'public') : null;
+        $photoPath = $request->hasFile('photo') ? $request->file('photo')->store('schools/'.($schoolId ?? 'unassigned').'/staff', 'public') : null;
 
         // Create staff record
         Staff::create([
@@ -81,6 +84,7 @@ class StaffController extends Controller
             'user_id'       => $user->id,
             'basic_salary'  => $request->basic_salary,
             'hire_date'     => $request->hire_date,
+            'biometric_id'  => $request->biometric_id,
         ]);
 
         return redirect()->route('staff.index')
@@ -124,6 +128,7 @@ class StaffController extends Controller
             'roles.*'       => 'exists:roles,name',
             'basic_salary'  => 'required|numeric|min:0',
             'hire_date'     => 'required|date|before_or_equal:today',
+            'biometric_id'  => ['nullable', 'string', 'max:50', Rule::unique('staff', 'biometric_id')->where('school_id', $staff->school_id)->ignore($staff->id)],
         ]);
 
         // Update user info
@@ -156,6 +161,7 @@ class StaffController extends Controller
             'photo'         => $photoPath,
             'basic_salary'  => $request->basic_salary,
             'hire_date'     => $request->hire_date,
+            'biometric_id'  => $request->biometric_id,
         ]);
 
         return redirect()->route('staff.index')->with('success', 'Staff updated successfully.');

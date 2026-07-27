@@ -14,12 +14,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        DB::statement('
-            UPDATE timetable_entries te
-            INNER JOIN timetables t ON t.id = te.timetable_id
-            SET te.school_id = t.school_id
-            WHERE te.school_id IS NULL AND t.school_id IS NOT NULL
-        ');
+        // Multi-table UPDATE...JOIN is MySQL-only syntax; skip on other
+        // drivers (same guard convention used elsewhere in this migration set).
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('
+                UPDATE timetable_entries te
+                INNER JOIN timetables t ON t.id = te.timetable_id
+                SET te.school_id = t.school_id
+                WHERE te.school_id IS NULL AND t.school_id IS NOT NULL
+            ');
+        }
     }
 
     public function down(): void

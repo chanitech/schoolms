@@ -1089,6 +1089,12 @@ return [
             'can'  => 'manage settings',
         ],
         [
+            'text' => 'Biometric Devices',
+            'url'  => '/settings/biometric-devices',
+            'icon' => 'fas fa-fingerprint',
+            'can'  => 'manage biometric devices',
+        ],
+        [
             'text' => 'Roles & Permissions',
             'icon' => 'fas fa-user-shield',
             'can'  => 'view roles',

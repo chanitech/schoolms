@@ -48,6 +48,8 @@ class Staff extends Model
         // Loan management fields
         'basic_salary',
         'hire_date',
+        // Fingerprint device enrollment ID (e.g. ZKTeco K40), scoped unique per school
+        'biometric_id',
     ];
 
     protected $casts = [

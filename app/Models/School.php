@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class School extends Model
 {
@@ -10,6 +11,7 @@ class School extends Model
         'name', 'slug', 'logo', 'email', 'phone',
         'address', 'motto', 'website',
         'subscription_status', 'subscription_expires_at', 'plan',
+        'biometric_api_key',
     ];
 
     protected $casts = [
@@ -38,6 +40,19 @@ class School extends Model
         $slug = self::LEGACY_SLUG_ALIASES[$slug] ?? $slug;
 
         return static::where('slug', $slug)->firstOrFail();
+    }
+
+    // Generates a fresh per-school secret for the fingerprint-relay
+    // ingestion endpoint. Stored in plaintext (like the shared PUBLIC_API_KEY)
+    // since it must be re-displayable for an admin to copy into the relay's
+    // config file — returned once here so the caller can show it immediately.
+    public function regenerateBiometricApiKey(): string
+    {
+        $key = Str::random(64);
+
+        $this->update(['biometric_api_key' => $key]);
+
+        return $key;
     }
 
     // All relationships bypass the BelongsToSchool global scope so the super-admin

@@ -166,6 +166,19 @@
                         </div>
                     </div>
 
+                    <!-- Biometric ID -->
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Biometric ID</label>
+                            <input type="text" name="biometric_id" class="form-control @error('biometric_id') is-invalid @enderror"
+                                   value="{{ old('biometric_id') }}">
+                            <small class="form-text text-muted">The ID assigned when this staff member's fingerprint was enrolled on the attendance device (e.g. ZKTeco K40). Leave blank if not enrolled.</small>
+                            @error('biometric_id')
+                                <span class="invalid-feedback">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+
                     <!-- Submit Buttons -->
                     <div class="col-md-12 mt-3">
                         <button type="submit" class="btn btn-success">
