@@ -107,10 +107,12 @@ $(document).ready(function() {
                         return;
                     }
 
+                    const formatMoney = (v) => Number(v).toLocaleString('en-US', { maximumFractionDigits: 0 });
+
                     let billHtml = '<ul class="list-group">';
                     bills.forEach(bill => {
                         billHtml += `<li class="list-group-item">
-                            ${bill.bill_name} - Total: ${bill.total_amount} | Paid: ${bill.amount_paid} | Balance: ${bill.balance} | Status: ${bill.status}
+                            ${bill.bill_name} - Total: ${formatMoney(bill.total_amount)} | Paid: ${formatMoney(bill.amount_paid)} | Balance: ${formatMoney(bill.balance)} | Status: ${bill.status}
                             <a href="/finance/payments/${bill.id}/create" class="btn btn-sm btn-success float-right">Record Payment</a>
                         </li>`;
                     });

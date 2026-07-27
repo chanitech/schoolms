@@ -185,7 +185,7 @@
 
                 $.get("{{ route('finance.pocket.last-balance') }}", { student_id: studentId })
                     .done(function(data) {
-                        $('#current_balance').text(parseFloat(data.balance).toFixed(2));
+                        $('#current_balance').text(parseFloat(data.balance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
                         $('#balance-info').removeClass('d-none');
                     })
                     .fail(function() {

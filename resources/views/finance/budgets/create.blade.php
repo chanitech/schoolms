@@ -133,7 +133,7 @@ function calculateTotal() {
     document.querySelectorAll('.item-price').forEach(input => {
         total += parseFloat(input.value) || 0;
     });
-    document.getElementById('total').innerText = total.toFixed(2);
+    document.getElementById('total').innerText = total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 // Recalculate total on input change
