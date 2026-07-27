@@ -43,12 +43,23 @@ class ImportLegacySchoolData extends Command
 
     protected $description = 'Import the old single-tenant school database into this app\'s multi-tenant schema';
 
-    // Run --audit first, review the output, then add any extra ids you want
-    // excluded here before the real run.
-    // 66 "fewfdfdg dfsdfds" and 69 "dds cxzc" are keyboard-mash guardian
-    // portal test signups the heuristic didn't catch (confirmed via audit).
-    protected array $excludeUserIds = [66, 69];
-    protected array $excludeStaffIds = [];
+    // These IDs are only meaningful for whichever legacy database the
+    // 'legacy' connection currently points at (see .env) — run --audit
+    // first, review the output, then add any extra ids you want excluded
+    // here before the real run. Reset to [] between imports of different
+    // schools, since an ID from one school's old database will almost
+    // certainly collide with a real, unrelated person in another's.
+    //
+    // History:
+    //   - Kitungwa import: excludeUserIds = [66, 69] (keyboard-mash guardian
+    //     portal test signups the heuristic didn't catch).
+    //   - Mema import: the heuristic missed one thing — staff id 60
+    //     ("Hamad hamaddi", h@gmail.com) exists identically in both Kitungwa's
+    //     and Mema's old data (generic placeholder name/email in both),
+    //     confirmed with the project owner as leftover test/seed data, not a
+    //     real Mema staff member.
+    protected array $excludeUserIds = [];
+    protected array $excludeStaffIds = [1000060];
     protected array $excludeGuardianIds = [];
 
     private int $schoolId;
@@ -1423,6 +1434,9 @@ class ImportLegacySchoolData extends Command
             }
         } catch (Throwable $e) {
             $this->stats[$table]['skipped'] = ($this->stats[$table]['skipped'] ?? 0) + 1;
+            if (getenv('LEGACY_IMPORT_DEBUG')) {
+                $this->error("[$table id=$id] ".$e->getMessage());
+            }
         }
     }
 
