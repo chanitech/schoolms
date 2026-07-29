@@ -106,6 +106,12 @@ class DemoSchoolSeeder extends Seeder
             $this->createStaffAttendance();
         });
 
+        // Runs in its own transaction and re-resolves the demo school itself,
+        // so every other sidebar module (timetable, HR, treasury, procurement,
+        // counseling, documents...) has real data too — not just the core
+        // academic/finance tables built above.
+        $this->call(\Database\Seeders\Demo\DemoModulesSeeder::class);
+
         $this->report();
     }
 
@@ -149,6 +155,13 @@ class DemoSchoolSeeder extends Seeder
      */
     private function purgeExistingDemoData(): void
     {
+        // DemoModulesSeeder's tables (timetable_entries, lesson_plans, marks-
+        // derived student_results, ...) hold foreign keys into the core
+        // tables this method is about to delete — clear those first, or a
+        // second run fails deleting e.g. school_classes while a
+        // timetable_entries row still references it.
+        \Database\Seeders\Demo\DemoModulesSeeder::purgeForSchool($this->sid);
+
         $classIds = DB::table('school_classes')->where('school_id', $this->sid)->pluck('id');
         $studentIds = DB::table('students')->where('school_id', $this->sid)->pluck('id');
         $subjectIds = DB::table('subjects')->where('school_id', $this->sid)->pluck('id');
