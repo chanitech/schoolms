@@ -102,7 +102,7 @@ class HomeController extends Controller
         }
 
         // ── Academic session ─────────────────────────────────────────────────
-        $currentSession = AcademicSession::where('is_current', true)->first();
+        $currentSession = AcademicSession::current();
 
         // ── Today's finance snapshot ─────────────────────────────────────────
         $todayCollection = $canViewPayments ? Payment::whereDate('payment_date', $today)->sum('amount') : 0;

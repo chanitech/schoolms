@@ -39,7 +39,7 @@ class TopicCoverageController extends Controller
         $isTeacher    = $user->hasRole('Teacher');
 
         $sessions        = AcademicSession::orderBy('name', 'desc')->get();
-        $currentSession  = AcademicSession::where('is_current', true)->first();
+        $currentSession  = AcademicSession::current();
         $selectedSession = $request->filled('session_id')
             ? AcademicSession::find($request->session_id)
             : $currentSession;
