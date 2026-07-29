@@ -14,9 +14,15 @@ class GuardianLoginController extends Controller
 {
     public function showLogin()
     {
-        if (Auth::check() && Auth::user()->hasRole('guardian')) {
-            return redirect()->route('guardian.dashboard');
+        if (Auth::check()) {
+            // The mobile app opens on this page, so already-signed-in staff
+            // land here too — send them to their own dashboard instead of
+            // showing them a login form they don't need.
+            return Auth::user()->hasRole('guardian')
+                ? redirect()->route('guardian.dashboard')
+                : redirect()->route('dashboard');
         }
+
         return view('guardian.login');
     }
 

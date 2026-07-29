@@ -25,7 +25,7 @@ Everything below is copy-paste ready for the Play Console.
 ## Short description (80 characters max)
 
 ```
-Parents: check school fees, results and receipts anytime, from your phone.
+School management in your pocket — for parents, teachers and school staff.
 ```
 
 ---
@@ -33,35 +33,42 @@ Parents: check school fees, results and receipts anytime, from your phone.
 ## Full description (4000 characters max)
 
 ```
-ShulePRO brings your child's school to your pocket.
+ShulePRO brings the whole school to your pocket — for parents and for school staff.
 
-Built for parents and guardians of students in Tanzanian schools, ShulePRO gives you secure, instant access to the school information that matters most — no more waiting for the end of term or a trip to the school office.
+ShulePRO is the mobile app for the ShulePRO school management system used by schools in Tanzania. Sign in with the account your school gave you, and you get the part of the system that belongs to your role.
 
-WHAT YOU CAN DO
+FOR PARENTS AND GUARDIANS
 
-• School fees — see exactly what has been paid, what remains, and when the next payment is due.
-• Payment receipts — view and keep every official receipt issued for your payments.
-• Academic results — follow your child's marks, grades, subject positions and overall performance as soon as the school publishes them.
-• Progress over time — see how your child is improving across exams and subjects.
-• Multiple children — one login shows every child you are registered with at the school.
+• School fees — see what has been paid, what remains, and when the next payment is due.
+• Payment receipts — view every official receipt issued for your payments.
+• Examination results — follow your child's marks, grades, subject positions and division as soon as the school publishes them.
+• Progress over time — see how your child improves across exams and subjects.
+• Several children — one login shows every child registered to you at the school.
 
-SIMPLE AND SECURE SIGN-IN
+FOR TEACHERS AND SCHOOL STAFF
 
-Log in with the phone number you registered at your child's school, together with your school code and password. You see only your own children's records, and nothing else.
+• Academics — enter and review marks, examinations, results and class performance.
+• Lesson plans and topic coverage — record the topics and subtopics covered in each session.
+• Attendance — mark class sessions and follow teaching attendance.
+• Students — registration, enrolment, classes and student records.
+• Finance office — school fees, payments, invoices, budgets, staff loans, procurement requests and expenses, each following the school's own approval chain.
+• Store and inventory — stock items, stock movements and store requests.
+• Library, dormitory, counselling, events and staff leave.
+• Reports — printable, signed reports carrying the school's letterhead and an approval trail.
+
+Every user sees only what their role allows, and every school's data is completely separate from every other school's.
+
+SIGNING IN
+
+Parents sign in with the phone number registered at their child's school, together with the school code and password. Staff sign in with their school email address and password using the "Staff / Admin" link on the sign-in screen. Accounts are created by the school — the app has no public sign-up.
 
 FOR SCHOOLS
 
-ShulePRO is the parent app for the ShulePRO school management system, used by schools to manage students, academics, examinations, fees, staff, stores and reporting. If your school does not use ShulePRO yet and you would like a demonstration, contact Chani Technologies on +255 713 209 535 or info@chanitech.co.tz.
-
-NOTE
-
-You need an account created by your child's school to use this app. If you cannot sign in, please contact your school office to confirm your registered phone number.
+If your school does not use ShulePRO yet and you would like a demonstration, contact Chani Technologies on +255 713 209 535 or info@chanitech.co.tz.
 
 ShulePRO is a product of Chani Technologies, Dar es Salaam, Tanzania.
 www.chanitech.co.tz
 ```
-
----
 
 ## Graphics to upload
 
@@ -96,16 +103,26 @@ Play Console → **App content** → **App access** → choose
 | Any other instructions | See below |
 
 ```
-The app opens on the Parent/Guardian login screen.
+The app opens on the Parent/Guardian sign-in screen. Both roles can be
+reviewed from the same app.
 
-School code: kitungwa
-Phone number: 0700000001
-Password: ReviewDemo2026
+PARENT / GUARDIAN LOGIN (the screen the app opens on)
+  School code: kitungwa
+  Phone number: 0700000001
+  Password: ReviewDemo2026
+  Shows: one demo student with sample fees, payment receipts and
+  examination results.
 
-This demo account belongs to a demo parent with one demo student and
-contains sample fees, payments and examination results so the reviewer
-can see all app features. Accounts are normally created by each school
-for its own registered parents.
+SCHOOL STAFF LOGIN (tap "Staff / Admin? Login here" at the bottom of the
+sign-in screen)
+  School code: demo
+  Email: demo@demo.ac.tz
+  Password: demo1234
+  Shows: the school-management side — students, academics, marks,
+  attendance, finance, store and reports — in a demo school.
+
+Accounts are created by each school for its own users; the app has no
+public sign-up.
 ```
 
 ---
