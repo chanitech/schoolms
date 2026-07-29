@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Database\Seeders\DemoSchoolSeeder;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Rebuilds the sales-demo school ('demo') from scratch.
@@ -48,6 +49,13 @@ class ResetDemoSchool extends Command
         }
 
         $this->call('db:seed', ['--class' => DemoSchoolSeeder::class, '--force' => true]);
+
+        // The login page caches whether the demo school exists for an hour so
+        // it isn't a DB hit on every visit. Without this, a stale 'false'
+        // cached from before this run (e.g. someone checking the login page
+        // while the demo school didn't exist yet) would hide the demo box for
+        // up to an hour after this command successfully creates it.
+        Cache::forget('demo-school-available');
 
         return self::SUCCESS;
     }
