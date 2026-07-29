@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\School;
+use Database\Seeders\DemoSchoolSeeder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
@@ -16,7 +19,21 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(): View
     {
-        return view('auth.login');
+        // Cached briefly rather than queried on every page view — the demo
+        // school's existence changes rarely, and this runs on the one page
+        // every visitor (including prospects with no account yet) hits first.
+        $demoAvailable = Cache::remember('demo-school-available', 3600, function () {
+            return School::where('slug', DemoSchoolSeeder::SLUG)
+                ->where('subscription_status', 'active')
+                ->exists();
+        });
+
+        return view('auth.login', [
+            'demoAvailable' => $demoAvailable,
+            'demoSlug' => DemoSchoolSeeder::SLUG,
+            'demoEmail' => DemoSchoolSeeder::LOGIN_EMAIL,
+            'demoPassword' => DemoSchoolSeeder::LOGIN_PASSWORD,
+        ]);
     }
 
     /**

@@ -106,6 +106,35 @@ input.is-invalid { border-color: #ef4444; }
 .forgot-row { text-align: right; margin-top: -.7rem; margin-bottom: 1.1rem; }
 .forgot-row a { font-size: .78rem; color: #94a3b8; text-decoration: none; }
 .forgot-row a:hover { color: #1f5c3f; text-decoration: underline; }
+
+.demo-box {
+    background: linear-gradient(135deg, #fdf8ee, #fbf1dc);
+    border: 1px solid #eddcae;
+    border-radius: 12px;
+    padding: .9rem 1rem;
+    margin-bottom: 1.4rem;
+}
+.demo-box-head {
+    display: flex; align-items: center; gap: .4rem;
+    font-size: .78rem; font-weight: 800; color: #92700f;
+    text-transform: uppercase; letter-spacing: .04em;
+    margin-bottom: .5rem;
+}
+.demo-box-creds {
+    font-size: .8rem; color: #4b5563; line-height: 1.6;
+}
+.demo-box-creds code {
+    background: #fff; border: 1px solid #eddcae; border-radius: 5px;
+    padding: .05rem .4rem; font-family: 'SFMono-Regular', Consolas, monospace;
+    color: #1e293b; font-size: .78rem;
+}
+.demo-box-btn {
+    width: 100%; margin-top: .7rem; padding: .55rem;
+    background: #fff; border: 1.5px solid #c9a24b; border-radius: 8px;
+    color: #92700f; font-size: .8rem; font-weight: 700; cursor: pointer;
+    transition: background .15s;
+}
+.demo-box-btn:hover { background: #fdf3dd; }
 </style>
 </head>
 <body>
@@ -130,6 +159,18 @@ input.is-invalid { border-color: #ef4444; }
         <div class="error-msg" style="background:#fff8e1;border-color:#f6c23e;color:#856404">
             <span>&#8987;</span>
             <span>{{ session('error') }}</span>
+        </div>
+        @endif
+
+        @if($demoAvailable ?? false)
+        <div class="demo-box">
+            <div class="demo-box-head"><span>&#11088;</span> Want to look around first?</div>
+            <div class="demo-box-creds">
+                School Code: <code>{{ $demoSlug }}</code><br>
+                Email: <code>{{ $demoEmail }}</code><br>
+                Password: <code>{{ $demoPassword }}</code>
+            </div>
+            <button type="button" class="demo-box-btn" onclick="fillDemo()">Fill in demo details</button>
         </div>
         @endif
 
@@ -214,6 +255,14 @@ function togglePass() {
     const input = document.getElementById('password');
     input.type = input.type === 'password' ? 'text' : 'password';
 }
+
+@if($demoAvailable ?? false)
+function fillDemo() {
+    document.getElementById('school_code').value = @json($demoSlug);
+    document.getElementById('email').value = @json($demoEmail);
+    document.getElementById('password').value = @json($demoPassword);
+}
+@endif
 
 document.getElementById('loginForm').addEventListener('submit', function() {
     const btn = document.getElementById('loginBtn');
