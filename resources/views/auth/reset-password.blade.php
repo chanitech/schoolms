@@ -99,7 +99,7 @@ input.is-invalid { border-color: #ef4444; }
 
 <div class="card">
     <div class="card-top">
-        <img src="{{ asset('images/shulepro-icon.svg') }}" alt="Shule360" class="school-logo">
+        <img src="{{ asset('images/shulepro-icon.svg') }}" alt="ShulePRO" class="school-logo">
         <h2>Shule<span class="accent">PRO</span></h2>
         <p>Set New Password</p>
     </div>

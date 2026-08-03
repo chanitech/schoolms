@@ -1,4 +1,4 @@
-# Shule360 — Google Play Store submission pack
+# ShulePRO — Google Play Store submission pack
 
 Everything below is copy-paste ready for the Play Console.
 
@@ -8,7 +8,7 @@ Everything below is copy-paste ready for the Play Console.
 
 | Field | Value |
 |---|---|
-| App name (30 chars max) | `Shule360` |
+| App name (30 chars max) | `ShulePRO` |
 | Default language | English (United States) |
 | App or game | **App** |
 | Free or paid | **Free** |
@@ -33,9 +33,9 @@ School management in your pocket — for parents, teachers and school staff.
 ## Full description (4000 characters max)
 
 ```
-Shule360 brings the whole school to your pocket — for parents and for school staff.
+ShulePRO brings the whole school to your pocket — for parents and for school staff.
 
-Shule360 is the mobile app for the Shule360 school management system used by schools in Tanzania. Sign in with the account your school gave you, and you get the part of the system that belongs to your role.
+ShulePRO is the mobile app for the ShulePRO school management system used by schools in Tanzania. Sign in with the account your school gave you, and you get the part of the system that belongs to your role.
 
 FOR PARENTS AND GUARDIANS
 
@@ -64,9 +64,9 @@ Parents sign in with the phone number registered at their child's school, togeth
 
 FOR SCHOOLS
 
-If your school does not use Shule360 yet and you would like a demonstration, contact Chani Technologies on +255 713 209 535 or info@chanitech.co.tz.
+If your school does not use ShulePRO yet and you would like a demonstration, contact Chani Technologies on +255 713 209 535 or info@chanitech.co.tz.
 
-Shule360 is a product of Chani Technologies, Dar es Salaam, Tanzania.
+ShulePRO is a product of Chani Technologies, Dar es Salaam, Tanzania.
 www.chanitech.co.tz
 ```
 
@@ -171,44 +171,17 @@ Answer **No** to every question about violence, sexuality, profanity, drugs, gam
 
 ---
 
-## Release steps (original submission — already done)
+## Release steps
 
 1. **Create app** — Play Console → *Create app* → fill App details table above.
 2. **Store listing** — Main store listing → short + full description, upload icon, feature graphic, screenshots.
 3. **App content** — complete every item: privacy policy, app access, ads, content rating, target audience, data safety.
-4. **Closed testing** — Testing → Closed testing → Create new release → upload the AAB.
+4. **Closed testing** — Testing → Closed testing → Create new release → upload
+   `mobile/android/app/build/outputs/bundle/release/app-release.aab`.
+   - Release name: `1.0 (1)`
+   - Release notes: `First release of ShulePRO for parents — school fees, payment receipts and examination results.`
    - Create an email list of **at least 12 testers** and invite them; they must **opt in via the link and keep the app installed for 14 days**.
 5. After 14 days with 12+ opted-in testers → **Apply for production access** → Google reviews → publish to **Production**.
-
----
-
-## Rename release: ShulePRO → Shule360 (v2 / 1.1)
-
-The app was renamed after submission to avoid a brand collision with an
-unrelated, already-operating competitor also using the name "ShulePro"
-(shulepro.com, Kenya-based, same market). The package ID
-(`tz.co.chanitech.shulepro`) is unchanged — only the display name.
-
-**Upload this update to the same Closed testing → Alpha track:**
-
-1. Testing → Closed testing → Alpha → **Create release**.
-2. Upload `mobile/android/app/build/outputs/bundle/release/app-release.aab`
-   (already rebuilt as versionCode 2 / 1.1 with the new name — or use
-   `~/Downloads/Shule360-release-v2.aab`).
-3. Release name: `1.1 (2)`
-4. Release notes:
-   `App renamed from ShulePRO to Shule360. No other changes — same login, same features.`
-5. **Save → Review release → Start rollout.** Your existing 12 opted-in
-   testers stay opted in; this does not reset the 14-day clock.
-6. **Also update the Main store listing** (separate from the release):
-   App name → `Shule360`; paste the updated short/full description from
-   this file; replace the feature graphic with the regenerated
-   `mobile/assets/feature-graphic.png` (also copied to `~/Downloads/`).
-7. **Re-take screenshots** after deploying the web-app changes to
-   production (`bash deploy.sh`) — the old screenshots show the
-   "ShulePRO" wordmark on the sign-in pages, which no longer matches.
-   Say "relaunch capture" or re-run
-   `node mobile/assets/shoot-portal-screenshots.js`.
 
 ---
 
@@ -217,8 +190,8 @@ unrelated, already-operating competitor also using the name "ShulePro"
 Each upload needs a higher version. In `mobile/android/app/build.gradle`:
 
 ```gradle
-versionCode 3          // increment by 1 every upload — 2 was used for the rename
-versionName "1.2"      // human-readable
+versionCode 2          // increment by 1 every upload
+versionName "1.1"      // human-readable
 ```
 
 Then rebuild:
@@ -232,4 +205,4 @@ cd mobile/android && JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Co
 - `mobile/android/shulepro-release.jks`
 - `mobile/android/key.properties`
 
-Losing these means never being able to update Shule360 on Play again.
+Losing these means never being able to update ShulePRO on Play again.

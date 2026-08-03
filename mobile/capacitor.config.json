@@ -1,6 +1,6 @@
 {
   "appId": "tz.co.chanitech.shulepro",
-  "appName": "Shule360",
+  "appName": "ShulePRO",
   "webDir": "www",
   "server": {
     "url": "https://schoolms.chanitech.co.tz/guardian/login",
