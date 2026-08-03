@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Privacy Policy — ShulePRO / SchoolMS</title>
+<title>Privacy Policy — Shule360 / SchoolMS</title>
 <style>
 *, *::before, *::after { box-sizing: border-box; }
 body {
@@ -45,19 +45,19 @@ footer {
 <body>
 <header>
     <h1>Privacy Policy</h1>
-    <p>ShulePRO &mdash; Smart school management, simplified.</p>
+    <p>Shule360 &mdash; Smart school management, simplified.</p>
 </header>
 <main>
     <p><strong>Effective date:</strong> 14 July 2026</p>
 
-    <p>ShulePRO (also known as SchoolMS) is a school management system operated by
-    <strong>Chanitech</strong>, Dar es Salaam, Tanzania. The ShulePRO mobile app gives
+    <p>Shule360 (also known as SchoolMS) is a school management system operated by
+    <strong>Chanitech</strong>, Dar es Salaam, Tanzania. The Shule360 mobile app gives
     parents and guardians secure access to their children's school information. This
     policy explains what information we handle, how we use it, and the choices you have.
-    It applies to the ShulePRO mobile app and the ShulePRO web portal.</p>
+    It applies to the Shule360 mobile app and the Shule360 web portal.</p>
 
     <h2>1. Information we handle</h2>
-    <p>ShulePRO processes information on behalf of the school your child attends. This includes:</p>
+    <p>Shule360 processes information on behalf of the school your child attends. This includes:</p>
     <ul>
         <li><strong>Guardian account information</strong> — your name, phone number, and login credentials, used to sign you in and link you to your child.</li>
         <li><strong>Student school records</strong> — your child's enrollment details, class, academic results, and school fee statements, receipts, and payment history. These records are created and managed by the school, not collected by the app.</li>
@@ -77,8 +77,8 @@ footer {
     host the system securely on our behalf.</p>
 
     <h2>3. Children's privacy</h2>
-    <p>Student records in ShulePRO are provided and managed by schools as part of their
-    educational duties. Children do not create accounts in the ShulePRO app; access is
+    <p>Student records in Shule360 are provided and managed by schools as part of their
+    educational duties. Children do not create accounts in the Shule360 app; access is
     granted to parents, guardians, and authorized school staff only. Each guardian can
     see only the records of children linked to them by the school.</p>
 
@@ -99,14 +99,14 @@ footer {
 
     <h2>7. Contact us</h2>
     <p>
-        Chanitech — ShulePRO / SchoolMS<br>
+        Chanitech — Shule360 / SchoolMS<br>
         Dar es Salaam, Tanzania<br>
         Email: <a href="mailto:info@chanitech.co.tz">info@chanitech.co.tz</a><br>
         Phone: +255 713 209 535
     </p>
 </main>
 <footer>
-    &copy; {{ date('Y') }} Chanitech &mdash; ShulePRO / SchoolMS
+    &copy; {{ date('Y') }} Chanitech &mdash; Shule360 / SchoolMS
 </footer>
 </body>
 </html>
