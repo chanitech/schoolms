@@ -179,19 +179,18 @@
     {{-- TODAY'S SCHOOL SCHEDULE --}}
     <div class="{{ $isTeacher ? 'col-lg-8' : 'col-lg-8' }}">
         <div class="card shadow-sm border-0 mb-3" style="border-radius:12px;overflow:hidden">
-            <div class="card-header d-flex align-items-center justify-content-between"
-                 style="background:linear-gradient(135deg,#00897b,#00695c);color:#fff">
+            <div class="card-header d-flex align-items-center justify-content-between hdr-flat">
                 <div>
-                    <i class="fas fa-calendar-day mr-2"></i>
+                    <i class="fas fa-calendar-day mr-2" style="color:#0d9488"></i>
                     <strong>Today's School Schedule</strong>
-                    <small class="ml-2 opacity-75">{{ now()->format('l, d M Y') }}</small>
+                    <small class="ml-2 text-muted">{{ now()->format('l, d M Y') }}</small>
                 </div>
                 <div class="d-flex" style="gap:.5rem">
                     <a href="{{ route('timetables.index', ['status'=>'published','type'=>'class']) }}"
-                       class="btn btn-sm btn-light">
+                       class="btn btn-sm btn-outline-secondary">
                         <i class="fas fa-list mr-1"></i>All Timetables
                     </a>
-                    <button type="button" class="btn btn-tool text-white" data-card-widget="collapse">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
                         <i class="fas fa-minus"></i>
                     </button>
                 </div>
@@ -211,8 +210,8 @@
         {{-- Library Quick Stats --}}
         @if($canViewLibrary)
         <div class="card shadow-sm border-0 mb-3" style="border-radius:12px;overflow:hidden">
-            <div class="card-header" style="background:linear-gradient(135deg,#6f42c1,#4a148c);color:#fff">
-                <i class="fas fa-book mr-2"></i><strong>Library</strong>
+            <div class="card-header hdr-flat">
+                <i class="fas fa-book mr-2" style="color:#7c3aed"></i><strong>Library</strong>
             </div>
             <div class="card-body p-3">
                 <div class="d-flex justify-content-between align-items-center mb-2">
@@ -240,8 +239,8 @@
 
         {{-- Quick Actions --}}
         <div class="card shadow-sm border-0" style="border-radius:12px;overflow:hidden">
-            <div class="card-header" style="background:linear-gradient(135deg,#e65100,#bf360c);color:#fff">
-                <i class="fas fa-bolt mr-2"></i><strong>Quick Actions</strong>
+            <div class="card-header hdr-flat">
+                <i class="fas fa-bolt mr-2" style="color:#0f2942"></i><strong>Quick Actions</strong>
             </div>
             <div class="card-body p-3">
                 <div class="quick-actions-grid">
@@ -303,8 +302,8 @@
     @if($canViewPayments && array_sum($feeTrend['values']))
     <div class="col-lg-6 mb-3">
         <div class="card shadow-sm border-0 h-100" style="border-radius:12px;overflow:hidden">
-            <div class="card-header" style="background:linear-gradient(135deg,#1b5e20,#2e7d32);color:#fff">
-                <i class="fas fa-chart-line mr-2"></i><strong>Fee Collection — Last 6 Months</strong>
+            <div class="card-header hdr-flat">
+                <i class="fas fa-chart-line mr-2" style="color:#16a34a"></i><strong>Fee Collection — Last 6 Months</strong>
             </div>
             <div class="card-body"><canvas id="feeTrendChart" style="max-height:240px"></canvas></div>
         </div>
@@ -314,8 +313,8 @@
     @if($canViewClasses && count($examPerformance['labels']))
     <div class="col-lg-6 mb-3">
         <div class="card shadow-sm border-0 h-100" style="border-radius:12px;overflow:hidden">
-            <div class="card-header" style="background:linear-gradient(135deg,#4527a0,#5e35b1);color:#fff">
-                <i class="fas fa-graduation-cap mr-2"></i><strong>Average Mark per Class — {{ $examPerformance['exam'] }}</strong>
+            <div class="card-header hdr-flat">
+                <i class="fas fa-graduation-cap mr-2" style="color:#4f46e5"></i><strong>Average Mark per Class — {{ $examPerformance['exam'] }}</strong>
             </div>
             <div class="card-body"><canvas id="examPerformanceChart" style="max-height:240px"></canvas></div>
         </div>
@@ -325,8 +324,8 @@
     @if($canViewStudents && count($classDistribution['labels']))
     <div class="col-lg-5 mb-3">
         <div class="card shadow-sm border-0 h-100" style="border-radius:12px;overflow:hidden">
-            <div class="card-header" style="background:linear-gradient(135deg,#0d47a1,#1976d2);color:#fff">
-                <i class="fas fa-users mr-2"></i><strong>Students per Class</strong>
+            <div class="card-header hdr-flat">
+                <i class="fas fa-users mr-2" style="color:#2563eb"></i><strong>Students per Class</strong>
             </div>
             <div class="card-body"><canvas id="classDistChart" style="max-height:230px"></canvas></div>
         </div>
@@ -336,8 +335,8 @@
     @if($canViewStudents && count($genderSplit['labels']))
     <div class="col-lg-3 mb-3">
         <div class="card shadow-sm border-0 h-100" style="border-radius:12px;overflow:hidden">
-            <div class="card-header" style="background:linear-gradient(135deg,#00695c,#00897b);color:#fff">
-                <i class="fas fa-venus-mars mr-2"></i><strong>Gender</strong>
+            <div class="card-header hdr-flat">
+                <i class="fas fa-venus-mars mr-2" style="color:#0d9488"></i><strong>Gender</strong>
             </div>
             <div class="card-body"><canvas id="genderChart" style="max-height:230px"></canvas></div>
         </div>
@@ -347,8 +346,8 @@
     @if($canViewStaff && array_sum($sessionWeek))
     <div class="col-lg-4 mb-3">
         <div class="card shadow-sm border-0 h-100" style="border-radius:12px;overflow:hidden">
-            <div class="card-header" style="background:linear-gradient(135deg,#e65100,#ef6c00);color:#fff">
-                <i class="fas fa-chalkboard-teacher mr-2"></i><strong>Teacher Sessions This Week</strong>
+            <div class="card-header hdr-flat">
+                <i class="fas fa-chalkboard-teacher mr-2" style="color:#ea580c"></i><strong>Teacher Sessions This Week</strong>
             </div>
             <div class="card-body">
                 <canvas id="sessionWeekChart" style="max-height:200px"></canvas>
@@ -370,10 +369,9 @@
     @if($canViewEvents)
     <div class="col-lg-4 mb-3">
         <div class="card shadow-sm border-0 h-100" style="border-radius:12px;overflow:hidden">
-            <div class="card-header d-flex justify-content-between align-items-center"
-                 style="background:linear-gradient(135deg,#f57c00,#e65100);color:#fff">
-                <div><i class="fas fa-calendar-alt mr-2"></i><strong>Upcoming Events</strong></div>
-                <a href="{{ route('events.calendar') }}" class="btn btn-sm btn-light">View All</a>
+            <div class="card-header d-flex justify-content-between align-items-center hdr-flat">
+                <div><i class="fas fa-calendar-alt mr-2" style="color:#d97706"></i><strong>Upcoming Events</strong></div>
+                <a href="{{ route('events.calendar') }}" class="btn btn-sm btn-outline-secondary">View All</a>
             </div>
             <div class="card-body p-0">
                 <ul class="list-group list-group-flush">
@@ -410,10 +408,9 @@
     @if($canViewStudents)
     <div class="col-lg-4 mb-3">
         <div class="card shadow-sm border-0 h-100" style="border-radius:12px;overflow:hidden">
-            <div class="card-header d-flex justify-content-between align-items-center"
-                 style="background:linear-gradient(135deg,#37474f,#263238);color:#fff">
-                <div><i class="fas fa-user-graduate mr-2"></i><strong>Recent Enrollments</strong></div>
-                <a href="{{ route('students.index') }}" class="btn btn-sm btn-light">View All</a>
+            <div class="card-header d-flex justify-content-between align-items-center hdr-flat">
+                <div><i class="fas fa-user-graduate mr-2" style="color:#334155"></i><strong>Recent Enrollments</strong></div>
+                <a href="{{ route('students.index') }}" class="btn btn-sm btn-outline-secondary">View All</a>
             </div>
             <div class="card-body p-0">
                 <ul class="list-group list-group-flush">
@@ -447,9 +444,8 @@
     @if($canViewEvents)
     <div class="col-lg-4 mb-3">
         <div class="card shadow-sm border-0 h-100" style="border-radius:12px;overflow:hidden">
-            <div class="card-header"
-                 style="background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff">
-                <i class="fas fa-chart-pie mr-2"></i><strong>Event Distribution</strong>
+            <div class="card-header hdr-flat">
+                <i class="fas fa-chart-pie mr-2" style="color:#2563eb"></i><strong>Event Distribution</strong>
             </div>
             <div class="card-body d-flex flex-column align-items-center justify-content-center">
                 @if($eventStats->count() > 0)
@@ -470,10 +466,9 @@
 <div class="row">
     <div class="col-12 mb-3">
         <div class="card shadow-sm border-0" style="border-radius:12px;overflow:hidden">
-            <div class="card-header d-flex align-items-center justify-content-between"
-                 style="background:linear-gradient(135deg,#2e7d32,#1b5e20);color:#fff">
-                <div><i class="fas fa-calendar-alt mr-2"></i><strong>Event Calendar</strong></div>
-                <button type="button" class="btn btn-tool text-white" data-card-widget="collapse">
+            <div class="card-header d-flex align-items-center justify-content-between hdr-flat">
+                <div><i class="fas fa-calendar-alt mr-2" style="color:#16a34a"></i><strong>Event Calendar</strong></div>
+                <button type="button" class="btn btn-tool" data-card-widget="collapse">
                     <i class="fas fa-minus"></i>
                 </button>
             </div>
@@ -492,11 +487,11 @@
 <style>
 /* ── Welcome Hero ──────────────────────────────────────────────────── */
 .welcome-hero {
-    background: linear-gradient(135deg, #1a237e 0%, #1565c0 50%, #0288d1 100%);
-    border-radius: 16px;
+    background: #0f2942;
+    border-radius: 12px;
     padding: 1.5rem 2rem;
     color: #fff;
-    box-shadow: 0 4px 20px rgba(26,35,126,.25);
+    box-shadow: 0 2px 10px rgba(15,41,66,.18);
 }
 .hero-avatar { font-size: 3.5rem; opacity: .85; line-height:1; }
 .hero-greeting { font-size: .95rem; opacity: .8; font-weight:400; }
@@ -523,31 +518,44 @@
 .date-full { font-size: 1.1rem; font-weight: 600; }
 .date-time { font-size: 1.6rem; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing:.5px; }
 
+/* ── Flat Card Headers ────────────────────────────────────────────────
+   Replaces the old per-section gradient headers with one consistent,
+   professional flat style; each section keeps a colored icon instead. */
+.hdr-flat { background: #fff; border-bottom: 1px solid #e9ecef; color: #1e293b; }
+
 /* ── Stats Cards ───────────────────────────────────────────────────── */
 .stats-row { gap-y: 1rem; }
 .stat-card {
-    border-radius: 14px;
+    background: #fff;
+    border: 1px solid #e6e9ef;
+    border-radius: 12px;
     padding: 1.1rem 1rem;
     display: flex;
     align-items: flex-start;
     gap: .9rem;
-    box-shadow: 0 2px 12px rgba(0,0,0,.08);
+    box-shadow: 0 1px 3px rgba(15,23,42,.05);
     margin-bottom: 1rem;
-    transition: transform .15s, box-shadow .15s;
-    color: #fff;
+    transition: transform .15s, box-shadow .15s, border-color .15s;
+    color: #1e293b;
 }
-.stat-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,.13); }
-.stat-icon { font-size: 1.8rem; opacity: .85; min-width:2rem; }
-.stat-number { font-size: 1.45rem; font-weight: 700; line-height: 1.1; }
-.stat-label { font-size: .78rem; opacity: .85; font-weight: 500; margin-top:.1rem; }
-.stat-growth { font-size: .72rem; margin-top: .3rem; opacity: .9; }
+.stat-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(15,23,42,.09); border-color: #d7dce5; }
+.stat-icon {
+    width: 46px; height: 46px;
+    border-radius: 11px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+.stat-number { font-size: 1.45rem; font-weight: 700; line-height: 1.1; color: #0f2942; }
+.stat-label { font-size: .78rem; color: #64748b; font-weight: 500; margin-top:.1rem; }
+.stat-growth { font-size: .72rem; margin-top: .3rem; }
 
-.stat-blue   { background: linear-gradient(135deg, #1976d2, #0d47a1); }
-.stat-teal   { background: linear-gradient(135deg, #00897b, #004d40); }
-.stat-green  { background: linear-gradient(135deg, #43a047, #1b5e20); }
-.stat-purple { background: linear-gradient(135deg, #7b1fa2, #4a148c); }
-.stat-orange { background: linear-gradient(135deg, #f57c00, #e65100); }
-.stat-red    { background: linear-gradient(135deg, #e53935, #b71c1c); }
+.stat-blue   .stat-icon { background: rgba(37,99,235,.12);  color: #2563eb; }
+.stat-teal   .stat-icon { background: rgba(13,148,136,.12); color: #0d9488; }
+.stat-green  .stat-icon { background: rgba(22,163,74,.12);  color: #16a34a; }
+.stat-purple .stat-icon { background: rgba(124,58,237,.12); color: #7c3aed; }
+.stat-orange .stat-icon { background: rgba(234,88,12,.12);  color: #ea580c; }
+.stat-red    .stat-icon { background: rgba(220,38,38,.12);  color: #dc2626; }
 
 /* ── Attendance Bar ────────────────────────────────────────────────── */
 .attendance-bar-card {
@@ -570,25 +578,27 @@
     text-decoration: none;
     font-size: .75rem;
     font-weight: 600;
-    color: #fff;
-    transition: transform .12s, box-shadow .12s;
+    color: #1e293b;
+    background: #f8f9fb;
+    border: 1px solid #e6e9ef;
+    transition: transform .12s, box-shadow .12s, border-color .12s, background .12s;
     text-align: center;
     line-height: 1.2;
 }
 .qa-btn i { font-size: 1.25rem; }
-.qa-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.18); color:#fff; text-decoration:none; }
-.qa-blue   { background: linear-gradient(135deg,#1976d2,#0d47a1); }
-.qa-green  { background: linear-gradient(135deg,#43a047,#2e7d32); }
-.qa-purple { background: linear-gradient(135deg,#7b1fa2,#4a148c); }
-.qa-teal   { background: linear-gradient(135deg,#00897b,#004d40); }
-.qa-orange { background: linear-gradient(135deg,#f57c00,#e65100); }
-.qa-red    { background: linear-gradient(135deg,#e53935,#b71c1c); }
+.qa-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(15,23,42,.1); background:#fff; border-color:#c9d0da; color:#1e293b; text-decoration:none; }
+.qa-blue   i { color: #2563eb; }
+.qa-green  i { color: #16a34a; }
+.qa-purple i { color: #7c3aed; }
+.qa-teal   i { color: #0d9488; }
+.qa-orange i { color: #ea580c; }
+.qa-red    i { color: #dc2626; }
 
 /* ── Student Avatar ────────────────────────────────────────────────── */
 .student-avatar {
     width: 36px; height: 36px;
     border-radius: 50%;
-    background: linear-gradient(135deg,#1976d2,#7b1fa2);
+    background: #0f2942;
     color: #fff;
     display: flex; align-items: center; justify-content: center;
     font-weight: 700; font-size: .9rem;
