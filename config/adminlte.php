@@ -718,6 +718,17 @@ return [
         // Events – requires 'view events'
         ['text' => 'Events', 'url' => 'events', 'icon' => 'fas fa-calendar-alt', 'can' => 'view events'],
 
+        // Bulk SMS – requires 'send sms'
+        [
+            'text'    => 'SMS',
+            'icon'    => 'fas fa-sms',
+            'can'     => 'send sms',
+            'submenu' => [
+                ['text' => 'Compose / Send', 'url' => 'sms/compose', 'icon' => 'fas fa-paper-plane', 'can' => 'send sms'],
+                ['text' => 'Sent Messages',  'url' => 'sms',         'icon' => 'fas fa-history',      'can' => 'send sms'],
+            ],
+        ],
+
         // HR Reports parent – will be shown if any sub-report is visible
         [
             'text' => 'HR Reports',

@@ -86,6 +86,13 @@ Route::get('/', function () {
 // Public privacy policy — required by the Google Play / App Store listings
 Route::view('/privacy', 'privacy')->name('privacy');
 
+// Bulk SMS (Beem Africa) — announcements to guardians/staff
+Route::middleware(['auth', 'verified'])->prefix('sms')->name('sms.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\SmsController::class, 'index'])->name('index');
+    Route::get('/compose', [\App\Http\Controllers\SmsController::class, 'compose'])->name('compose');
+    Route::post('/send', [\App\Http\Controllers\SmsController::class, 'send'])->name('send');
+});
+
 // Public document verification — checks the digital-signature code printed
 // on exported treasurer-office reports
 Route::get('/verify-document', function (\Illuminate\Http\Request $request) {
