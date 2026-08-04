@@ -57,6 +57,16 @@ class Student extends Model
         return $this->belongsTo(Guardian::class);
     }
 
+    public function transportAssignment()
+    {
+        return $this->hasOne(StudentTransportAssignment::class);
+    }
+
+    public function transportFees()
+    {
+        return $this->hasMany(TransportFee::class);
+    }
+
     // School Class
     public function schoolClass()
     {

@@ -993,6 +993,18 @@ return [
             ],
         ],
 
+        // ========== TRANSPORT (School Bus Service) ==========
+        [
+            'text' => 'Transport',
+            'icon' => 'fas fa-bus',
+            'can'  => 'view transport',
+            'submenu' => [
+                ['text' => 'Buses',       'url' => 'transport/buses',  'icon' => 'fas fa-bus',           'can' => 'view transport'],
+                ['text' => 'Routes',      'url' => 'transport/routes', 'icon' => 'fas fa-route',          'can' => 'view transport'],
+                ['text' => 'Fees',        'url' => 'transport/fees',   'icon' => 'fas fa-file-invoice-dollar', 'can' => 'view transport'],
+            ],
+        ],
+
         // ========== PERFORMANCE & TASKS ==========
         // Was completely ungated (parent + My Dashboard + Tasks) — every
         // authenticated user of any role saw this Treasurer/Finance-Office

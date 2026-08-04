@@ -708,6 +708,30 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/transactions',                       [\App\Http\Controllers\InventoryController::class, 'storeTransaction'])->name('transactions.store');
     });
 
+    // ==================== TRANSPORT (School Bus Service) ====================
+    Route::prefix('transport')->name('transport.')->group(function () {
+        Route::resource('buses', \App\Http\Controllers\BusController::class)->except(['show']);
+
+        Route::get('/routes',                          [\App\Http\Controllers\BusRouteController::class, 'index'])->name('routes.index');
+        Route::get('/routes/create',                    [\App\Http\Controllers\BusRouteController::class, 'create'])->name('routes.create');
+        Route::post('/routes',                          [\App\Http\Controllers\BusRouteController::class, 'store'])->name('routes.store');
+        Route::get('/routes/{route}',                   [\App\Http\Controllers\BusRouteController::class, 'show'])->name('routes.show');
+        Route::get('/routes/{route}/edit',               [\App\Http\Controllers\BusRouteController::class, 'edit'])->name('routes.edit');
+        Route::put('/routes/{route}',                   [\App\Http\Controllers\BusRouteController::class, 'update'])->name('routes.update');
+        Route::delete('/routes/{route}',                [\App\Http\Controllers\BusRouteController::class, 'destroy'])->name('routes.destroy');
+
+        Route::post('/routes/{route}/stops',             [\App\Http\Controllers\BusRouteController::class, 'storeStop'])->name('routes.stops.store');
+        Route::put('/stops/{stop}',                      [\App\Http\Controllers\BusRouteController::class, 'updateStop'])->name('stops.update');
+        Route::delete('/stops/{stop}',                   [\App\Http\Controllers\BusRouteController::class, 'destroyStop'])->name('stops.destroy');
+
+        Route::post('/routes/{route}/assign',            [\App\Http\Controllers\BusRouteController::class, 'assignStudent'])->name('routes.assign');
+        Route::post('/assignments/{assignment}/unassign',[\App\Http\Controllers\BusRouteController::class, 'unassignStudent'])->name('assignments.unassign');
+        Route::post('/routes/{route}/generate-fees',     [\App\Http\Controllers\BusRouteController::class, 'generateFees'])->name('routes.generate-fees');
+
+        Route::get('/fees',                              [\App\Http\Controllers\TransportFeeController::class, 'index'])->name('fees.index');
+        Route::post('/fees/{fee}/pay',                   [\App\Http\Controllers\TransportFeeController::class, 'pay'])->name('fees.pay');
+    });
+
     // Document Library
     Route::get('documents/{document}/download',         [DocumentController::class, 'download'])->name('documents.download');
     Route::post('documents/{document}/toggle-featured', [DocumentController::class, 'toggleFeatured'])->name('documents.toggle-featured');
