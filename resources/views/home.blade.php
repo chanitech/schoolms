@@ -248,12 +248,15 @@
             </div>
             <div class="card-body p-3">
                 @foreach($notices as $notice)
-                <div class="mb-2 pb-2 {{ !$loop->last ? 'border-bottom' : '' }}">
-                    <div class="small font-weight-bold">
-                        @if($notice->pinned)<i class="fas fa-thumbtack text-warning mr-1"></i>@endif
-                        {{ $notice->title }}
+                @php $nbColor = $notice->audience === 'staff' ? '#0284c7' : '#6366f1'; @endphp
+                <div class="d-flex mb-2 pb-2 {{ !$loop->last ? 'border-bottom' : '' }}" style="gap:.6rem;border-left:3px solid {{ $notice->pinned ? '#d97706' : $nbColor }};padding-left:.6rem;">
+                    <div class="flex-grow-1">
+                        <div class="small font-weight-bold text-dark">
+                            @if($notice->pinned)<i class="fas fa-thumbtack text-warning mr-1"></i>@endif
+                            {{ $notice->title }}
+                        </div>
+                        <div class="small text-muted">{{ \Illuminate\Support\Str::limit($notice->body, 90) }}</div>
                     </div>
-                    <div class="small text-muted">{{ \Illuminate\Support\Str::limit($notice->body, 90) }}</div>
                 </div>
                 @endforeach
             </div>

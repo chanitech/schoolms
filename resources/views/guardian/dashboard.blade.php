@@ -87,6 +87,8 @@ body{font-family:'DM Sans',sans-serif;background:#f0f4f8;color:var(--sl-700);}
 .notice-item{display:flex;gap:.7rem;padding:.6rem 0;}
 .notice-item+.notice-item{border-top:1px solid var(--sl-100);}
 .notice-ico{width:32px;height:32px;flex-shrink:0;border-radius:50%;background:var(--em-lt);color:var(--em-dk);display:flex;align-items:center;justify-content:center;font-size:.85rem;}
+.notice-item.n-all .notice-ico{background:#e0e7ff;color:#4338ca;}
+.notice-item.n-pinned .notice-ico{background:#fef3c7;color:#b45309;}
 .notice-title{font-weight:700;color:var(--sl-900);font-size:.86rem;}
 .notice-body{color:var(--sl-500);font-size:.78rem;margin-top:.1rem;}
 </style>
@@ -120,7 +122,7 @@ body{font-family:'DM Sans',sans-serif;background:#f0f4f8;color:var(--sl-700);}
         <div class="notice-board">
             <div class="sec-lbl" style="margin-bottom:.6rem;">Notice Board</div>
             @foreach($notices as $notice)
-                <div class="notice-item">
+                <div class="notice-item {{ $notice->pinned ? 'n-pinned' : ($notice->audience === 'all' ? 'n-all' : '') }}">
                     <div class="notice-ico"><i class="fas {{ $notice->pinned ? 'fa-thumbtack' : 'fa-bullhorn' }}"></i></div>
                     <div>
                         <div class="notice-title">{{ $notice->title }}</div>
