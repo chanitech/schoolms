@@ -17,50 +17,31 @@
 <div class="container-fluid">
     @include('partials.flash')
 
-    @forelse($notices as $notice)
-    @php
-        $audienceClass = ['all' => 'nb-all', 'staff' => 'nb-staff', 'guardians' => 'nb-guardians'][$notice->audience];
-        $posterName = $notice->poster->name ?? 'Administration';
-        $initials = strtoupper(collect(explode(' ', $posterName))->map(fn($w) => mb_substr($w, 0, 1))->take(2)->implode(''));
-    @endphp
-    <div class="nb-card {{ $audienceClass }} {{ $notice->pinned ? 'nb-pinned' : '' }}">
-        @if($notice->pinned)
-            <div class="nb-ribbon"><i class="fas fa-thumbtack mr-1"></i>Pinned</div>
-        @endif
-        <div class="nb-avatar">{{ $initials }}</div>
-        <div class="nb-main">
-            <div class="nb-head">
-                <h5 class="nb-title">{{ $notice->title }}</h5>
-                <span class="nb-audience">{{ ucfirst($notice->audience) }}</span>
-            </div>
-            <p class="nb-body">{{ $notice->body }}</p>
-            <div class="nb-meta">
-                <span><i class="fas fa-user-tie mr-1"></i>{{ $posterName }}</span>
-                <span><i class="far fa-clock mr-1"></i>{{ $notice->created_at->format('d M Y') }}</span>
-                @if($notice->expires_at)
-                    <span class="nb-expiry"><i class="fas fa-hourglass-half mr-1"></i>Expires {{ $notice->expires_at->format('d M Y') }}</span>
-                @endif
-            </div>
-        </div>
-        @can('manage notices')
-        <div class="nb-actions">
-            <a href="{{ route('notices.edit', $notice) }}" class="btn btn-outline-secondary btn-xs" title="Edit">
-                <i class="fas fa-edit"></i>
-            </a>
-            <form action="{{ route('notices.destroy', $notice) }}" method="POST"
-                  onsubmit="return confirm('Remove this notice?');">
-                @csrf @method('DELETE')
-                <button type="submit" class="btn btn-outline-danger btn-xs" title="Delete"><i class="fas fa-trash"></i></button>
-            </form>
-        </div>
-        @endcan
-    </div>
-    @empty
+    @if($notices->isEmpty())
     <div class="nb-empty">
         <i class="fas fa-bullhorn"></i>
         <p>No notices posted yet.</p>
     </div>
-    @endforelse
+    @else
+        @php
+            $pinned = $notices->getCollection()->where('pinned', true);
+            $recent = $notices->getCollection()->where('pinned', false);
+        @endphp
+
+        @if($pinned->isNotEmpty())
+        <div class="nb-sec-lbl"><i class="fas fa-thumbtack mr-2"></i>Pinned</div>
+        @foreach($pinned as $notice)
+            @include('notices._card', ['notice' => $notice])
+        @endforeach
+        @endif
+
+        @if($recent->isNotEmpty())
+        <div class="nb-sec-lbl"><i class="fas fa-clock mr-2"></i>Recently Posted</div>
+        @foreach($recent as $notice)
+            @include('notices._card', ['notice' => $notice])
+        @endforeach
+        @endif
+    @endif
 
     {{ $notices->links() }}
 </div>
@@ -68,6 +49,18 @@
 
 @section('css')
 <style>
+.nb-sec-lbl{
+    font-size:.68rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+    color:#94a3b8; margin:0 0 .7rem; display:flex; align-items:center;
+}
+.nb-sec-lbl:not(:first-child){ margin-top:1.6rem; }
+
+.nb-new{
+    display:inline-block; background:#dcfce7; color:#15803d; font-size:.6rem; font-weight:700;
+    text-transform:uppercase; letter-spacing:.04em; border-radius:20px; padding:.1rem .5rem;
+    vertical-align:middle; margin-left:.4rem;
+}
+
 .nb-card{
     display:flex; align-items:flex-start; gap:1rem;
     background:#fff; border-radius:10px; border-left:4px solid #cbd5e1;

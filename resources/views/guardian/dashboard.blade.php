@@ -125,7 +125,12 @@ body{font-family:'DM Sans',sans-serif;background:#f0f4f8;color:var(--sl-700);}
                 <div class="notice-item {{ $notice->pinned ? 'n-pinned' : ($notice->audience === 'all' ? 'n-all' : '') }}">
                     <div class="notice-ico"><i class="fas {{ $notice->pinned ? 'fa-thumbtack' : 'fa-bullhorn' }}"></i></div>
                     <div>
-                        <div class="notice-title">{{ $notice->title }}</div>
+                        <div class="notice-title">
+                            {{ $notice->title }}
+                            @if($notice->created_at->gt(now()->subDays(3)))
+                                <span style="display:inline-block;background:var(--em-lt);color:var(--em-dk);font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;border-radius:20px;padding:.06rem .45rem;vertical-align:middle;margin-left:.3rem;">New</span>
+                            @endif
+                        </div>
                         <div class="notice-body">{{ \Illuminate\Support\Str::limit($notice->body, 140) }}</div>
                     </div>
                 </div>

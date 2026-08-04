@@ -254,6 +254,9 @@
                         <div class="small font-weight-bold text-dark">
                             @if($notice->pinned)<i class="fas fa-thumbtack text-warning mr-1"></i>@endif
                             {{ $notice->title }}
+                            @if($notice->created_at->gt(now()->subDays(3)))
+                                <span class="badge badge-success" style="font-size:.55rem;vertical-align:middle;">New</span>
+                            @endif
                         </div>
                         <div class="small text-muted">{{ \Illuminate\Support\Str::limit($notice->body, 90) }}</div>
                     </div>
