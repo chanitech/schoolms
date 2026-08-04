@@ -81,6 +81,14 @@ body{font-family:'DM Sans',sans-serif;background:#f0f4f8;color:var(--sl-700);}
 .empty-state p{color:var(--sl-500);font-size:.88rem;}
 
 @media(max-width:576px){.fin-grid{gap:.5rem;}.fin-val{font-size:.76rem;}}
+
+/* Notice board */
+.notice-board{background:#fff;border-radius:var(--r);box-shadow:var(--sh-sm);padding:1.2rem 1.4rem;margin-bottom:1.4rem;animation:slideUp .42s ease both;}
+.notice-item{display:flex;gap:.7rem;padding:.6rem 0;}
+.notice-item+.notice-item{border-top:1px solid var(--sl-100);}
+.notice-ico{width:32px;height:32px;flex-shrink:0;border-radius:50%;background:var(--em-lt);color:var(--em-dk);display:flex;align-items:center;justify-content:center;font-size:.85rem;}
+.notice-title{font-weight:700;color:var(--sl-900);font-size:.86rem;}
+.notice-body{color:var(--sl-500);font-size:.78rem;margin-top:.1rem;}
 </style>
 @endpush
 
@@ -106,6 +114,22 @@ body{font-family:'DM Sans',sans-serif;background:#f0f4f8;color:var(--sl-700);}
             </a>
         </div>
     </div>
+
+    {{-- Notice Board --}}
+    @if($notices->isNotEmpty())
+        <div class="notice-board">
+            <div class="sec-lbl" style="margin-bottom:.6rem;">Notice Board</div>
+            @foreach($notices as $notice)
+                <div class="notice-item">
+                    <div class="notice-ico"><i class="fas {{ $notice->pinned ? 'fa-thumbtack' : 'fa-bullhorn' }}"></i></div>
+                    <div>
+                        <div class="notice-title">{{ $notice->title }}</div>
+                        <div class="notice-body">{{ \Illuminate\Support\Str::limit($notice->body, 140) }}</div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    @endif
 
     @if($students->isEmpty())
         <div class="empty-state">

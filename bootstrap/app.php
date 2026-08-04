@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // SubstituteBindings (so route model binding is school-scoped).
         $middleware->appendToGroup('web', \App\Http\Middleware\ResolveTenant::class);
         $middleware->appendToGroup('web', \App\Http\Middleware\RestrictGuardianMenu::class);
+        $middleware->appendToGroup('web', \App\Http\Middleware\InjectMenuBadges::class);
         $middleware->appendToPriorityList(
             \Illuminate\Session\Middleware\StartSession::class,
             \App\Http\Middleware\ResolveTenant::class,

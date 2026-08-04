@@ -725,6 +725,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/{suggestion}/respond', [\App\Http\Controllers\SuggestionController::class, 'respond'])->name('respond');
     });
 
+    // ==================== NOTICE BOARD ====================
+    // Viewing is open to every authenticated user (staff and guardians);
+    // 'manage notices' (route middleware, not menu 'can') gates create/edit/delete.
+    Route::resource('notices', \App\Http\Controllers\NoticeController::class)->except(['show']);
+
     // ==================== TRANSPORT (School Bus Service) ====================
     Route::prefix('transport')->name('transport.')->group(function () {
         Route::resource('buses', \App\Http\Controllers\BusController::class)->except(['show']);

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Guardian;
+use App\Models\Notice;
 use App\Models\Student;
 use App\Models\User;
 use App\Models\Exam;
@@ -252,7 +253,9 @@ public function dashboard()
             return $student;
         });
 
-    return view('guardian.dashboard', compact('guardian', 'students'));
+    $notices = Notice::visibleTo(['all', 'guardians']);
+
+    return view('guardian.dashboard', compact('guardian', 'students', 'notices'));
 }
 
 /**

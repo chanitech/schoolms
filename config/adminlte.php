@@ -793,7 +793,6 @@ return [
                     'route' => 'treasurer.loans.pending',
                     'icon' => 'fas fa-clock',
                     'can' => 'approve loans',
-                    'label' => $pendingLoansCount ?? 0,
                     'label_color' => 'warning',
                 ],
                 [
@@ -834,7 +833,6 @@ return [
                     'route' => 'finance.budgets.pending',
                     'icon' => 'fas fa-check-circle',
                     'can' => 'view pending approvals',
-                    'label' => $pendingBudgetsCount ?? 0,
                     'label_color' => 'warning',
                 ],
                 [
@@ -863,7 +861,6 @@ return [
                     'route' => 'finance.invoices.do',
                     'icon' => 'fas fa-check-double',
                     'can' => 'approve invoices',
-                    'label' => $pendingInvoicesCount ?? 0,
                     'label_color' => 'warning',
                 ],
                 [
@@ -990,6 +987,17 @@ return [
                     'icon'  => 'fas fa-exchange-alt',
                     'can'   => ['manage settings', 'manage stock', 'view inventory'],
                 ],
+            ],
+        ],
+
+        // ========== NOTICE BOARD ==========
+        // Viewing is open to everyone; only the manage sub-item is gated.
+        [
+            'text'    => 'Notice Board',
+            'icon'    => 'fas fa-bullhorn',
+            'submenu' => [
+                ['text' => 'View Notices',  'route' => 'notices.index',  'icon' => 'fas fa-list'],
+                ['text' => 'Post Notice',   'route' => 'notices.create', 'icon' => 'fas fa-plus', 'can' => 'manage notices'],
             ],
         ],
 

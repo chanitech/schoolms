@@ -239,6 +239,27 @@
 
     {{-- RIGHT SIDEBAR: Quick Stats + Quick Actions --}}
     <div class="col-lg-4">
+        {{-- Notice Board --}}
+        @if($notices->isNotEmpty())
+        <div class="card shadow-sm border-0 mb-3" style="border-radius:12px;overflow:hidden">
+            <div class="card-header d-flex align-items-center justify-content-between hdr-flat">
+                <div><i class="fas fa-bullhorn mr-2" style="color:#d97706"></i><strong>Notice Board</strong></div>
+                <a href="{{ route('notices.index') }}" class="btn btn-sm btn-outline-secondary">View All</a>
+            </div>
+            <div class="card-body p-3">
+                @foreach($notices as $notice)
+                <div class="mb-2 pb-2 {{ !$loop->last ? 'border-bottom' : '' }}">
+                    <div class="small font-weight-bold">
+                        @if($notice->pinned)<i class="fas fa-thumbtack text-warning mr-1"></i>@endif
+                        {{ $notice->title }}
+                    </div>
+                    <div class="small text-muted">{{ \Illuminate\Support\Str::limit($notice->body, 90) }}</div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
         {{-- Library Quick Stats --}}
         @if($canViewLibrary)
         <div class="card shadow-sm border-0 mb-3" style="border-radius:12px;overflow:hidden">

@@ -12,6 +12,7 @@ use App\Models\Event;
 use App\Models\Leave;
 use App\Models\Lending;
 use App\Models\LessonPlan;
+use App\Models\Notice;
 use App\Models\Payment;
 use App\Models\SchoolClass;
 use App\Models\Staff;
@@ -221,6 +222,8 @@ class HomeController extends Controller
                 });
         }
 
+        $notices = Notice::visibleTo(['all', 'staff'])->load('poster');
+
         return view('home', compact(
             'canViewStudents', 'canViewStaff', 'canViewClasses', 'canViewPayments',
             'canViewTimetables', 'canViewLeaves', 'canViewDorms', 'canViewLibrary', 'canViewEvents',
@@ -234,6 +237,7 @@ class HomeController extends Controller
             'libraryStats',
             'recentStudents',
             'feeTrend', 'classDistribution', 'genderSplit', 'examPerformance', 'sessionWeek',
+            'notices',
         ));
     }
 
