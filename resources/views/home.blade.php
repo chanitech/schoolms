@@ -48,92 +48,92 @@
 </div>
 
 {{-- ══════════════════════════════════════════════════════════════════════
-     STATS ROW
+     STATS ROW — solid-color small-boxes with a footer link (per-card)
 ══════════════════════════════════════════════════════════════════════ --}}
 <div class="row stats-row">
     @if($canViewStudents)
     <div class="col-xl-2 col-md-4 col-6">
-        <div class="stat-card stat-blue">
-            <div class="stat-icon"><i class="fas fa-user-graduate"></i></div>
-            <div class="stat-body">
-                <div class="stat-number">{{ number_format($studentCount) }}</div>
-                <div class="stat-label">Students</div>
+        <div class="small-box-custom sb-teal">
+            <div class="sb-inner">
+                <h3>{{ number_format($studentCount) }}</h3>
+                <p>Students</p>
                 @if(isset($studentGrowth) && $studentGrowth !== null)
-                    <div class="stat-growth {{ $studentGrowth >= 0 ? 'text-success' : 'text-danger' }}">
-                        <i class="fas fa-arrow-{{ $studentGrowth >= 0 ? 'up' : 'down' }} mr-1"></i>{{ abs($studentGrowth) }}% this month
-                    </div>
+                    <div class="sb-sub"><i class="fas fa-arrow-{{ $studentGrowth >= 0 ? 'up' : 'down' }} mr-1"></i>{{ abs($studentGrowth) }}% this month</div>
                 @endif
             </div>
+            <div class="sb-icon"><i class="fas fa-user-graduate"></i></div>
+            <a href="{{ route('students.index') }}" class="sb-footer">Student register <i class="fas fa-arrow-circle-right"></i></a>
         </div>
     </div>
     @endif
     @if($canViewStaff)
     <div class="col-xl-2 col-md-4 col-6">
-        <div class="stat-card stat-teal">
-            <div class="stat-icon"><i class="fas fa-chalkboard-teacher"></i></div>
-            <div class="stat-body">
-                <div class="stat-number">{{ number_format($staffCount) }}</div>
-                <div class="stat-label">Staff Members</div>
-                <div class="stat-growth text-info">
-                    <i class="fas fa-circle mr-1"></i>{{ $staffPresentToday }} present today
-                </div>
+        <div class="small-box-custom sb-blue">
+            <div class="sb-inner">
+                <h3>{{ number_format($staffCount) }}</h3>
+                <p>Staff Members</p>
+                <div class="sb-sub"><i class="fas fa-circle mr-1" style="font-size:.5rem;vertical-align:middle"></i>{{ $staffPresentToday }} present today</div>
             </div>
+            <div class="sb-icon"><i class="fas fa-chalkboard-teacher"></i></div>
+            <a href="{{ route('staff.index') }}" class="sb-footer">Staff list <i class="fas fa-arrow-circle-right"></i></a>
         </div>
     </div>
     @endif
     @if($canViewClasses)
     <div class="col-xl-2 col-md-4 col-6">
-        <div class="stat-card stat-green">
-            <div class="stat-icon"><i class="fas fa-school"></i></div>
-            <div class="stat-body">
-                <div class="stat-number">{{ $classCount }}</div>
-                <div class="stat-label">Classes</div>
-                <div class="stat-growth text-muted">{{ $subjectCount }} subjects</div>
+        <div class="small-box-custom sb-green">
+            <div class="sb-inner">
+                <h3>{{ $classCount }}</h3>
+                <p>Classes</p>
+                <div class="sb-sub">{{ $subjectCount }} subjects</div>
             </div>
+            <div class="sb-icon"><i class="fas fa-school"></i></div>
+            <a href="{{ route('classes.index') }}" class="sb-footer">View classes <i class="fas fa-arrow-circle-right"></i></a>
         </div>
     </div>
     @endif
     @if($canViewPayments)
     <div class="col-xl-2 col-md-4 col-6">
-        <div class="stat-card stat-purple">
-            <div class="stat-icon"><i class="fas fa-money-bill-wave"></i></div>
-            <div class="stat-body">
-                <div class="stat-number">{{ number_format($todayCollection) }}</div>
-                <div class="stat-label">Today's Collections</div>
-                <div class="stat-growth text-muted">{{ number_format($monthCollection) }} this month</div>
+        <div class="small-box-custom sb-purple">
+            <div class="sb-inner">
+                <h3 style="font-size:1.5rem">{{ number_format($todayCollection) }}</h3>
+                <p>Today's Collections</p>
+                <div class="sb-sub">{{ number_format($monthCollection) }} this month</div>
             </div>
+            <div class="sb-icon"><i class="fas fa-money-bill-wave"></i></div>
+            <a href="{{ route('finance.payments.index') }}" class="sb-footer">View payments <i class="fas fa-arrow-circle-right"></i></a>
         </div>
     </div>
     @endif
     @if($canViewTimetables)
     <div class="col-xl-2 col-md-4 col-6">
-        <div class="stat-card stat-orange">
-            <div class="stat-icon"><i class="fas fa-calendar-week"></i></div>
-            <div class="stat-body">
-                <div class="stat-number">{{ $publishedTimetables }}</div>
-                <div class="stat-label">Active Timetables</div>
+        <div class="small-box-custom {{ $canViewLeaves && $pendingLeaves > 0 ? 'sb-orange' : 'sb-teal' }}">
+            <div class="sb-inner">
+                <h3>{{ $publishedTimetables }}</h3>
+                <p>Active Timetables</p>
                 @if($canViewLeaves)
                     @if($pendingLeaves > 0)
-                        <div class="stat-growth text-warning">
-                            <i class="fas fa-exclamation-circle mr-1"></i>{{ $pendingLeaves }} leave(s) pending
-                        </div>
+                        <div class="sb-sub"><i class="fas fa-exclamation-circle mr-1"></i>{{ $pendingLeaves }} leave(s) pending</div>
                     @else
-                        <div class="stat-growth text-success"><i class="fas fa-check mr-1"></i>No pending leaves</div>
+                        <div class="sb-sub"><i class="fas fa-check mr-1"></i>No pending leaves</div>
                     @endif
                 @endif
             </div>
+            <div class="sb-icon"><i class="fas fa-calendar-week"></i></div>
+            <a href="{{ route('timetables.index', ['status'=>'published','type'=>'class']) }}" class="sb-footer">View timetables <i class="fas fa-arrow-circle-right"></i></a>
         </div>
     </div>
     @endif
     @if($canViewDorms)
     <div class="col-xl-2 col-md-4 col-6">
-        <div class="stat-card stat-red">
-            <div class="stat-icon"><i class="fas fa-bed"></i></div>
-            <div class="stat-body">
-                <div class="stat-number">{{ $dormCount }}</div>
-                <div class="stat-label">Dormitories</div>
-                <div class="stat-growth text-muted">{{ $departmentCount }} departments</div>
+        <div class="small-box-custom sb-red">
+            <div class="sb-inner">
+                <h3>{{ $dormCount }}</h3>
+                <p>Dormitories</p>
+                <div class="sb-sub">{{ $departmentCount }} departments</div>
             </div>
+            <div class="sb-icon"><i class="fas fa-bed"></i></div>
+            <a href="{{ route('dormitories.index') }}" class="sb-footer">View dormitories <i class="fas fa-arrow-circle-right"></i></a>
         </div>
     </div>
     @endif
@@ -148,27 +148,59 @@
 </div>
 @endif
 
-@if($canViewStaff)
+@if($canViewStaff || $canViewPayments || $canViewLeaves || $canViewTimetables)
 {{-- ══════════════════════════════════════════════════════════════════════
-     STAFF ATTENDANCE PROGRESS BAR
+     SECONDARY METRICS — icon-led info-boxes
 ══════════════════════════════════════════════════════════════════════ --}}
-<div class="row mb-3">
-    <div class="col-12">
-        <div class="attendance-bar-card">
-            <div class="d-flex justify-content-between align-items-center mb-1">
-                <span class="font-weight-bold text-dark">
-                    <i class="fas fa-user-check text-success mr-2"></i>Staff Attendance Today
-                </span>
-                <span class="font-weight-bold {{ $staffAttendanceRate >= 80 ? 'text-success' : ($staffAttendanceRate >= 60 ? 'text-warning' : 'text-danger') }}">
-                    {{ $staffPresentToday }} / {{ $staffCount }} &nbsp;·&nbsp; {{ $staffAttendanceRate }}%
-                </span>
-            </div>
-            <div class="progress" style="height:10px;border-radius:8px">
-                <div class="progress-bar {{ $staffAttendanceRate >= 80 ? 'bg-success' : ($staffAttendanceRate >= 60 ? 'bg-warning' : 'bg-danger') }}"
-                     style="width:{{ $staffAttendanceRate }}%;border-radius:8px;transition:width 1s ease"></div>
+<div class="row mb-1">
+    @if($canViewStaff)
+    <div class="col-md-3 col-6">
+        <div class="info-box-custom">
+            <div class="ib-icon" style="background:rgba(13,148,136,.12);color:#0d9488"><i class="fas fa-user-check"></i></div>
+            <div class="ib-body">
+                <span class="ib-label">Staff Attendance</span>
+                <span class="ib-value">{{ $staffAttendanceRate }}%</span>
+                <span class="ib-sub">{{ $staffPresentToday }} / {{ $staffCount }} present today</span>
             </div>
         </div>
     </div>
+    @endif
+    @if($canViewPayments)
+    <div class="col-md-3 col-6">
+        <div class="info-box-custom">
+            <div class="ib-icon" style="background:rgba(124,58,237,.12);color:#7c3aed"><i class="fas fa-wallet"></i></div>
+            <div class="ib-body">
+                <span class="ib-label">Collected This Month</span>
+                <span class="ib-value" style="font-size:1.15rem">{{ number_format($monthCollection) }}</span>
+                <span class="ib-sub">TZS, all classes</span>
+            </div>
+        </div>
+    </div>
+    @endif
+    @if($canViewLeaves)
+    <div class="col-md-3 col-6">
+        <div class="info-box-custom">
+            <div class="ib-icon" style="background:{{ $pendingLeaves > 0 ? 'rgba(234,88,12,.12)' : 'rgba(22,163,74,.12)' }};color:{{ $pendingLeaves > 0 ? '#ea580c' : '#16a34a' }}"><i class="fas fa-umbrella-beach"></i></div>
+            <div class="ib-body">
+                <span class="ib-label">Pending Leaves</span>
+                <span class="ib-value">{{ $pendingLeaves }}</span>
+                <span class="ib-sub">Awaiting approval</span>
+            </div>
+        </div>
+    </div>
+    @endif
+    @if($canViewTimetables)
+    <div class="col-md-3 col-6">
+        <div class="info-box-custom">
+            <div class="ib-icon" style="background:rgba(37,99,235,.12);color:#2563eb"><i class="fas fa-calendar-check"></i></div>
+            <div class="ib-body">
+                <span class="ib-label">Published Timetables</span>
+                <span class="ib-value">{{ $publishedTimetables }}</span>
+                <span class="ib-sub">Currently active</span>
+            </div>
+        </div>
+    </div>
+    @endif
 </div>
 @endif
 
@@ -523,47 +555,69 @@
    professional flat style; each section keeps a colored icon instead. */
 .hdr-flat { background: #fff; border-bottom: 1px solid #e9ecef; color: #1e293b; }
 
-/* ── Stats Cards ───────────────────────────────────────────────────── */
+/* ── Stats Cards: solid-color small-box with footer link ─────────────
+   (matches the e-ManExcel reliability-dashboard reference style) ───── */
 .stats-row { gap-y: 1rem; }
-.stat-card {
+.small-box-custom {
+    position: relative;
+    border-radius: 12px;
+    color: #fff;
+    margin-bottom: 1rem;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(15,23,42,.1);
+    transition: transform .15s, box-shadow .15s;
+    display: block;
+}
+.small-box-custom:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(15,23,42,.18); }
+.small-box-custom .sb-inner { position: relative; z-index: 1; padding: 1.1rem 1.1rem .9rem; }
+.small-box-custom h3 { font-size: 1.9rem; font-weight: 700; margin: 0; line-height: 1.05; }
+.small-box-custom p { margin: .3rem 0 0; font-size: .85rem; font-weight: 500; opacity: .95; }
+.small-box-custom .sb-sub { margin-top: .35rem; font-size: .72rem; opacity: .85; }
+.small-box-custom .sb-icon {
+    position: absolute; top: .3rem; right: .6rem;
+    font-size: 3.4rem; opacity: .25; line-height: 1;
+}
+.small-box-custom .sb-footer {
+    display: block; position: relative; z-index: 1;
+    padding: .5rem 1.1rem;
+    background: rgba(0,0,0,.13);
+    color: #fff; font-size: .76rem; font-weight: 600;
+    text-decoration: none;
+}
+.small-box-custom .sb-footer:hover { background: rgba(0,0,0,.24); color: #fff; text-decoration: none; }
+
+.sb-teal   { background: #0d9488; }
+.sb-blue   { background: #2563eb; }
+.sb-green  { background: #16a34a; }
+.sb-purple { background: #7c3aed; }
+.sb-orange { background: #d97706; }
+.sb-red    { background: #dc2626; }
+
+/* ── Secondary Metrics: icon-led info-box ─────────────────────────────
+   White cards with a colored square icon on the left, matching the
+   e-ManExcel reference's second KPI row. ─────────────────────────── */
+.info-box-custom {
     background: #fff;
     border: 1px solid #e6e9ef;
     border-radius: 12px;
-    padding: 1.1rem 1rem;
+    padding: 1rem;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: .9rem;
     box-shadow: 0 1px 3px rgba(15,23,42,.05);
     margin-bottom: 1rem;
-    transition: transform .15s, box-shadow .15s, border-color .15s;
-    color: #1e293b;
 }
-.stat-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(15,23,42,.09); border-color: #d7dce5; }
-.stat-icon {
-    width: 46px; height: 46px;
-    border-radius: 11px;
+.info-box-custom .ib-icon {
+    width: 48px; height: 48px;
+    border-radius: 10px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     flex-shrink: 0;
 }
-.stat-number { font-size: 1.45rem; font-weight: 700; line-height: 1.1; color: #0f2942; }
-.stat-label { font-size: .78rem; color: #64748b; font-weight: 500; margin-top:.1rem; }
-.stat-growth { font-size: .72rem; margin-top: .3rem; }
-
-.stat-blue   .stat-icon { background: rgba(37,99,235,.12);  color: #2563eb; }
-.stat-teal   .stat-icon { background: rgba(13,148,136,.12); color: #0d9488; }
-.stat-green  .stat-icon { background: rgba(22,163,74,.12);  color: #16a34a; }
-.stat-purple .stat-icon { background: rgba(124,58,237,.12); color: #7c3aed; }
-.stat-orange .stat-icon { background: rgba(234,88,12,.12);  color: #ea580c; }
-.stat-red    .stat-icon { background: rgba(220,38,38,.12);  color: #dc2626; }
-
-/* ── Attendance Bar ────────────────────────────────────────────────── */
-.attendance-bar-card {
-    background: #fff;
-    border-radius: 12px;
-    padding: .9rem 1.2rem;
-    box-shadow: 0 2px 10px rgba(0,0,0,.06);
-}
+.info-box-custom .ib-body { display: flex; flex-direction: column; min-width: 0; }
+.info-box-custom .ib-label { font-size: .74rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: .3px; }
+.info-box-custom .ib-value { font-size: 1.35rem; font-weight: 700; color: #0f2942; line-height: 1.25; }
+.info-box-custom .ib-sub { font-size: .74rem; color: #94a3b8; }
 
 /* ── Quick Actions Grid ────────────────────────────────────────────── */
 .quick-actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
