@@ -518,6 +518,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/child/{student}/ai-insight', [GuardianController::class, 'aiInsight'])->name('child.ai.insight');
         // NEW: receipt route
     Route::get('/payment/{payment}/receipt', [GuardianController::class, 'paymentReceipt'])->name('payment.receipt');
+
+        Route::prefix('suggestions')->name('suggestions.')->group(function () {
+            Route::get('/',       [\App\Http\Controllers\SuggestionController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\SuggestionController::class, 'create'])->name('create');
+            Route::post('/',      [\App\Http\Controllers\SuggestionController::class, 'store'])->name('store');
+        });
     });
 
     // ==================== STAFF ATTENDANCE ====================
@@ -706,6 +712,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/transactions',                        [\App\Http\Controllers\InventoryController::class, 'transactions'])->name('transactions');
         Route::get('/transactions/create',                 [\App\Http\Controllers\InventoryController::class, 'createTransaction'])->name('transactions.create');
         Route::post('/transactions',                       [\App\Http\Controllers\InventoryController::class, 'storeTransaction'])->name('transactions.store');
+    });
+
+    // ==================== SUGGESTIONS / OPINIONS BOX ====================
+    // Submitting and viewing your own is open to every authenticated user
+    // (staff and guardians) — 'manage suggestions' only gates the admin inbox.
+    Route::prefix('suggestions')->name('suggestions.')->group(function () {
+        Route::get('/',        [\App\Http\Controllers\SuggestionController::class, 'index'])->name('index');
+        Route::get('/create',  [\App\Http\Controllers\SuggestionController::class, 'create'])->name('create');
+        Route::post('/',       [\App\Http\Controllers\SuggestionController::class, 'store'])->name('store');
+        Route::get('/manage',  [\App\Http\Controllers\SuggestionController::class, 'manage'])->name('manage');
+        Route::post('/{suggestion}/respond', [\App\Http\Controllers\SuggestionController::class, 'respond'])->name('respond');
     });
 
     // ==================== TRANSPORT (School Bus Service) ====================

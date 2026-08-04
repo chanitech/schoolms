@@ -21,6 +21,7 @@ class RestrictGuardianMenu
             config(['adminlte.menu' => [
                 ['text' => 'My Children', 'route' => 'guardian.dashboard', 'icon' => 'fas fa-home'],
                 ['text' => 'Fees & Payments', 'route' => 'guardian.fees', 'icon' => 'fas fa-wallet'],
+                ['text' => 'Suggestions', 'route' => 'guardian.suggestions.index', 'icon' => 'fas fa-comment-dots'],
             ]]);
         }
 

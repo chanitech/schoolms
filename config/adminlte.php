@@ -993,6 +993,20 @@ return [
             ],
         ],
 
+        // ========== SUGGESTIONS / OPINIONS BOX ==========
+        // Open to every authenticated staff role — no 'can' key on the
+        // parent item or the submit/my-submissions entry, same as the
+        // guardian-side menu (RestrictGuardianMenu). Only the admin inbox
+        // is gated.
+        [
+            'text'    => 'Suggestions',
+            'icon'    => 'fas fa-comment-dots',
+            'submenu' => [
+                ['text' => 'Submit / My Suggestions', 'url' => 'suggestions',        'icon' => 'fas fa-pen'],
+                ['text' => 'Manage Suggestions',       'url' => 'suggestions/manage', 'icon' => 'fas fa-inbox', 'can' => 'manage suggestions'],
+            ],
+        ],
+
         // ========== TRANSPORT (School Bus Service) ==========
         [
             'text' => 'Transport',
