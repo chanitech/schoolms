@@ -52,8 +52,10 @@ return new class extends Migration
         TransportFee::where('school_id', $school->id)->delete();
         StudentTransportAssignment::where('school_id', $school->id)->delete();
         BusStop::where('school_id', $school->id)->delete();
-        BusRoute::where('school_id', $school->id)->delete();
-        Bus::where('school_id', $school->id)->delete();
+        // Bus/BusRoute use SoftDeletes — forceDelete so the plate_number
+        // unique constraint doesn't collide with a trashed row on reseed.
+        BusRoute::withTrashed()->where('school_id', $school->id)->forceDelete();
+        Bus::withTrashed()->where('school_id', $school->id)->forceDelete();
         Notice::where('school_id', $school->id)->delete();
         Suggestion::where('school_id', $school->id)->delete();
         TimetableSessionLog::where('school_id', $school->id)->delete();
@@ -179,12 +181,15 @@ return new class extends Migration
 
         foreach ($notices as $n) {
             $when = now()->subDays($n['days_ago']);
-            Notice::create([
+            // create() silently drops created_at/updated_at since they
+            // aren't in $fillable — forceFill + save keeps our explicit
+            // historical dates instead of Eloquent stamping "now".
+            (new Notice())->forceFill([
                 'school_id' => $school->id,
                 'title' => $n['title'], 'body' => $n['body'], 'audience' => $n['audience'],
                 'pinned' => $n['pinned'], 'posted_by' => $poster->id ?? null,
                 'created_at' => $when, 'updated_at' => $when,
-            ]);
+            ])->save();
         }
     }
 
@@ -216,7 +221,9 @@ return new class extends Migration
             $when = now()->subDays($r['days_ago']);
             $responded = isset($r['response']);
 
-            Suggestion::create([
+            // forceFill, not create() — created_at/updated_at aren't in
+            // $fillable, so create() would silently stamp them with "now".
+            (new Suggestion())->forceFill([
                 'school_id' => $school->id,
                 'submitted_by' => $submitter?->id,
                 'submitter_role' => $r['anon'] ? 'Teacher' : 'Teacher',
@@ -229,7 +236,7 @@ return new class extends Migration
                 'responded_by' => $responded ? ($principal->id ?? null) : null,
                 'responded_at' => $responded ? $when->copy()->addDay() : null,
                 'created_at' => $when, 'updated_at' => $when,
-            ]);
+            ])->save();
         }
     }
 
