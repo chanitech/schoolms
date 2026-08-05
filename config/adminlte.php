@@ -733,9 +733,10 @@ return [
         [
             'text' => 'HR Reports',
             'icon' => 'fas fa-chart-line',
-            'can' => ['view staff report', 'view attendance report', 'view leave report',
+            'can' => ['view hr summary dashboard', 'view staff report', 'view attendance report', 'view leave report',
                       'view job cards report', 'view evaluation report'],
             'submenu' => [
+                ['text' => 'Summary Dashboard', 'url' => 'hr-reports/summary', 'icon' => 'fas fa-chart-pie', 'can' => 'view hr summary dashboard'],
                 ['text' => 'Staff Report', 'url' => 'hr-reports/staff', 'icon' => 'fas fa-users', 'can' => 'view staff report'],
                 ['text' => 'Attendance Report', 'url' => 'hr-reports/attendance', 'icon' => 'fas fa-calendar-check', 'can' => 'view attendance report'],
                 ['text' => 'Leave Report', 'url' => 'hr-reports/leaves', 'icon' => 'fas fa-plane-departure', 'can' => 'view leave report'],
