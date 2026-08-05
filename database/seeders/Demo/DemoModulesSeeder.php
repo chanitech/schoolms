@@ -790,7 +790,7 @@ class DemoModulesSeeder extends Seeder
                 'school_id' => $this->sid,
                 'student_id' => $student->id,
                 'gender' => $student->gender,
-                'age' => now()->diffInYears($student->date_of_birth),
+                'age' => $student->age,
                 'stream' => optional($student->class)->name,
                 'education_program' => 'O-Level',
                 'g_performance' => 'Average to good academic performance.',
