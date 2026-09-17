@@ -13,9 +13,22 @@ use Illuminate\Support\Facades\Storage;
  * one database (row-level multi-tenancy via BelongsToSchool), so a backup
  * necessarily contains every school — this is why it's super-admin-only,
  * not exposed anywhere in the per-school admin area.
+ *
+ * IMPORTANT: every call here uses Storage::disk('local') explicitly, never
+ * the bare Storage:: facade. This app sets FILESYSTEM_DISK=public in .env,
+ * so the bare facade's "default" disk is the web-accessible one
+ * (storage/app/public, symlinked to public/storage) — using it here would
+ * make full database dumps fetchable by anyone who guesses a filename,
+ * with no login required. Confirmed and fixed after an initial version of
+ * this controller did exactly that.
  */
 class BackupController extends Controller
 {
+    private function disk(): \Illuminate\Contracts\Filesystem\Filesystem
+    {
+        return Storage::disk('local');
+    }
+
     private function directory(): string
     {
         return config('backup.directory', 'backups');
@@ -24,12 +37,12 @@ class BackupController extends Controller
     public function index()
     {
         $dir = $this->directory();
-        $files = collect(Storage::files($dir))
+        $files = collect($this->disk()->files($dir))
             ->filter(fn ($path) => str_ends_with($path, '.sql.gz'))
             ->map(fn ($path) => [
                 'name' => basename($path),
-                'size' => Storage::size($path),
-                'date' => Storage::lastModified($path),
+                'size' => $this->disk()->size($path),
+                'date' => $this->disk()->lastModified($path),
             ])
             ->sortByDesc('date')
             ->values();
@@ -42,8 +55,8 @@ class BackupController extends Controller
         $db = config('database.connections.' . config('database.default'));
         $filename = 'backup_' . now()->format('Y-m-d_His') . '.sql.gz';
 
-        Storage::makeDirectory($this->directory());
-        $absolutePath = Storage::path($this->directory() . '/' . $filename);
+        $this->disk()->makeDirectory($this->directory());
+        $absolutePath = $this->disk()->path($this->directory() . '/' . $filename);
 
         $mysqldump = config('backup.mysqldump_path', 'mysqldump');
         $command = sprintf(
@@ -64,7 +77,7 @@ class BackupController extends Controller
 
         if (!$result->successful()) {
             Log::error('Database backup failed', ['error' => $result->errorOutput()]);
-            Storage::delete($this->directory() . '/' . $filename);
+            $this->disk()->delete($this->directory() . '/' . $filename);
 
             return back()->with('error', 'Backup failed — check the application log for details.');
         }
@@ -77,15 +90,15 @@ class BackupController extends Controller
         $this->assertSafeFilename($filename);
         $path = $this->directory() . '/' . $filename;
 
-        abort_unless(Storage::exists($path), 404);
+        abort_unless($this->disk()->exists($path), 404);
 
-        return Storage::download($path);
+        return $this->disk()->download($path);
     }
 
     public function destroy(string $filename)
     {
         $this->assertSafeFilename($filename);
-        Storage::delete($this->directory() . '/' . $filename);
+        $this->disk()->delete($this->directory() . '/' . $filename);
 
         return back()->with('success', 'Backup deleted.');
     }
