@@ -23,7 +23,7 @@ class StaffController extends Controller
     // List staff with departments & user (roles will be accessed via user)
     public function index()
     {
-        $staffs = Staff::with('department', 'user')->paginate(10);
+        $staffs = Staff::with('department', 'user.roles')->paginate(10);
         return view('staff.index', compact('staffs'));
     }
 

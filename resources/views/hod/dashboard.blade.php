@@ -453,7 +453,7 @@
 
 @push('js')
 @if($sessTotal > 0)
-<script src="https://cdn.jsdelivr.net/npm/chart.js@3/dist/chart.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
 new Chart(document.getElementById('sessChart'), {
     type: 'doughnut',

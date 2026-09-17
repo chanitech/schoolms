@@ -133,7 +133,7 @@
 @stop
 
 @section('js')
-<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
 $(document).ready(function() {
     const dormNames = @json($dormitories->pluck('name'));

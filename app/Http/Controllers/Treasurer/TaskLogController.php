@@ -46,7 +46,7 @@ class TaskLogController extends Controller
 
     public function create()
     {
-        $users = User::role(self::FINANCE_ROLES)->get();
+        $users = User::role(self::FINANCE_ROLES)->with('roles')->get();
 
         return view('treasurer.tasks.create', compact('users'));
     }

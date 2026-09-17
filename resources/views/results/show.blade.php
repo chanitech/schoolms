@@ -699,7 +699,7 @@ body{font-family:'DM Sans',sans-serif;background:#f0f4f8;color:var(--sl-700);}
 @stop
 
 @push('js')
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
 /* ═══ Session → load exams via AJAX ═════════════════════ */
 function loadExamsForSession() {

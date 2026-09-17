@@ -50,16 +50,17 @@ class EventController extends Controller
             $query->whereDate('end_date', '<=', $request->end_date);
         }
 
-        $events = $query->orderBy('start_date', 'asc')->paginate(10);
+        $events = $query->with('department')->orderBy('start_date', 'asc')->paginate(10);
 
-        // Summary counts
+        // Summary counts — one grouped query instead of one COUNT per type.
+        $byType = Event::selectRaw('type, count(*) as total')->groupBy('type')->pluck('total', 'type');
         $summary = [
-            'total' => Event::count(),
-            'academic' => Event::where('type', 'academic')->count(),
-            'sport' => Event::where('type', 'sport')->count(),
-            'cultural' => Event::where('type', 'cultural')->count(),
-            'holiday' => Event::where('type', 'holiday')->count(),
-            'other' => Event::where('type', 'other')->count(),
+            'total' => $byType->sum(),
+            'academic' => $byType->get('academic', 0),
+            'sport' => $byType->get('sport', 0),
+            'cultural' => $byType->get('cultural', 0),
+            'holiday' => $byType->get('holiday', 0),
+            'other' => $byType->get('other', 0),
         ];
 
         $departments = Department::all();
