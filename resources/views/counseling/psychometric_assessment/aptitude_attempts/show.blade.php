@@ -10,7 +10,7 @@
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h3 class="card-title">Attempt by {{ $aptitudeAttempt->student->name }} ({{ $aptitudeAttempt->student->admission_no }})</h3>
-        <a href="{{ route('aptitude.pdf', $aptitudeAttempt->id) }}" class="btn btn-danger btn-sm">
+        <a href="{{ route('counseling.psychometric.aptitude.pdf', $aptitudeAttempt->id) }}" class="btn btn-danger btn-sm">
             <i class="fas fa-file-pdf"></i> Download PDF
         </a>
     </div>

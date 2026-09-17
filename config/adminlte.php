@@ -995,43 +995,6 @@ return [
             ],
         ],
 
-        // ========== NOTICE BOARD ==========
-        // Viewing is open to everyone; only the manage sub-item is gated.
-        [
-            'text'    => 'Notice Board',
-            'icon'    => 'fas fa-bullhorn',
-            'submenu' => [
-                ['text' => 'View Notices',  'route' => 'notices.index',  'icon' => 'fas fa-list'],
-                ['text' => 'Post Notice',   'route' => 'notices.create', 'icon' => 'fas fa-plus', 'can' => 'manage notices'],
-            ],
-        ],
-
-        // ========== SUGGESTIONS / OPINIONS BOX ==========
-        // Open to every authenticated staff role — no 'can' key on the
-        // parent item or the submit/my-submissions entry, same as the
-        // guardian-side menu (RestrictGuardianMenu). Only the admin inbox
-        // is gated.
-        [
-            'text'    => 'Suggestions',
-            'icon'    => 'fas fa-comment-dots',
-            'submenu' => [
-                ['text' => 'Submit / My Suggestions', 'url' => 'suggestions',        'icon' => 'fas fa-pen'],
-                ['text' => 'Manage Suggestions',       'url' => 'suggestions/manage', 'icon' => 'fas fa-inbox', 'can' => 'manage suggestions'],
-            ],
-        ],
-
-        // ========== TRANSPORT (School Bus Service) ==========
-        [
-            'text' => 'Transport',
-            'icon' => 'fas fa-bus',
-            'can'  => 'view transport',
-            'submenu' => [
-                ['text' => 'Buses',       'url' => 'transport/buses',  'icon' => 'fas fa-bus',           'can' => 'view transport'],
-                ['text' => 'Routes',      'url' => 'transport/routes', 'icon' => 'fas fa-route',          'can' => 'view transport'],
-                ['text' => 'Fees',        'url' => 'transport/fees',   'icon' => 'fas fa-file-invoice-dollar', 'can' => 'view transport'],
-            ],
-        ],
-
         // ========== PERFORMANCE & TASKS ==========
         // Was completely ungated (parent + My Dashboard + Tasks) — every
         // authenticated user of any role saw this Treasurer/Finance-Office
@@ -1074,7 +1037,46 @@ return [
     ],
 ],
 
-    
+// ========== NOTICE BOARD ==========
+// Viewing is open to everyone; only the manage sub-item is gated. Was
+// previously nested inside Treasurer Office's submenu by mistake — moved
+// to a top-level section since this is for all staff, not finance-only.
+[
+    'text'    => 'Notice Board',
+    'icon'    => 'fas fa-bullhorn',
+    'submenu' => [
+        ['text' => 'View Notices',  'route' => 'notices.index',  'icon' => 'fas fa-list'],
+        ['text' => 'Post Notice',   'route' => 'notices.create', 'icon' => 'fas fa-plus', 'can' => 'manage notices'],
+    ],
+],
+
+// ========== SUGGESTIONS / OPINIONS BOX ==========
+// Open to every authenticated staff role — no 'can' key on the
+// parent item or the submit/my-submissions entry, same as the
+// guardian-side menu (RestrictGuardianMenu). Only the admin inbox
+// is gated. Also previously mis-nested inside Treasurer Office.
+[
+    'text'    => 'Suggestions',
+    'icon'    => 'fas fa-comment-dots',
+    'submenu' => [
+        ['text' => 'Submit / My Suggestions', 'url' => 'suggestions',        'icon' => 'fas fa-pen'],
+        ['text' => 'Manage Suggestions',       'url' => 'suggestions/manage', 'icon' => 'fas fa-inbox', 'can' => 'manage suggestions'],
+    ],
+],
+
+// ========== TRANSPORT (School Bus Service) ==========
+// Also previously mis-nested inside Treasurer Office.
+[
+    'text' => 'Transport',
+    'icon' => 'fas fa-bus',
+    'can'  => 'view transport',
+    'submenu' => [
+        ['text' => 'Buses',       'url' => 'transport/buses',  'icon' => 'fas fa-bus',           'can' => 'view transport'],
+        ['text' => 'Routes',      'url' => 'transport/routes', 'icon' => 'fas fa-route',          'can' => 'view transport'],
+        ['text' => 'Fees',        'url' => 'transport/fees',   'icon' => 'fas fa-file-invoice-dollar', 'can' => 'view transport'],
+    ],
+],
+
 [
     'text' => 'Library',
     'icon' => 'fas fa-book',

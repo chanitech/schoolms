@@ -10,7 +10,7 @@
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h3 class="card-title">All Attempts</h3>
-        <a href="{{ route('aptitude.create') }}" class="btn btn-primary btn-sm">
+        <a href="{{ route('counseling.psychometric.aptitude.create') }}" class="btn btn-primary btn-sm">
             <i class="fas fa-plus"></i> New Attempt
         </a>
     </div>
@@ -37,10 +37,10 @@
                             <td>{{ $attempt->total_score }}</td>
                             <td>{{ $attempt->created_at->format('d M Y, H:i') }}</td>
                             <td>
-                                <a href="{{ route('aptitude.show', $attempt->id) }}" class="btn btn-info btn-sm">
+                                <a href="{{ route('counseling.psychometric.aptitude.show', $attempt->id) }}" class="btn btn-info btn-sm">
                                     <i class="fas fa-eye"></i> View
                                 </a>
-                                <a href="{{ route('aptitude.pdf', $attempt->id) }}" class="btn btn-danger btn-sm">
+                                <a href="{{ route('counseling.psychometric.aptitude.pdf', $attempt->id) }}" class="btn btn-danger btn-sm">
                                     <i class="fas fa-file-pdf"></i> PDF
                                 </a>
                             </td>
@@ -55,7 +55,7 @@
             </div>
         @else
             <div class="alert alert-warning">
-                No aptitude test attempts found. <a href="{{ route('aptitude.create') }}">Create one now</a>.
+                No aptitude test attempts found. <a href="{{ route('counseling.psychometric.aptitude.create') }}">Create one now</a>.
             </div>
         @endif
     </div>

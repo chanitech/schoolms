@@ -3,7 +3,7 @@
 @section('content_header')
 <h1><i class="fas fa-edit"></i> Record Student Attempt</h1> @stop
 @section('content')
-<form action="{{ route('aptitude.store') }}" method="POST"> @csrf <div class="card card-primary"> <div class="card-body">
+<form action="{{ route('counseling.psychometric.aptitude.store') }}" method="POST"> @csrf <div class="card card-primary"> <div class="card-body">
         <!-- Student Select -->
         <div class="form-group">
             <label>Select Student</label>
@@ -113,7 +113,7 @@
 
     <div class="card-footer">
         <button type="submit" class="btn btn-success">Save Attempt</button>
-        <a href="{{ route('aptitude.index') }}" class="btn btn-secondary">Cancel</a>
+        <a href="{{ route('counseling.psychometric.aptitude.index') }}" class="btn btn-secondary">Cancel</a>
     </div>
 
 </div>
