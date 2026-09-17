@@ -72,6 +72,7 @@ use App\Http\Controllers\Treasurer\TaskJustificationController;
 use App\Http\Controllers\Treasurer\FinanceDashboardController;
 use App\Http\Controllers\SuperAdmin\SchoolController as SuperSchoolController;
 use App\Http\Controllers\SuperAdmin\AccountController as SuperAccountController;
+use App\Http\Controllers\SuperAdmin\BackupController as SuperBackupController;
 
 /*
 |--------------------------------------------------------------------------
@@ -309,6 +310,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/rooms/{roomId}/beds/bulk', [DormitoryController::class, 'bulkCreateBedsForm'])->name('beds.bulk.form');
         Route::post('/rooms/{roomId}/beds/bulk', [DormitoryController::class, 'bulkStoreBeds'])->name('beds.bulk.store');
     });
+
+    // Registered before Route::resources() below: 'subjects/teacher-assignments'
+    // is one path segment after the prefix, same shape as the resource's
+    // 'subjects/{subject}' show route, so it must win the match by coming first
+    // or Laravel treats "teacher-assignments" as a {subject} ID (404).
+    Route::get('subjects/teacher-assignments', [SubjectController::class, 'teacherAssignments'])->name('subjects.teacher-assignments');
+    Route::put('subjects/{subject}/classes/{class}/teacher', [SubjectController::class, 'updateTeacherAssignment'])->name('subjects.update-teacher-assignment');
 
     // ==================== OTHER RESOURCE ROUTES ====================
     Route::resources([
@@ -792,6 +800,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::post('accounts/{user}/change-school', [SuperAccountController::class, 'changeSchool'])
             ->name('accounts.change-school');
+
+        Route::get('backups', [SuperBackupController::class, 'index'])->name('backups.index');
+        Route::post('backups', [SuperBackupController::class, 'create'])->name('backups.create');
+        Route::get('backups/{filename}/download', [SuperBackupController::class, 'download'])->name('backups.download');
+        Route::delete('backups/{filename}', [SuperBackupController::class, 'destroy'])->name('backups.destroy');
     });
 
 });

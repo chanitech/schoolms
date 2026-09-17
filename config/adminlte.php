@@ -331,6 +331,12 @@ return [
                 'icon'  => 'fas fa-users-cog',
                 'can'   => 'is-super-admin',
             ],
+            [
+                'text'  => 'Backups',
+                'route' => 'super.backups.index',
+                'icon'  => 'fas fa-database',
+                'can'   => 'is-super-admin',
+            ],
         ],
     ],
     // AI Tools
@@ -560,15 +566,13 @@ return [
             [
                 'text'    => 'Subjects & Staff',
                 'icon'    => 'fas fa-chalkboard-teacher',
-                'can'     => ['view subjects', 'view subject assignments', 'view teacher assignments'],
+                'can'     => ['view subjects', 'view teacher assignments'],
                 'submenu' => [
                     ['text' => 'Subjects',            'url' => 'subjects',           'icon' => 'fas fa-book-open', 'can' => 'view subjects'],
-                    // These pointed at URLs with no matching route at all (404, not
-                    // 403) — no "assign students/teachers" listing page was ever
-                    // built. Assigning students to a subject already happens via
-                    // Subjects > a specific subject's "assign students" action.
-                    ['text' => 'Subjects Assignment', 'url' => '#', 'icon' => 'fas fa-tasks',     'can' => 'view subject assignments'],
-                    ['text' => 'Teachers Assignment', 'url' => '#', 'icon' => 'fas fa-user-tie',  'can' => 'view teacher assignments'],
+                    // "Subjects Assignment" was removed here — it pointed at '#'
+                    // with no route ever built for it. That function already
+                    // exists via Subjects > a specific subject > "assign students".
+                    ['text' => 'Teachers Assignment', 'route' => 'subjects.teacher-assignments', 'icon' => 'fas fa-user-tie', 'can' => 'view teacher assignments'],
                 ],
             ],
 

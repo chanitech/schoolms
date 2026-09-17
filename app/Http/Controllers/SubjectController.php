@@ -20,8 +20,10 @@ class SubjectController extends Controller
         $this->middleware('permission:edit subjects')->only(['edit', 'update']);
         $this->middleware('permission:delete subjects')->only('destroy');
         $this->middleware('permission:view subject assignments')->only('assignStudents');
+        $this->middleware('permission:view teacher assignments')->only('teacherAssignments');
         $this->middleware('permission:manage subjects')->only([
             'assignIndividualStudents', 'unassignIndividualStudents', 'updateAssignedStudents',
+            'updateTeacherAssignment',
         ]);
     }
 
@@ -257,6 +259,41 @@ class SubjectController extends Controller
         }
 
         return back()->with('success', 'Student assignments updated.');
+    }
+
+    /**
+     * 👨‍🏫 Teacher Assignments — one page listing every subject+class pairing
+     * with its assigned teacher (subject_class.teacher_id), so staff aren't
+     * forced to open each subject's edit form individually to see or change
+     * who teaches what. The sidebar link for this previously pointed at '#'.
+     */
+    public function teacherAssignments()
+    {
+        $subjects = Subject::with(['department', 'classes' => function ($q) {
+            $q->orderBy('school_classes.name');
+        }])->orderBy('name')->get();
+
+        $teachers = Staff::whereHas('user', fn ($q) => $q->role('teacher'))
+            ->get(['id', 'first_name', 'last_name'])
+            ->sortBy(fn ($s) => $s->first_name . ' ' . $s->last_name);
+
+        return view('subjects.teacher-assignments', compact('subjects', 'teachers'));
+    }
+
+    /**
+     * 🔁 Update the teacher for one subject+class pairing.
+     */
+    public function updateTeacherAssignment(Request $request, Subject $subject, SchoolClass $class)
+    {
+        $validated = $request->validate([
+            'teacher_id' => 'nullable|exists:staff,id',
+        ]);
+
+        $subject->classes()->updateExistingPivot($class->id, [
+            'teacher_id' => $validated['teacher_id'] ?? null,
+        ]);
+
+        return back()->with('success', 'Teacher assignment updated.');
     }
 }
 
