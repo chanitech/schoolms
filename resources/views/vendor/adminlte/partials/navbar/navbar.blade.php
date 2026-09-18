@@ -21,6 +21,13 @@
         {{-- Custom right links --}}
         @yield('content_top_nav_right')
 
+        {{-- Dark mode toggle --}}
+        <li class="nav-item">
+            <a class="nav-link" href="#" id="darkModeToggle" title="Toggle dark mode" role="button">
+                <i class="fas fa-moon"></i>
+            </a>
+        </li>
+
         {{-- Notification Bell --}}
         @auth
             @include('partials.notification-bell')
@@ -45,3 +52,31 @@
     </ul>
 
 </nav>
+
+<script>
+    (function () {
+        var STORAGE_KEY = 'shulepro-dark-mode';
+        var toggle = document.getElementById('darkModeToggle');
+        if (!toggle) return;
+
+        var icon = toggle.querySelector('i');
+
+        function syncIcon() {
+            var isDark = document.body.classList.contains('dark-mode');
+            icon.classList.toggle('fa-moon', !isDark);
+            icon.classList.toggle('fa-sun', isDark);
+        }
+
+        syncIcon();
+
+        toggle.addEventListener('click', function (e) {
+            e.preventDefault();
+            document.body.classList.toggle('dark-mode');
+            var isDark = document.body.classList.contains('dark-mode');
+            try {
+                localStorage.setItem(STORAGE_KEY, isDark ? '1' : '0');
+            } catch (err) {}
+            syncIcon();
+        });
+    })();
+</script>

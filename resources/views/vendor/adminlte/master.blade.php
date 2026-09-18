@@ -27,6 +27,40 @@
         }
     </style>
 
+    {{-- Dark-mode readability fixes: many pages use Bootstrap's light-background
+         utility classes (table-light, thead-light, bg-light, bg-white) for
+         headers/cards. AdminLTE's dark-mode only recolors its own components,
+         so these stayed white and their text (recolored white by dark-mode)
+         became invisible. Also darken the top navbar, which is hardcoded to
+         navbar-white/navbar-light in config and doesn't switch on its own. --}}
+    <style type="text/css">
+        body.dark-mode .table-light,
+        body.dark-mode .table-light > th,
+        body.dark-mode .table-light > td,
+        body.dark-mode thead.thead-light th,
+        body.dark-mode .thead-light th {
+            background-color: #3a3f44 !important;
+            color: #e9ecef !important;
+            border-color: #4b5157 !important;
+        }
+        body.dark-mode .bg-light {
+            background-color: #3a3f44 !important;
+            color: #e9ecef !important;
+        }
+        body.dark-mode .bg-white {
+            background-color: #2c3237 !important;
+            color: #e9ecef !important;
+        }
+        body.dark-mode .main-header.navbar {
+            background-color: #343a40 !important;
+            border-color: #4b5157 !important;
+        }
+        body.dark-mode .main-header.navbar .nav-link,
+        body.dark-mode .main-header.navbar .nav-link i {
+            color: #e9ecef !important;
+        }
+    </style>
+
     {{-- Custom stylesheets (pre AdminLTE) --}}
     @yield('adminlte_css_pre')
 
@@ -82,6 +116,17 @@
 </head>
 
 <body class="@yield('classes_body')" @yield('body_data')>
+
+    {{-- Apply saved dark-mode preference before anything paints, to avoid a flash of the wrong theme --}}
+    <script>
+        (function () {
+            try {
+                if (localStorage.getItem('shulepro-dark-mode') === '1') {
+                    document.body.classList.add('dark-mode');
+                }
+            } catch (e) {}
+        })();
+    </script>
 
     {{-- Body Content --}}
     @yield('body')
