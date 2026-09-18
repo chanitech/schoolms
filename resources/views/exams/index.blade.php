@@ -166,8 +166,8 @@
                 </form>
                 @endif
 
-                {{-- Unpublish (Admin only) --}}
-                @if($exam->isPublished() && auth()->user()->hasRole('Admin'))
+                {{-- Unpublish (Admin/Principal — Principal is the one who publishes, so they can also undo it) --}}
+                @if($exam->isPublished() && auth()->user()->hasAnyRole(['Admin','Principal']))
                 <form action="{{ route('exams.unpublish', $exam) }}" method="POST"
                       onsubmit="return confirm('Unpublish and hide results from parents?')">
                     @csrf

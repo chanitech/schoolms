@@ -180,12 +180,12 @@ class ExamController extends Controller
         return back()->with('success', "Results for \"{$exam->name}\" are now published and visible to parents.");
     }
 
-    // ── Unpublish (Admin only — sends back to reviewed) ───────────────────
+    // ── Unpublish (Admin/Principal — Principal publishes, so can also undo it) ─
     public function unpublish(Exam $exam)
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
-        abort_unless($user->hasAnyRole(['Admin']), 403);
+        abort_unless($user->hasAnyRole(['Admin', 'Principal']), 403);
         abort_unless($exam->isPublished(), 403, 'Only published exams can be unpublished.');
 
         $exam->update([
