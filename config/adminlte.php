@@ -110,7 +110,9 @@ return [
     */
 
     'preloader' => [
-        'enabled' => true,
+        // Off: it only hides on the browser 'load' event, so on a slow
+        // connection users stared at a spinner until every asset finished.
+        'enabled' => false,
         'mode' => 'fullscreen',
         'img' => [
             'path' => 'images/shulepro-icon.svg',
