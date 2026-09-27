@@ -42,7 +42,7 @@ class AIAnalysisService
     public function __construct()
     {
         $this->apiKey = config('services.groq.key', env('GROQ_API_KEY'));
-        $this->model  = config('services.groq.model', env('GROQ_MODEL', 'llama-3.3-70b-versatile'));
+        $this->model  = config('services.groq.model', env('GROQ_MODEL', 'openai/gpt-oss-120b'));
     }
 
     /**

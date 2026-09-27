@@ -37,7 +37,12 @@ return [
 
     'groq' => [
         'key'   => env('GROQ_API_KEY'),
-        'model' => env('GROQ_MODEL', 'llama-3.3-70b-versatile'),
+        // Groq stopped granting this key access to any Llama model (confirmed
+        // via /v1/models — the key itself is valid, it just no longer lists
+        // llama-3.3-70b-versatile or llama-3.1-8b-instant as available).
+        // openai/gpt-oss-120b is the closest available model in quality and
+        // is confirmed working with this key.
+        'model' => env('GROQ_MODEL', 'openai/gpt-oss-120b'),
     ],
 
     'deepseek' => [
