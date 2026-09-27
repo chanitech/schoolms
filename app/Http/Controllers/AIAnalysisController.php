@@ -89,9 +89,22 @@ class AIAnalysisController extends Controller
         'lowest'   => $m->min('mark'),
     ])->toArray();
 
+    // Per-student averages so the report can name specific students who
+    // need attention or recognition, not just rank subjects in the
+    // abstract — a principal acts on "these 3 students", not "Biology".
+    $byStudent = $marks->groupBy('student_id')
+        ->map(fn ($m) => [
+            'name'    => trim(($m->first()->student->first_name ?? '') . ' ' . ($m->first()->student->last_name ?? '')),
+            'average' => round($m->avg('mark'), 2),
+        ])
+        ->sortByDesc('average')
+        ->values();
+
     $data = [
         'class_id' => $request->class_id,  // For caching
         'subjects' => $subjects,
+        'top_students'    => $byStudent->take(3)->toArray(),
+        'bottom_students' => $byStudent->slice(-3)->reverse()->values()->toArray(),
     ];
 
     try {

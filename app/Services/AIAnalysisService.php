@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Mark;
 use App\Models\Student;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
@@ -12,9 +13,21 @@ class AIAnalysisService
     /**
      * Build the student payload used by analyzeStudentPerformance(). Expects
      * $student->marks (with subject and grade) already eager-loaded.
+     *
+     * Includes each subject's class average alongside the student's own
+     * score — without it, the AI has no way to tell "62%" apart from
+     * "weak" vs "actually above average for this subject", so it either
+     * hedges or invents a judgement call that isn't grounded in real data.
      */
     public function buildStudentPayload(Student $student): array
     {
+        $classAverages = $student->class_id
+            ? Mark::where('class_id', $student->class_id)
+                ->selectRaw('subject_id, ROUND(AVG(mark), 1) as avg_mark')
+                ->groupBy('subject_id')
+                ->pluck('avg_mark', 'subject_id')
+            : collect();
+
         return [
             'id'    => $student->id,
             'name'  => $student->first_name . ' ' . $student->last_name,
@@ -24,8 +37,9 @@ class AIAnalysisService
                 // Mark's actual column is `mark`, not `score`; `grade` is a
                 // belongsTo relation, not a scalar — using either directly
                 // silently sent null/whole-object noise to the AI before.
-                'score'   => $m->mark,
-                'grade'   => $m->grade->name ?? 'N/A',
+                'score'          => $m->mark,
+                'grade'          => $m->grade->name ?? 'N/A',
+                'class_average'  => $classAverages[$m->subject_id] ?? null,
             ])->toArray(),
         ];
     }
@@ -150,6 +164,12 @@ class AIAnalysisService
         $prompt = <<<PROMPT
 You are a professional education analyst for a Tanzanian school. Analyze the student data below and write a detailed, structured report in Markdown.
 
+Each subject includes the student's score AND the class_average for that
+subject — use the comparison, not the raw score alone, to judge strengths
+and weaknesses. A 65% is a weakness if the class averages 85%, and a
+strength if the class averages 45%. Call out that gap explicitly (e.g.
+"12 points above the class average of 53%").
+
 Use EXACTLY this format — do not skip any section:
 
 ## Student Performance Report: {$studentData['name']}
@@ -158,16 +178,16 @@ Use EXACTLY this format — do not skip any section:
 ---
 
 ### 📊 Performance Overview
-Write 2-3 sentences summarising this student's overall academic standing, average score, and general trend.
+Write 2-3 sentences summarising this student's overall academic standing, their average vs. the class average, and general trend.
 
 ### ✅ Top Strengths
-List the 2-3 subjects where the student excels. For each one explain WHY it is a strength (consistency, high score, etc.).
+List the 2-3 subjects where the student is strongest relative to the class average, not just the highest raw score. State both numbers and the gap.
 
 ### ⚠️ Areas Needing Improvement
-List the 2-3 weakest subjects. Be specific — mention the actual score and why it is concerning.
+List the 2-3 subjects where the student is furthest below the class average. State both numbers and the gap — a low score that matches the whole class struggling is a different problem than a low score where peers are doing fine.
 
 ### 💡 Actionable Recommendations
-Give 3 concrete, specific recommendations that the teacher or parent can act on THIS WEEK.
+Give 3 concrete, specific recommendations that the teacher or parent can act on THIS WEEK, tied directly to the weak subjects identified above.
 
 ---
 *Based on {$count} subject records*
@@ -210,6 +230,9 @@ Name the top subject and explain what is going well.
 
 ### ⚠️ Subject Needing Urgent Attention
 Name the weakest subject. Explain the risk and what a low pass rate means for students.
+
+### 👥 Students to Watch
+The data includes top_students and bottom_students (each student's overall average across all subjects). List the bottom_students by name with their average, and briefly note what kind of support each likely needs. Then list the top_students by name as ones worth recognizing.
 
 ### 💡 Teacher Recommendations
 Give 3 specific, immediately actionable teaching strategies tailored to this class's data.
