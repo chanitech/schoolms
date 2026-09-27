@@ -86,7 +86,19 @@ class AIAnalysisService
                         ]
                     ],
                     'temperature' => 0.4,
-                    'max_tokens' => 1200,
+                    'max_tokens' => 1800,
+                    // openai/gpt-oss-120b is a reasoning model: it spends part
+                    // of max_tokens on an internal reasoning chain before
+                    // writing the visible answer, and that cost scales with
+                    // how much data is in the prompt. On a real student's 28
+                    // marks it burned 1012 of 1200 tokens reasoning, cutting
+                    // the report off mid-sentence (finish_reason: "length").
+                    // 'low' keeps reasoning minimal (verified: ~6-400 tokens
+                    // instead of 1000+) so the budget goes to the actual
+                    // report; combined with the higher ceiling above, both
+                    // the student and class report prompts finish cleanly
+                    // (finish_reason: "stop") against real data.
+                    'reasoning_effort' => 'low',
                 ]);
 
             if ($response->successful()) {

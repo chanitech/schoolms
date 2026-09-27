@@ -78,11 +78,15 @@ class AIAnalysisController extends Controller
         return response()->json(['analysis' => 'No marks found for this class.']);
     }
 
+    // Mark's actual column is `mark`, not `score` — using `score` silently
+    // returned null for every row here, so every subject showed 0%/N/A
+    // regardless of real marks (buildStudentPayload() had this same bug,
+    // fixed separately; this call site was missed).
     $subjects = $marks->groupBy('subject.name')->map(fn($m) => [
-        'average'  => round($m->avg('score'), 2),
-        'pass_rate' => round($m->where('score', '>=', 50)->count() / $m->count() * 100, 2),
-        'highest'  => $m->max('score'),
-        'lowest'   => $m->min('score'),
+        'average'  => round($m->avg('mark'), 2),
+        'pass_rate' => round($m->where('mark', '>=', 50)->count() / $m->count() * 100, 2),
+        'highest'  => $m->max('mark'),
+        'lowest'   => $m->min('mark'),
     ])->toArray();
 
     $data = [
@@ -106,15 +110,17 @@ class AIAnalysisController extends Controller
     {
         $request->validate(['class_id' => 'required|exists:school_classes,id']);
 
-        // Get students with average score below 40
+        // Get students with average mark below 40. (Same wrong-column bug as
+        // analyzeClass() — 'score' doesn't exist on Mark, so this silently
+        // flagged every student as struggling, average always 0.)
         $struggling = Student::where('class_id', $request->class_id)
             ->whereHas('marks')
             ->with('marks')
             ->get()
-            ->filter(fn($s) => $s->marks->avg('score') < 40)
+            ->filter(fn($s) => $s->marks->avg('mark') < 40)
             ->map(fn($s) => [
                 'name'    => $s->first_name . ' ' . $s->last_name,
-                'average' => round($s->marks->avg('score'), 2),
+                'average' => round($s->marks->avg('mark'), 2),
             ])
             ->values();
 
