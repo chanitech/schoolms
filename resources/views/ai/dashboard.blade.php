@@ -13,7 +13,7 @@
             </h1>
         </div>
         <div class="d-flex align-items-center mt-1 mt-md-0">
-            <span class="badge badge-primary mr-2"><i class="fas fa-microchip mr-1"></i>Groq — llama-3.3-70b</span>
+            <span class="badge badge-primary mr-2"><i class="fas fa-microchip mr-1"></i>Groq — {{ config('services.groq.model') }}</span>
             <span class="badge badge-success"><i class="fas fa-bolt mr-1"></i>Free Tier · 30 req/min</span>
         </div>
     </div>
