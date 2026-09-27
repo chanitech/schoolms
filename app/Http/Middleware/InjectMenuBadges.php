@@ -9,6 +9,7 @@ use App\Models\Suggestion;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpFoundation\Response;
 
 class InjectMenuBadges
@@ -21,7 +22,18 @@ class InjectMenuBadges
     public function handle(Request $request, Closure $next): Response
     {
         if (Auth::check()) {
-            $counts = $this->pendingCounts(Auth::user());
+            $user = Auth::user();
+
+            // These counts ran on every single page navigation (up to 4
+            // queries per request, for every Admin/Principal/Treasurer-role
+            // user), just to keep a sidebar badge fresh. A short cache keeps
+            // badges effectively live while cutting that to once per 30s
+            // per user, no matter how many pages they click through.
+            $counts = Cache::remember(
+                "menu-badges:user:{$user->id}",
+                now()->addSeconds(30),
+                fn () => $this->pendingCounts($user)
+            );
 
             if (array_filter($counts) !== []) {
                 config(['adminlte.menu' => $this->applyBadges(config('adminlte.menu', []), $counts)]);
