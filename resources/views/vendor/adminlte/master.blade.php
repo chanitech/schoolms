@@ -107,11 +107,11 @@
     {{-- Custom Stylesheets (post AdminLTE) --}}
     @yield('adminlte_css')
 
-    {{-- Favicon (ShulePRO brand — SVG, with a PNG fallback for older browsers/iOS) --}}
-    <link rel="icon" type="image/svg+xml" href="{{ asset('images/shulepro-icon.svg') }}">
-    <link rel="alternate icon" href="{{ asset('vendor/adminlte/dist/img/shulepro-icon.png') }}">
+    {{-- Favicon (ShulePRO brand; master files live in resources/brand) --}}
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/brand/favicon-32.png') }}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('images/brand/favicon-192.png') }}">
     <link rel="apple-touch-icon" href="{{ asset('vendor/adminlte/dist/img/shulepro-icon.png') }}">
-    <meta name="theme-color" content="#0f2942">
+    <meta name="theme-color" content="#1B2956">
 
 </head>
 

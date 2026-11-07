@@ -29,12 +29,12 @@ body {
     text-align: center; color: #fff;
 }
 .school-logo {
-    width: 72px; height: 72px; border-radius: 22px;
+    height: 64px; width: auto;
     margin: 0 auto .9rem;
     display: block;
 }
 .card-top h2 { font-size: 1.25rem; font-weight: 800; }
-.card-top h2 .accent { color: #c9a24b; }
+.card-top h2 .accent { color: #FBB516; }
 .card-top p  { font-size: .82rem; opacity: .8; margin-top: .3rem; }
 
 .card-body { padding: 2rem; }
@@ -112,7 +112,7 @@ input.is-invalid { border-color: #ef4444; }
 
 <div class="card">
     <div class="card-top">
-        <img src="{{ asset('images/shulepro-icon.svg') }}" alt="ShulePRO" class="school-logo">
+        <img src="{{ asset('images/brand/shulepro-icon-white.png') }}" alt="ShulePRO" class="school-logo">
         <h2>Shule<span class="accent">PRO</span></h2>
         <p>Parent &amp; Guardian Portal</p>
     </div>

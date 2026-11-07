@@ -63,9 +63,11 @@ return [
     |
     */
 
-    'logo' => '<b>Shule</b>PRO',
-    'logo_img' => 'images/shulepro-icon.svg',
-    'logo_img_class' => 'brand-image img-circle elevation-3',
+    'logo' => '<b>Shule</b><b style="color:#FBB516">PRO</b>',
+    // White variant: the sidebar is always dark. No img-circle — the mark is
+    // wider than tall and a circle crop clips it.
+    'logo_img' => 'images/brand/shulepro-icon-white.png',
+    'logo_img_class' => 'brand-image',
     'logo_img_xl' => null,
     'logo_img_xl_class' => 'brand-image-xs',
     'logo_img_alt' => 'ShulePRO Logo',
@@ -86,10 +88,10 @@ return [
     'auth_logo' => [
         'enabled' => true,
         'img' => [
-            'path' => 'images/shulepro-icon.svg',
+            'path' => 'images/brand/shulepro-icon.png',
             'alt' => 'ShulePRO Logo',
             'class' => '',
-            'width' => 50,
+            'width' => 70,
             'height' => 50,
         ],
     ],
@@ -115,10 +117,10 @@ return [
         'enabled' => false,
         'mode' => 'fullscreen',
         'img' => [
-            'path' => 'images/shulepro-icon.svg',
+            'path' => 'images/brand/shulepro-icon.png',
             'alt' => 'ShulePRO Preloader Image',
             'effect' => 'animation__shake',
-            'width' => 50,
+            'width' => 70,
             'height' => 50,
         ],
     ],
