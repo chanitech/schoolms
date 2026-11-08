@@ -9,33 +9,33 @@
 @section('content')
 <div class="row">
     <div class="col-6 col-md-4 col-lg">
-        <div class="small-box-custom sb-blue">
-            <div class="sb-inner"><h3>{{ $totalStaff }}</h3><p>Total Staff</p></div>
-            <div class="sb-icon"><i class="fas fa-users"></i></div>
+        <div class="info-box">
+            <span class="info-box-icon bg-primary"><i class="fas fa-users"></i></span>
+            <div class="info-box-content"><span class="info-box-text">Total Staff</span><span class="info-box-number">{{ $totalStaff }}</span></div>
         </div>
     </div>
     <div class="col-6 col-md-4 col-lg">
-        <div class="small-box-custom sb-green">
-            <div class="sb-inner"><h3>{{ $totalDepartments }}</h3><p>Departments</p></div>
-            <div class="sb-icon"><i class="fas fa-building"></i></div>
+        <div class="info-box">
+            <span class="info-box-icon bg-primary"><i class="fas fa-building"></i></span>
+            <div class="info-box-content"><span class="info-box-text">Departments</span><span class="info-box-number">{{ $totalDepartments }}</span></div>
         </div>
     </div>
     <div class="col-6 col-md-4 col-lg">
-        <div class="small-box-custom sb-orange">
-            <div class="sb-inner"><h3>{{ $totalLeaves }}</h3><p>Leave Requests</p></div>
-            <div class="sb-icon"><i class="fas fa-plane-departure"></i></div>
+        <div class="info-box">
+            <span class="info-box-icon bg-primary"><i class="fas fa-plane-departure"></i></span>
+            <div class="info-box-content"><span class="info-box-text">Leave Requests</span><span class="info-box-number">{{ $totalLeaves }}</span></div>
         </div>
     </div>
     <div class="col-6 col-md-4 col-lg">
-        <div class="small-box-custom sb-red">
-            <div class="sb-inner"><h3>{{ $totalJobCards }}</h3><p>Job Cards</p></div>
-            <div class="sb-icon"><i class="fas fa-briefcase"></i></div>
+        <div class="info-box">
+            <span class="info-box-icon bg-primary"><i class="fas fa-briefcase"></i></span>
+            <div class="info-box-content"><span class="info-box-text">Job Cards</span><span class="info-box-number">{{ $totalJobCards }}</span></div>
         </div>
     </div>
     <div class="col-6 col-md-4 col-lg">
-        <div class="small-box-custom sb-purple">
-            <div class="sb-inner"><h3>{{ $totalEvents }}</h3><p>Events</p></div>
-            <div class="sb-icon"><i class="fas fa-calendar-alt"></i></div>
+        <div class="info-box">
+            <span class="info-box-icon bg-primary"><i class="fas fa-calendar-alt"></i></span>
+            <div class="info-box-content"><span class="info-box-text">Events</span><span class="info-box-number">{{ $totalEvents }}</span></div>
         </div>
     </div>
 </div>
@@ -66,10 +66,6 @@
         </div>
     </div>
 </div>
-@stop
-
-@section('css')
-@include('partials.dashboard-widgets-css')
 @stop
 
 @section('js')

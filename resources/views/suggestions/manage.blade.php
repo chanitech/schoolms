@@ -12,13 +12,13 @@
 
     <div class="row">
         @foreach([['New', 'new', 'secondary', 'fa-envelope'], ['In Review', 'in_review', 'warning', 'fa-search'], ['Resolved', 'resolved', 'success', 'fa-check'], ['Dismissed', 'dismissed', 'danger', 'fa-times']] as [$label, $key, $color, $icon])
-        <div class="col-6 col-md-3">
-            <div class="small-box-custom sb-{{ $color === 'secondary' ? 'blue' : ($color === 'warning' ? 'orange' : ($color === 'success' ? 'green' : 'red')) }}">
-                <div class="sb-inner">
-                    <h3>{{ $counts[$key] ?? 0 }}</h3>
-                    <p>{{ $label }}</p>
+        <div class="col-sm-6 col-xl-3">
+            <div class="info-box">
+                <span class="info-box-icon bg-{{ $color }}"><i class="fas {{ $icon }}"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text">{{ $label }}</span>
+                    <span class="info-box-number">{{ $counts[$key] ?? 0 }}</span>
                 </div>
-                <div class="sb-icon"><i class="fas {{ $icon }}"></i></div>
             </div>
         </div>
         @endforeach
@@ -137,10 +137,6 @@
         </div>
     </div>
 </div>
-@stop
-
-@section('css')
-@include('partials.dashboard-widgets-css')
 @stop
 
 @section('js')

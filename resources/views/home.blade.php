@@ -2,517 +2,343 @@
 
 @section('title', 'Dashboard')
 
-@section('content_header')
-@stop
-
-@section('content')
-@include('partials.flash')
 @php
-    $hour = now()->hour;
-    $greeting = $hour < 12 ? 'Good Morning' : ($hour < 17 ? 'Good Afternoon' : 'Good Evening');
     $user = auth()->user();
     $isTeacher = $user->hasRole('Teacher');
     $isAdmin   = $user->hasAnyRole(['Admin','Academic','HOD','HR']);
 @endphp
 
-{{-- ══════════════════════════════════════════════════════════════════════
-     WELCOME HERO BANNER
-══════════════════════════════════════════════════════════════════════ --}}
-<div class="welcome-hero mb-4">
-    <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap:1rem">
-        <div class="d-flex align-items-center" style="gap:1rem">
-            <div class="hero-avatar">
-                <i class="fas fa-user-circle"></i>
-            </div>
-            <div>
-                <div class="hero-greeting">{{ $greeting }},</div>
-                <div class="hero-name">{{ $user->name ?? ($user->first_name . ' ' . $user->last_name) }}</div>
-                <div class="hero-meta">
-                    @foreach($user->getRoleNames() as $role)
-                        <span class="role-badge">{{ $role }}</span>
-                    @endforeach
-                    @if($currentSession ?? null)
-                        <span class="session-badge">
-                            <i class="fas fa-graduation-cap mr-1"></i>{{ $currentSession->name }}
-                        </span>
-                    @endif
-                </div>
-            </div>
+@section('content_header')
+    <div class="d-flex justify-content-between align-items-end flex-wrap">
+        <div>
+            <h1 class="m-0">Dashboard</h1>
+            <small class="text-muted">
+                Signed in as <strong>{{ $user->name ?? ($user->first_name . ' ' . $user->last_name) }}</strong>
+                ({{ $user->getRoleNames()->implode(', ') }})
+                @if($currentSession ?? null) · {{ $currentSession->name }} @endif
+            </small>
         </div>
-        <div class="hero-date">
-            <div class="date-day">{{ now()->format('l') }}</div>
-            <div class="date-full">{{ now()->format('d F Y') }}</div>
-            <div class="date-time" id="liveClock"></div>
-        </div>
+        <span class="text-muted">{{ now()->format('l, d F Y') }}</span>
     </div>
-</div>
+@stop
 
-{{-- ══════════════════════════════════════════════════════════════════════
-     STATS ROW — solid-color small-boxes with a footer link (per-card)
-══════════════════════════════════════════════════════════════════════ --}}
-<div class="row stats-row">
+@section('content')
+@include('partials.flash')
+
+{{-- Key figures --}}
+<div class="row">
     @if($canViewStudents)
-    <div class="col-xl-2 col-md-4 col-6">
-        <div class="small-box-custom sb-teal">
-            <div class="sb-inner">
-                <h3>{{ number_format($studentCount) }}</h3>
-                <p>Students</p>
+    <div class="col-lg-4 col-md-6">
+        <div class="info-box">
+            <span class="info-box-icon bg-primary"><i class="fas fa-user-graduate"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Students</span>
+                <span class="info-box-number">{{ number_format($studentCount) }}</span>
                 @if(isset($studentGrowth) && $studentGrowth !== null)
-                    <div class="sb-sub"><i class="fas fa-arrow-{{ $studentGrowth >= 0 ? 'up' : 'down' }} mr-1"></i>{{ abs($studentGrowth) }}% this month</div>
+                    <span class="small text-muted">{{ $studentGrowth >= 0 ? '+' : '−' }}{{ abs($studentGrowth) }}% this month</span>
                 @endif
+                <a href="{{ route('students.index') }}" class="small">Student register</a>
             </div>
-            <div class="sb-icon"><i class="fas fa-user-graduate"></i></div>
-            <a href="{{ route('students.index') }}" class="sb-footer">Student register <i class="fas fa-arrow-circle-right"></i></a>
         </div>
     </div>
     @endif
     @if($canViewStaff)
-    <div class="col-xl-2 col-md-4 col-6">
-        <div class="small-box-custom sb-blue">
-            <div class="sb-inner">
-                <h3>{{ number_format($staffCount) }}</h3>
-                <p>Staff Members</p>
-                <div class="sb-sub"><i class="fas fa-circle mr-1" style="font-size:.5rem;vertical-align:middle"></i>{{ $staffPresentToday }} present today</div>
+    <div class="col-lg-4 col-md-6">
+        <div class="info-box">
+            <span class="info-box-icon bg-primary"><i class="fas fa-chalkboard-teacher"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Staff Members</span>
+                <span class="info-box-number">{{ number_format($staffCount) }}</span>
+                <span class="small text-muted">{{ $staffPresentToday }} present today ({{ $staffAttendanceRate }}%)</span>
+                <a href="{{ route('staff.index') }}" class="small">Staff list</a>
             </div>
-            <div class="sb-icon"><i class="fas fa-chalkboard-teacher"></i></div>
-            <a href="{{ route('staff.index') }}" class="sb-footer">Staff list <i class="fas fa-arrow-circle-right"></i></a>
         </div>
     </div>
     @endif
     @if($canViewClasses)
-    <div class="col-xl-2 col-md-4 col-6">
-        <div class="small-box-custom sb-green">
-            <div class="sb-inner">
-                <h3>{{ $classCount }}</h3>
-                <p>Classes</p>
-                <div class="sb-sub">{{ $subjectCount }} subjects</div>
+    <div class="col-lg-4 col-md-6">
+        <div class="info-box">
+            <span class="info-box-icon bg-primary"><i class="fas fa-school"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Classes</span>
+                <span class="info-box-number">{{ $classCount }}</span>
+                <span class="small text-muted">{{ $subjectCount }} subjects</span>
+                <a href="{{ route('classes.index') }}" class="small">View classes</a>
             </div>
-            <div class="sb-icon"><i class="fas fa-school"></i></div>
-            <a href="{{ route('classes.index') }}" class="sb-footer">View classes <i class="fas fa-arrow-circle-right"></i></a>
         </div>
     </div>
     @endif
     @if($canViewPayments)
-    <div class="col-xl-2 col-md-4 col-6">
-        <div class="small-box-custom sb-purple">
-            <div class="sb-inner">
-                <h3 style="font-size:1.5rem">{{ number_format($todayCollection) }}</h3>
-                <p>Today's Collections</p>
-                <div class="sb-sub">{{ number_format($monthCollection) }} this month</div>
+    <div class="col-lg-4 col-md-6">
+        <div class="info-box">
+            <span class="info-box-icon bg-success"><i class="fas fa-money-bill-wave"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Collected Today</span>
+                <span class="info-box-number">{{ number_format($todayCollection) }} <small>TZS</small></span>
+                <span class="small text-muted">{{ number_format($monthCollection) }} TZS this month</span>
+                <a href="{{ route('finance.payments.index') }}" class="small">Payments</a>
             </div>
-            <div class="sb-icon"><i class="fas fa-money-bill-wave"></i></div>
-            <a href="{{ route('finance.payments.index') }}" class="sb-footer">View payments <i class="fas fa-arrow-circle-right"></i></a>
         </div>
     </div>
     @endif
     @if($canViewTimetables)
-    <div class="col-xl-2 col-md-4 col-6">
-        <div class="small-box-custom {{ $canViewLeaves && $pendingLeaves > 0 ? 'sb-orange' : 'sb-teal' }}">
-            <div class="sb-inner">
-                <h3>{{ $publishedTimetables }}</h3>
-                <p>Active Timetables</p>
+    <div class="col-lg-4 col-md-6">
+        <div class="info-box">
+            <span class="info-box-icon {{ $canViewLeaves && $pendingLeaves > 0 ? 'bg-warning' : 'bg-primary' }}"><i class="fas fa-calendar-week"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Active Timetables</span>
+                <span class="info-box-number">{{ $publishedTimetables }}</span>
                 @if($canViewLeaves)
-                    @if($pendingLeaves > 0)
-                        <div class="sb-sub"><i class="fas fa-exclamation-circle mr-1"></i>{{ $pendingLeaves }} leave(s) pending</div>
-                    @else
-                        <div class="sb-sub"><i class="fas fa-check mr-1"></i>No pending leaves</div>
-                    @endif
+                    <span class="small text-muted">{{ $pendingLeaves > 0 ? $pendingLeaves . ' leave request(s) pending' : 'No pending leave requests' }}</span>
                 @endif
+                <a href="{{ route('timetables.index', ['status'=>'published','type'=>'class']) }}" class="small">Timetables</a>
             </div>
-            <div class="sb-icon"><i class="fas fa-calendar-week"></i></div>
-            <a href="{{ route('timetables.index', ['status'=>'published','type'=>'class']) }}" class="sb-footer">View timetables <i class="fas fa-arrow-circle-right"></i></a>
         </div>
     </div>
     @endif
     @if($canViewDorms)
-    <div class="col-xl-2 col-md-4 col-6">
-        <div class="small-box-custom sb-red">
-            <div class="sb-inner">
-                <h3>{{ $dormCount }}</h3>
-                <p>Dormitories</p>
-                <div class="sb-sub">{{ $departmentCount }} departments</div>
+    <div class="col-lg-4 col-md-6">
+        <div class="info-box">
+            <span class="info-box-icon bg-primary"><i class="fas fa-bed"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Dormitories</span>
+                <span class="info-box-number">{{ $dormCount }}</span>
+                <span class="small text-muted">{{ $departmentCount }} departments</span>
+                <a href="{{ route('dormitories.index') }}" class="small">View dormitories</a>
             </div>
-            <div class="sb-icon"><i class="fas fa-bed"></i></div>
-            <a href="{{ route('dormitories.index') }}" class="sb-footer">View dormitories <i class="fas fa-arrow-circle-right"></i></a>
         </div>
     </div>
     @endif
 </div>
 @if(!$canViewStudents && !$canViewStaff && !$canViewClasses && !$canViewPayments && !$canViewTimetables && !$canViewDorms)
-<div class="row stats-row">
-    <div class="col-12">
-        <div class="alert alert-light border text-muted mb-3" style="border-radius:12px">
-            <i class="fas fa-info-circle mr-1"></i> Your role doesn't have school-wide statistics to show here — use the sidebar menu for what you're set up to do.
-        </div>
-    </div>
+<div class="alert alert-light border text-muted">
+    <i class="fas fa-info-circle mr-1"></i> Your role has no school-wide figures to show here. Use the sidebar menu for your tasks.
 </div>
 @endif
 
-@if($canViewStaff || $canViewPayments || $canViewLeaves || $canViewTimetables)
-{{-- ══════════════════════════════════════════════════════════════════════
-     SECONDARY METRICS — icon-led info-boxes
-══════════════════════════════════════════════════════════════════════ --}}
-<div class="row mb-1">
-    @if($canViewStaff)
-    <div class="col-md-3 col-6">
-        <div class="info-box-custom">
-            <div class="ib-icon" style="background:rgba(13,148,136,.12);color:#0d9488"><i class="fas fa-user-check"></i></div>
-            <div class="ib-body">
-                <span class="ib-label">Staff Attendance</span>
-                <span class="ib-value">{{ $staffAttendanceRate }}%</span>
-                <span class="ib-sub">{{ $staffPresentToday }} / {{ $staffCount }} present today</span>
-            </div>
-        </div>
-    </div>
-    @endif
-    @if($canViewPayments)
-    <div class="col-md-3 col-6">
-        <div class="info-box-custom">
-            <div class="ib-icon" style="background:rgba(124,58,237,.12);color:#7c3aed"><i class="fas fa-wallet"></i></div>
-            <div class="ib-body">
-                <span class="ib-label">Collected This Month</span>
-                <span class="ib-value" style="font-size:1.15rem">{{ number_format($monthCollection) }}</span>
-                <span class="ib-sub">TZS, all classes</span>
-            </div>
-        </div>
-    </div>
-    @endif
-    @if($canViewLeaves)
-    <div class="col-md-3 col-6">
-        <div class="info-box-custom">
-            <div class="ib-icon" style="background:{{ $pendingLeaves > 0 ? 'rgba(234,88,12,.12)' : 'rgba(22,163,74,.12)' }};color:{{ $pendingLeaves > 0 ? '#ea580c' : '#16a34a' }}"><i class="fas fa-umbrella-beach"></i></div>
-            <div class="ib-body">
-                <span class="ib-label">Pending Leaves</span>
-                <span class="ib-value">{{ $pendingLeaves }}</span>
-                <span class="ib-sub">Awaiting approval</span>
-            </div>
-        </div>
-    </div>
-    @endif
-    @if($canViewTimetables)
-    <div class="col-md-3 col-6">
-        <div class="info-box-custom">
-            <div class="ib-icon" style="background:rgba(37,99,235,.12);color:#2563eb"><i class="fas fa-calendar-check"></i></div>
-            <div class="ib-body">
-                <span class="ib-label">Published Timetables</span>
-                <span class="ib-value">{{ $publishedTimetables }}</span>
-                <span class="ib-sub">Currently active</span>
-            </div>
-        </div>
-    </div>
-    @endif
-</div>
-@endif
-
-{{-- ══════════════════════════════════════════════════════════════════════
-     MAIN CONTENT: Schedule | Events | Quick Actions
-══════════════════════════════════════════════════════════════════════ --}}
 <div class="row">
-    {{-- TODAY'S SCHOOL SCHEDULE --}}
-    <div class="{{ $isTeacher ? 'col-lg-8' : 'col-lg-8' }}">
-        <div class="card shadow-sm border-0 mb-3" style="border-radius:12px;overflow:hidden">
-            <div class="card-header d-flex align-items-center justify-content-between hdr-flat">
-                <div>
-                    <i class="fas fa-calendar-day mr-2" style="color:#0d9488"></i>
-                    <strong>Today's School Schedule</strong>
-                    <small class="ml-2 text-muted">{{ now()->format('l, d M Y') }}</small>
-                </div>
-                <div class="d-flex" style="gap:.5rem">
-                    <a href="{{ route('timetables.index', ['status'=>'published','type'=>'class']) }}"
-                       class="btn btn-sm btn-outline-secondary">
-                        <i class="fas fa-list mr-1"></i>All Timetables
-                    </a>
-                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                        <i class="fas fa-minus"></i>
-                    </button>
+    {{-- Today's school schedule --}}
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-calendar-day mr-1"></i> Today's School Schedule</h3>
+                <div class="card-tools">
+                    <a href="{{ route('timetables.index', ['status'=>'published','type'=>'class']) }}" class="btn btn-sm btn-default">All Timetables</a>
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
                 </div>
             </div>
             <div class="card-body p-0">
                 <div id="todayScheduleBody">
                     <div class="text-center text-muted py-4">
-                        <i class="fas fa-spinner fa-spin fa-2x mb-2 d-block"></i>Loading today's schedule…
+                        <i class="fas fa-spinner fa-spin mr-1"></i> Loading today's schedule…
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- RIGHT SIDEBAR: Quick Stats + Quick Actions --}}
     <div class="col-lg-4">
-        {{-- Notice Board --}}
+        {{-- Notice board --}}
         @if($notices->isNotEmpty())
-        <div class="card shadow-sm border-0 mb-3" style="border-radius:12px;overflow:hidden">
-            <div class="card-header d-flex align-items-center justify-content-between hdr-flat">
-                <div><i class="fas fa-bullhorn mr-2" style="color:#d97706"></i><strong>Notice Board</strong></div>
-                <a href="{{ route('notices.index') }}" class="btn btn-sm btn-outline-secondary">View All</a>
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-bullhorn mr-1"></i> Notice Board</h3>
+                <div class="card-tools">
+                    <a href="{{ route('notices.index') }}" class="btn btn-sm btn-default">View All</a>
+                </div>
             </div>
-            <div class="card-body p-3">
+            <ul class="list-group list-group-flush">
                 @foreach($notices as $notice)
-                @php $nbColor = $notice->audience === 'staff' ? '#0284c7' : '#6366f1'; @endphp
-                <div class="d-flex mb-2 pb-2 {{ !$loop->last ? 'border-bottom' : '' }}" style="gap:.6rem;border-left:3px solid {{ $notice->pinned ? '#d97706' : $nbColor }};padding-left:.6rem;">
-                    <div class="flex-grow-1">
-                        <div class="small font-weight-bold text-dark">
-                            @if($notice->pinned)<i class="fas fa-thumbtack text-warning mr-1"></i>@endif
-                            {{ $notice->title }}
-                            @if($notice->created_at->gt(now()->subDays(3)))
-                                <span class="badge badge-success" style="font-size:.55rem;vertical-align:middle;">New</span>
-                            @endif
-                        </div>
-                        <div class="small text-muted">{{ \Illuminate\Support\Str::limit($notice->body, 90) }}</div>
+                <li class="list-group-item">
+                    <div class="font-weight-bold small">
+                        @if($notice->pinned)<i class="fas fa-thumbtack text-muted mr-1" title="Pinned"></i>@endif
+                        {{ $notice->title }}
+                        @if($notice->created_at->gt(now()->subDays(3)))
+                            <span class="badge badge-success ml-1">New</span>
+                        @endif
                     </div>
-                </div>
+                    <div class="small text-muted">{{ \Illuminate\Support\Str::limit($notice->body, 90) }}</div>
+                </li>
                 @endforeach
-            </div>
+            </ul>
         </div>
         @endif
 
-        {{-- Library Quick Stats --}}
+        {{-- Library --}}
         @if($canViewLibrary)
-        <div class="card shadow-sm border-0 mb-3" style="border-radius:12px;overflow:hidden">
-            <div class="card-header hdr-flat">
-                <i class="fas fa-book mr-2" style="color:#7c3aed"></i><strong>Library</strong>
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-book mr-1"></i> Library</h3>
             </div>
-            <div class="card-body p-3">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="text-muted small"><i class="fas fa-book-open mr-1"></i>Total Books</span>
-                    <strong>{{ number_format($libraryStats['books'] ?? 0) }}</strong>
-                </div>
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="text-muted small"><i class="fas fa-hand-holding-heart mr-1"></i>Borrowed</span>
-                    <strong class="text-warning">{{ $libraryStats['active_borrowings'] ?? 0 }}</strong>
-                </div>
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="text-muted small"><i class="fas fa-chart-line mr-1"></i>Issued This Month</span>
-                    <strong class="text-success">{{ $libraryStats['issued_this_month'] ?? 0 }}</strong>
-                </div>
-                @if(($libraryStats['books'] ?? 0) > 0)
-                    <div class="progress mt-2" style="height:6px;border-radius:4px">
-                        <div class="progress-bar bg-purple"
-                             style="width:{{ min(100, round(($libraryStats['active_borrowings'] ?? 0) / max($libraryStats['books'], 1) * 100)) }}%;background:#6f42c1"></div>
-                    </div>
-                    <small class="text-muted">{{ round(($libraryStats['active_borrowings'] ?? 0) / max($libraryStats['books'] ?? 1, 1) * 100) }}% of books currently borrowed</small>
-                @endif
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <tr><td>Total books</td><td class="text-right font-weight-bold">{{ number_format($libraryStats['books'] ?? 0) }}</td></tr>
+                    <tr><td>Currently borrowed</td><td class="text-right font-weight-bold">{{ $libraryStats['active_borrowings'] ?? 0 }}</td></tr>
+                    <tr><td>Issued this month</td><td class="text-right font-weight-bold">{{ $libraryStats['issued_this_month'] ?? 0 }}</td></tr>
+                </table>
             </div>
+            @if(($libraryStats['books'] ?? 0) > 0)
+            @php $borrowPct = round(($libraryStats['active_borrowings'] ?? 0) / max($libraryStats['books'], 1) * 100); @endphp
+            <div class="card-footer">
+                <div class="progress progress-sm mb-1">
+                    <div class="progress-bar bg-primary" style="width:{{ min(100, $borrowPct) }}%"></div>
+                </div>
+                <small class="text-muted">{{ $borrowPct }}% of books currently borrowed</small>
+            </div>
+            @endif
         </div>
         @endif
 
-        {{-- Quick Actions --}}
-        <div class="card shadow-sm border-0" style="border-radius:12px;overflow:hidden">
-            <div class="card-header hdr-flat">
-                <i class="fas fa-bolt mr-2" style="color:#0f2942"></i><strong>Quick Actions</strong>
+        {{-- Quick actions --}}
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-link mr-1"></i> Quick Actions</h3>
             </div>
-            <div class="card-body p-3">
-                <div class="quick-actions-grid">
-                    @if($isAdmin)
-                        <a href="{{ route('students.create') }}" class="qa-btn qa-blue">
-                            <i class="fas fa-user-plus"></i><span>Add Student</span>
-                        </a>
-                        <a href="{{ route('marks.create') }}" class="qa-btn qa-green">
-                            <i class="fas fa-pen-alt"></i><span>Enter Marks</span>
-                        </a>
-                        <a href="{{ route('finance.payments.index') }}" class="qa-btn qa-purple">
-                            <i class="fas fa-credit-card"></i><span>Payments</span>
-                        </a>
-                        <a href="{{ route('timetables.create') }}" class="qa-btn qa-teal">
-                            <i class="fas fa-calendar-plus"></i><span>New Timetable</span>
-                        </a>
-                        <a href="{{ route('events.create') }}" class="qa-btn qa-orange">
-                            <i class="fas fa-calendar-alt"></i><span>Add Event</span>
-                        </a>
-                        <a href="{{ route('hr-reports.index') }}" class="qa-btn qa-red">
-                            <i class="fas fa-chart-bar"></i><span>HR Reports</span>
-                        </a>
-                    @endif
-                    @if($isTeacher)
-                        <a href="{{ route('timetables.my-sessions') }}" class="qa-btn qa-blue">
-                            <i class="fas fa-chalkboard-teacher"></i><span>My Sessions</span>
-                        </a>
-                        <a href="{{ route('marks.create') }}" class="qa-btn qa-green">
-                            <i class="fas fa-pen-alt"></i><span>Enter Marks</span>
-                        </a>
-                        <a href="{{ route('topic-coverage.index') }}" class="qa-btn qa-teal">
-                            <i class="fas fa-tasks"></i><span>Lesson Plans</span>
-                        </a>
-                        <a href="{{ route('results.class') }}" class="qa-btn qa-purple">
-                            <i class="fas fa-chart-line"></i><span>Results</span>
-                        </a>
-                    @endif
-                    @if($canViewLibrary)
-                    <a href="{{ route('library.lendings.create') }}" class="qa-btn qa-orange">
-                        <i class="fas fa-book"></i><span>Lend Book</span>
-                    </a>
-                    @endif
-                    @if($canViewEvents)
-                    <a href="{{ route('events.calendar') }}" class="qa-btn qa-red">
-                        <i class="fas fa-calendar"></i><span>Calendar</span>
-                    </a>
-                    @endif
-                </div>
+            <div class="list-group list-group-flush">
+                @if($isAdmin)
+                    <a href="{{ route('students.create') }}" class="list-group-item list-group-item-action"><i class="fas fa-user-plus fa-fw mr-2 text-muted"></i>Add Student</a>
+                    <a href="{{ route('marks.create') }}" class="list-group-item list-group-item-action"><i class="fas fa-pen-alt fa-fw mr-2 text-muted"></i>Enter Marks</a>
+                    <a href="{{ route('finance.payments.index') }}" class="list-group-item list-group-item-action"><i class="fas fa-credit-card fa-fw mr-2 text-muted"></i>Payments</a>
+                    <a href="{{ route('timetables.create') }}" class="list-group-item list-group-item-action"><i class="fas fa-calendar-plus fa-fw mr-2 text-muted"></i>New Timetable</a>
+                    <a href="{{ route('events.create') }}" class="list-group-item list-group-item-action"><i class="fas fa-calendar-alt fa-fw mr-2 text-muted"></i>Add Event</a>
+                    <a href="{{ route('hr-reports.index') }}" class="list-group-item list-group-item-action"><i class="fas fa-chart-bar fa-fw mr-2 text-muted"></i>HR Reports</a>
+                @endif
+                @if($isTeacher)
+                    <a href="{{ route('timetables.my-sessions') }}" class="list-group-item list-group-item-action"><i class="fas fa-chalkboard-teacher fa-fw mr-2 text-muted"></i>My Sessions</a>
+                    <a href="{{ route('marks.create') }}" class="list-group-item list-group-item-action"><i class="fas fa-pen-alt fa-fw mr-2 text-muted"></i>Enter Marks</a>
+                    <a href="{{ route('topic-coverage.index') }}" class="list-group-item list-group-item-action"><i class="fas fa-tasks fa-fw mr-2 text-muted"></i>Lesson Plans</a>
+                    <a href="{{ route('results.class') }}" class="list-group-item list-group-item-action"><i class="fas fa-chart-line fa-fw mr-2 text-muted"></i>Results</a>
+                @endif
+                @if($canViewLibrary)
+                    <a href="{{ route('library.lendings.create') }}" class="list-group-item list-group-item-action"><i class="fas fa-book fa-fw mr-2 text-muted"></i>Lend Book</a>
+                @endif
+                @if($canViewEvents)
+                    <a href="{{ route('events.calendar') }}" class="list-group-item list-group-item-action"><i class="fas fa-calendar fa-fw mr-2 text-muted"></i>Calendar</a>
+                @endif
             </div>
         </div>
     </div>
 </div>
 
-{{-- ══════════════════════════════════════════════════════════════════════
-     ANALYTICS — permission-gated smart charts
-══════════════════════════════════════════════════════════════════════ --}}
+{{-- Analytics --}}
 @if($canViewPayments || $canViewStudents || $canViewClasses || $canViewStaff)
 <div class="row">
     @if($canViewPayments && array_sum($feeTrend['values']))
-    <div class="col-lg-6 mb-3">
-        <div class="card shadow-sm border-0 h-100" style="border-radius:12px;overflow:hidden">
-            <div class="card-header hdr-flat">
-                <i class="fas fa-chart-line mr-2" style="color:#16a34a"></i><strong>Fee Collection — Last 6 Months</strong>
-            </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">Fee Collection — Last 6 Months</h3></div>
             <div class="card-body"><canvas id="feeTrendChart" style="max-height:240px"></canvas></div>
         </div>
     </div>
     @endif
 
     @if($canViewClasses && count($examPerformance['labels']))
-    <div class="col-lg-6 mb-3">
-        <div class="card shadow-sm border-0 h-100" style="border-radius:12px;overflow:hidden">
-            <div class="card-header hdr-flat">
-                <i class="fas fa-graduation-cap mr-2" style="color:#4f46e5"></i><strong>Average Mark per Class — {{ $examPerformance['exam'] }}</strong>
-            </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">Average Mark per Class — {{ $examPerformance['exam'] }}</h3></div>
             <div class="card-body"><canvas id="examPerformanceChart" style="max-height:240px"></canvas></div>
         </div>
     </div>
     @endif
 
     @if($canViewStudents && count($classDistribution['labels']))
-    <div class="col-lg-5 mb-3">
-        <div class="card shadow-sm border-0 h-100" style="border-radius:12px;overflow:hidden">
-            <div class="card-header hdr-flat">
-                <i class="fas fa-users mr-2" style="color:#2563eb"></i><strong>Students per Class</strong>
-            </div>
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">Students per Class</h3></div>
             <div class="card-body"><canvas id="classDistChart" style="max-height:230px"></canvas></div>
         </div>
     </div>
     @endif
 
     @if($canViewStudents && count($genderSplit['labels']))
-    <div class="col-lg-3 mb-3">
-        <div class="card shadow-sm border-0 h-100" style="border-radius:12px;overflow:hidden">
-            <div class="card-header hdr-flat">
-                <i class="fas fa-venus-mars mr-2" style="color:#0d9488"></i><strong>Gender</strong>
-            </div>
+    <div class="col-lg-3">
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">Gender</h3></div>
             <div class="card-body"><canvas id="genderChart" style="max-height:230px"></canvas></div>
         </div>
     </div>
     @endif
 
     @if($canViewStaff && array_sum($sessionWeek))
-    <div class="col-lg-4 mb-3">
-        <div class="card shadow-sm border-0 h-100" style="border-radius:12px;overflow:hidden">
-            <div class="card-header hdr-flat">
-                <i class="fas fa-chalkboard-teacher mr-2" style="color:#ea580c"></i><strong>Teacher Sessions This Week</strong>
-            </div>
-            <div class="card-body">
-                <canvas id="sessionWeekChart" style="max-height:200px"></canvas>
-                <div class="text-center mt-2">
-                    <a href="{{ route('timetables.class-attendance.report') }}" class="btn btn-xs btn-outline-secondary">Full report</a>
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Teacher Sessions This Week</h3>
+                <div class="card-tools">
+                    <a href="{{ route('timetables.class-attendance.report') }}" class="btn btn-sm btn-default">Full report</a>
                 </div>
             </div>
+            <div class="card-body"><canvas id="sessionWeekChart" style="max-height:200px"></canvas></div>
         </div>
     </div>
     @endif
 </div>
 @endif
 
-{{-- ══════════════════════════════════════════════════════════════════════
-     EVENTS + RECENT STUDENTS + CALENDAR
-══════════════════════════════════════════════════════════════════════ --}}
 <div class="row">
-    {{-- Upcoming Events --}}
+    {{-- Upcoming events --}}
     @if($canViewEvents)
-    <div class="col-lg-4 mb-3">
-        <div class="card shadow-sm border-0 h-100" style="border-radius:12px;overflow:hidden">
-            <div class="card-header d-flex justify-content-between align-items-center hdr-flat">
-                <div><i class="fas fa-calendar-alt mr-2" style="color:#d97706"></i><strong>Upcoming Events</strong></div>
-                <a href="{{ route('events.calendar') }}" class="btn btn-sm btn-outline-secondary">View All</a>
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-calendar-alt mr-1"></i> Upcoming Events</h3>
+                <div class="card-tools">
+                    <a href="{{ route('events.calendar') }}" class="btn btn-sm btn-default">View All</a>
+                </div>
             </div>
-            <div class="card-body p-0">
-                <ul class="list-group list-group-flush">
-                    @forelse($upcomingEvents as $event)
-                        @php
-                            $evColor = match($event->type) {
-                                'academic'=>'primary','sport'=>'success','cultural'=>'warning','holiday'=>'danger',default=>'secondary'
-                            };
-                        @endphp
-                        <li class="list-group-item px-3 py-2 border-left-{{ $evColor }}" style="border-left:4px solid">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <div class="font-weight-bold small">{{ $event->title }}</div>
-                                    <div class="text-muted" style="font-size:.78rem">
-                                        <i class="far fa-calendar-alt mr-1"></i>
-                                        {{ \Carbon\Carbon::parse($event->start_date)->format('d M Y') }}
-                                    </div>
-                                </div>
-                                <span class="badge badge-{{ $evColor }} badge-pill">{{ ucfirst($event->type) }}</span>
-                            </div>
-                        </li>
-                    @empty
-                        <li class="list-group-item text-center text-muted py-4">
-                            <i class="fas fa-calendar-times fa-2x mb-2 d-block"></i>No upcoming events
-                        </li>
-                    @endforelse
-                </ul>
-            </div>
+            <ul class="list-group list-group-flush">
+                @forelse($upcomingEvents as $event)
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="font-weight-bold small">{{ $event->title }}</div>
+                            <div class="small text-muted">{{ \Carbon\Carbon::parse($event->start_date)->format('d M Y') }}</div>
+                        </div>
+                        <span class="badge badge-secondary">{{ ucfirst($event->type) }}</span>
+                    </li>
+                @empty
+                    <li class="list-group-item text-center text-muted py-4">No upcoming events</li>
+                @endforelse
+            </ul>
         </div>
     </div>
     @endif
 
-    {{-- Recent Student Registrations --}}
+    {{-- Recent enrollments --}}
     @if($canViewStudents)
-    <div class="col-lg-4 mb-3">
-        <div class="card shadow-sm border-0 h-100" style="border-radius:12px;overflow:hidden">
-            <div class="card-header d-flex justify-content-between align-items-center hdr-flat">
-                <div><i class="fas fa-user-graduate mr-2" style="color:#334155"></i><strong>Recent Enrollments</strong></div>
-                <a href="{{ route('students.index') }}" class="btn btn-sm btn-outline-secondary">View All</a>
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-user-graduate mr-1"></i> Recent Enrollments</h3>
+                <div class="card-tools">
+                    <a href="{{ route('students.index') }}" class="btn btn-sm btn-default">View All</a>
+                </div>
             </div>
-            <div class="card-body p-0">
-                <ul class="list-group list-group-flush">
-                    @forelse($recentStudents as $student)
-                        <li class="list-group-item px-3 py-2">
-                            <div class="d-flex align-items-center" style="gap:.75rem">
-                                <div class="student-avatar">
-                                    {{ strtoupper(substr($student->first_name ?? $student->name ?? 'S', 0, 1)) }}
-                                </div>
-                                <div>
-                                    <div class="font-weight-bold small">
-                                        {{ $student->name ?? ($student->first_name . ' ' . $student->last_name) }}
-                                    </div>
-                                    <div class="text-muted" style="font-size:.78rem">
-                                        {{ ucfirst($student->gender ?? '') }}
-                                        · {{ \Carbon\Carbon::parse($student->created_at)->diffForHumans() }}
-                                    </div>
-                                </div>
-                            </div>
-                        </li>
-                    @empty
-                        <li class="list-group-item text-center text-muted py-4">No recent enrollments</li>
-                    @endforelse
-                </ul>
-            </div>
+            <ul class="list-group list-group-flush">
+                @forelse($recentStudents as $student)
+                    <li class="list-group-item">
+                        <div class="font-weight-bold small">{{ $student->name ?? ($student->first_name . ' ' . $student->last_name) }}</div>
+                        <div class="small text-muted">
+                            {{ ucfirst($student->gender ?? '') }} · {{ \Carbon\Carbon::parse($student->created_at)->diffForHumans() }}
+                        </div>
+                    </li>
+                @empty
+                    <li class="list-group-item text-center text-muted py-4">No recent enrollments</li>
+                @endforelse
+            </ul>
         </div>
     </div>
     @endif
 
-    {{-- Event Type Chart --}}
+    {{-- Event distribution --}}
     @if($canViewEvents)
-    <div class="col-lg-4 mb-3">
-        <div class="card shadow-sm border-0 h-100" style="border-radius:12px;overflow:hidden">
-            <div class="card-header hdr-flat">
-                <i class="fas fa-chart-pie mr-2" style="color:#2563eb"></i><strong>Event Distribution</strong>
-            </div>
-            <div class="card-body d-flex flex-column align-items-center justify-content-center">
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">Event Distribution</h3></div>
+            <div class="card-body">
                 @if($eventStats->count() > 0)
                     <canvas id="eventChart" style="max-height:200px"></canvas>
                 @else
-                    <div class="text-center text-muted py-4">
-                        <i class="fas fa-chart-pie fa-2x mb-2 d-block"></i>No event data yet
-                    </div>
+                    <div class="text-center text-muted py-4">No event data yet</div>
                 @endif
             </div>
         </div>
@@ -520,136 +346,30 @@
     @endif
 </div>
 
-{{-- Event Calendar --}}
+{{-- Event calendar --}}
 @if($canViewEvents)
-<div class="row">
-    <div class="col-12 mb-3">
-        <div class="card shadow-sm border-0" style="border-radius:12px;overflow:hidden">
-            <div class="card-header d-flex align-items-center justify-content-between hdr-flat">
-                <div><i class="fas fa-calendar-alt mr-2" style="color:#16a34a"></i><strong>Event Calendar</strong></div>
-                <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                    <i class="fas fa-minus"></i>
-                </button>
-            </div>
-            <div class="card-body">
-                <div id="dashboardCalendar"></div>
-            </div>
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-calendar-alt mr-1"></i> Event Calendar</h3>
+        <div class="card-tools">
+            <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
         </div>
+    </div>
+    <div class="card-body">
+        <div id="dashboardCalendar"></div>
     </div>
 </div>
 @endif
 
 @stop
 
-@section('css')
-@include('partials.dashboard-widgets-css')
-<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css" rel="stylesheet">
-<style>
-/* ── Welcome Hero ──────────────────────────────────────────────────── */
-.welcome-hero {
-    background: #0f2942;
-    border-radius: 12px;
-    padding: 1.5rem 2rem;
-    color: #fff;
-    box-shadow: 0 2px 10px rgba(15,41,66,.18);
-}
-.hero-avatar { font-size: 3.5rem; opacity: .85; line-height:1; }
-.hero-greeting { font-size: .95rem; opacity: .8; font-weight:400; }
-.hero-name { font-size: 1.6rem; font-weight: 700; line-height:1.2; }
-.hero-meta { margin-top: .4rem; display:flex; gap:.5rem; flex-wrap:wrap; }
-.role-badge {
-    background: rgba(255,255,255,.2);
-    border: 1px solid rgba(255,255,255,.4);
-    border-radius: 20px;
-    padding: .15rem .75rem;
-    font-size: .78rem;
-    font-weight: 600;
-    letter-spacing: .5px;
-}
-.session-badge {
-    background: rgba(255,255,255,.15);
-    border: 1px solid rgba(255,255,255,.3);
-    border-radius: 20px;
-    padding: .15rem .75rem;
-    font-size: .78rem;
-}
-.hero-date { text-align: right; }
-.date-day { font-size: 1rem; opacity: .75; }
-.date-full { font-size: 1.1rem; font-weight: 600; }
-.date-time { font-size: 1.6rem; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing:.5px; }
-
-/* ── Flat Card Headers ────────────────────────────────────────────────
-   Replaces the old per-section gradient headers with one consistent,
-   professional flat style; each section keeps a colored icon instead. */
-.hdr-flat { background: #fff; border-bottom: 1px solid #e9ecef; color: #1e293b; }
-
-/* ── Stats Cards: solid-color small-box + info-box styles ─────────────
-   Shared with other pages via partials.dashboard-widgets-css. ──────── */
-.stats-row { gap-y: 1rem; }
-
-/* ── Quick Actions Grid ────────────────────────────────────────────── */
-.quick-actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
-.qa-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: .35rem;
-    padding: .9rem .5rem;
-    border-radius: 10px;
-    text-decoration: none;
-    font-size: .75rem;
-    font-weight: 600;
-    color: #1e293b;
-    background: #f8f9fb;
-    border: 1px solid #e6e9ef;
-    transition: transform .12s, box-shadow .12s, border-color .12s, background .12s;
-    text-align: center;
-    line-height: 1.2;
-}
-.qa-btn i { font-size: 1.25rem; }
-.qa-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(15,23,42,.1); background:#fff; border-color:#c9d0da; color:#1e293b; text-decoration:none; }
-.qa-blue   i { color: #2563eb; }
-.qa-green  i { color: #16a34a; }
-.qa-purple i { color: #7c3aed; }
-.qa-teal   i { color: #0d9488; }
-.qa-orange i { color: #ea580c; }
-.qa-red    i { color: #dc2626; }
-
-/* ── Student Avatar ────────────────────────────────────────────────── */
-.student-avatar {
-    width: 36px; height: 36px;
-    border-radius: 50%;
-    background: #0f2942;
-    color: #fff;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: .9rem;
-    flex-shrink: 0;
-}
-
-/* ── Today Schedule Table ──────────────────────────────────────────── */
-#todayScheduleBody .table th { font-size: .8rem; text-transform: uppercase; letter-spacing: .5px; }
-#todayScheduleBody .table td { font-size: .87rem; }
-
-</style>
-@stop
 
 @section('js')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.js"></script>
+{{-- v6 ships one global bundle (styles included); main.min.js/css were v5 paths and 404 --}}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-
-    // ── Live clock ──────────────────────────────────────────────────
-    function tick() {
-        const now  = new Date();
-        const h    = String(now.getHours()).padStart(2, '0');
-        const m    = String(now.getMinutes()).padStart(2, '0');
-        const s    = String(now.getSeconds()).padStart(2, '0');
-        const el   = document.getElementById('liveClock');
-        if (el) el.textContent = `${h}:${m}:${s}`;
-    }
-    tick(); setInterval(tick, 1000);
 
     // ── Event chart ─────────────────────────────────────────────────
     const eventChartEl = document.getElementById('eventChart');
@@ -761,7 +481,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (calendarEl) {
         new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
-            height: 340,
+            height: 'auto',
             headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
             events: @json($calendarEvents ?? []),
             eventDisplay: 'block',
@@ -780,7 +500,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (isWeekend) {
         document.getElementById('todayScheduleBody').innerHTML =
-            '<div class="text-center text-muted py-4"><i class="fas fa-umbrella-beach fa-2x mb-2 d-block"></i>No classes on weekends — enjoy!</div>';
+            '<div class="text-center text-muted py-4">No classes are scheduled on weekends.</div>';
         return;
     }
 

@@ -26,43 +26,43 @@
     @endif
 
     <div class="row">
-        <div class="col-md-3 col-6">
-            <div class="info-box-custom">
-                <div class="ib-icon" style="background:rgba(37,99,235,.12);color:#2563eb"><i class="fas fa-bus"></i></div>
-                <div class="ib-body">
-                    <span class="ib-label">Bus</span>
-                    <span class="ib-value" style="font-size:1.1rem">{{ $route->bus->plate_number ?? '— none —' }}</span>
-                    <span class="ib-sub">{{ $route->bus->driver ? 'Driver: ' . $route->bus->driver->first_name . ' ' . $route->bus->driver->last_name : 'No driver set' }}</span>
+        <div class="col-sm-6 col-xl-3">
+            <div class="info-box">
+                <span class="info-box-icon bg-primary"><i class="fas fa-bus"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text">Bus</span>
+                    <span class="info-box-number">{{ $route->bus->plate_number ?? '— none —' }}</span>
+                    <span class="small text-muted">{{ $route->bus->driver ? 'Driver: ' . $route->bus->driver->first_name . ' ' . $route->bus->driver->last_name : 'No driver set' }}</span>
                 </div>
             </div>
         </div>
-        <div class="col-md-3 col-6">
-            <div class="info-box-custom">
-                <div class="ib-icon" style="background:rgba(22,163,74,.12);color:#16a34a"><i class="fas fa-wallet"></i></div>
-                <div class="ib-body">
-                    <span class="ib-label">Monthly Fee</span>
-                    <span class="ib-value">{{ number_format($route->monthly_fee) }}</span>
-                    <span class="ib-sub">TZS per student</span>
+        <div class="col-sm-6 col-xl-3">
+            <div class="info-box">
+                <span class="info-box-icon bg-success"><i class="fas fa-wallet"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text">Monthly Fee</span>
+                    <span class="info-box-number">{{ number_format($route->monthly_fee) }}</span>
+                    <span class="small text-muted">TZS per student</span>
                 </div>
             </div>
         </div>
-        <div class="col-md-3 col-6">
-            <div class="info-box-custom">
-                <div class="ib-icon" style="background:rgba(124,58,237,.12);color:#7c3aed"><i class="fas fa-user-graduate"></i></div>
-                <div class="ib-body">
-                    <span class="ib-label">Students</span>
-                    <span class="ib-value">{{ $route->activeAssignments->count() }}</span>
-                    <span class="ib-sub">Currently assigned</span>
+        <div class="col-sm-6 col-xl-3">
+            <div class="info-box">
+                <span class="info-box-icon bg-primary"><i class="fas fa-user-graduate"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text">Students</span>
+                    <span class="info-box-number">{{ $route->activeAssignments->count() }}</span>
+                    <span class="small text-muted">Currently assigned</span>
                 </div>
             </div>
         </div>
-        <div class="col-md-3 col-6">
-            <div class="info-box-custom">
-                <div class="ib-icon" style="background:rgba(13,148,136,.12);color:#0d9488"><i class="fas fa-map-marker-alt"></i></div>
-                <div class="ib-body">
-                    <span class="ib-label">Stops</span>
-                    <span class="ib-value">{{ $route->stops->count() }}</span>
-                    <span class="ib-sub">Pickup / dropoff points</span>
+        <div class="col-sm-6 col-xl-3">
+            <div class="info-box">
+                <span class="info-box-icon bg-primary"><i class="fas fa-map-marker-alt"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text">Stops</span>
+                    <span class="info-box-number">{{ $route->stops->count() }}</span>
+                    <span class="small text-muted">Pickup / dropoff points</span>
                 </div>
             </div>
         </div>
@@ -211,6 +211,3 @@
 </div>
 @stop
 
-@section('css')
-@include('partials.dashboard-widgets-css')
-@stop
