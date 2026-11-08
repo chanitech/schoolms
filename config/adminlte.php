@@ -581,6 +581,12 @@ return [
                         ],
                     ],
                     [
+                        'text' => 'Student Attendance',
+                        'url'  => 'student-attendance',
+                        'icon' => 'fas fa-user-check',
+                        'can'  => 'is-class-coordinator',
+                    ],
+                    [
                         'text' => 'Class Attendance',
                         'url'  => 'timetables/class-attendance',
                         'icon' => 'fas fa-clipboard-check',

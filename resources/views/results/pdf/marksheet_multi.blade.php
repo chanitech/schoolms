@@ -349,6 +349,17 @@
     </tbody>
 </table>
 
+@if($row['attendance'])
+    <div class="summary-box" style="margin-bottom:4px;">
+        <strong>Attendance</strong> ({{ $session->name }} to {{ $attendanceUpTo->format('d M Y') }}):
+        <strong>{{ $row['attendance']['rate'] }}%</strong> &nbsp; | &nbsp;
+        Attended {{ $row['attendance']['attended'] }} of {{ $row['attendance']['days'] }} school days &nbsp; | &nbsp;
+        Absent {{ $row['attendance']['absent'] }} &nbsp; | &nbsp;
+        Late {{ $row['attendance']['late'] }}
+        @if($row['attendance']['excused']) &nbsp; | &nbsp; Excused {{ $row['attendance']['excused'] }} @endif
+    </div>
+@endif
+
 {{-- Summary --}}
 <div class="summary-box">
     <strong>{{ $exams->count() > 1 ? 'Overall Average' : 'Average' }} (Best 7):</strong> {{ $displayAvg }} &nbsp; | &nbsp;

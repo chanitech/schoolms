@@ -16,6 +16,7 @@ use App\Http\Controllers\{
     GradeController,
     DivisionController,
     StudentResultController,
+    StudentAttendanceController,
     MarkController,
     DepartmentController,
     JobCardController,
@@ -441,6 +442,12 @@ Route::middleware(['auth', 'verified', 'staff.only'])->group(function () {
     // Period Settings — the teaching/break periods timetable generation and
     // capacity analysis are computed against. Each school manages its own.
     Route::resource('timetable-periods', TimetablePeriodController::class)->except(['show']);
+
+    // ==================== STUDENT ATTENDANCE ====================
+    Route::middleware('can:is-class-coordinator')->group(function () {
+        Route::get('student-attendance', [StudentAttendanceController::class, 'index'])->name('student-attendance.index');
+        Route::post('student-attendance', [StudentAttendanceController::class, 'store'])->name('student-attendance.store');
+    });
 
     // ==================== RESULTS GROUP ====================
     Route::prefix('results')->name('results.')->group(function () {

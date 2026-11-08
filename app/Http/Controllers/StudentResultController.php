@@ -22,6 +22,7 @@ use App\Models\AcademicSession;
 use Illuminate\Support\Collection;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Enrollment;
+use App\Models\StudentAttendance;
 use Illuminate\Support\Facades\DB;
 use App\Services\DocumentSignatureService;
 use App\Models\User;
@@ -796,8 +797,13 @@ class StudentResultController extends Controller
     $classSize  = $studentsData->count();
     $isOfficial = $selected->isPublished();
 
-    $studentsData = $studentsData->map(function ($row) use ($findGrade, $grades, $class, $session, $selected, $classSize, $isOfficial) {
+    // Stops at publication so re-printing an old report gives the same figure.
+    $attendanceUpTo = $selected->published_at ?? now();
+    $attendance     = StudentAttendance::summaries($studentIds, $sessionId, $attendanceUpTo);
+
+    $studentsData = $studentsData->map(function ($row) use ($findGrade, $grades, $class, $session, $selected, $classSize, $isOfficial, $attendance) {
         $grade = $findGrade($row['average_mark']);
+        $row['attendance']    = $attendance->get($row['student']->id);
         $row['overallGrade']  = $grade;
         $row['comments']      = StudentResultService::reportComments($row['student']->first_name, $row['overallSubjects'], $grade, $grades, $row['eligible_for_rank']);
         $row['signature']     = $isOfficial ? $this->reportCardSignature($row, $class, $session, $selected, $classSize) : null;
@@ -822,6 +828,7 @@ class StudentResultController extends Controller
         'exams'        => $exams,
         'selectedExam' => $selected,
         'classSize'    => $classSize,
+        'attendanceUpTo' => $attendanceUpTo,
         'isOfficial'   => $isOfficial,
         'coordinator'  => $coordinator,
         'coordinatorSignature' => $isOfficial ? $coordinator?->user?->signatureDataUri() : null,
