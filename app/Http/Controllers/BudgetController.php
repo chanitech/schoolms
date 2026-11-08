@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Budget;
 use App\Models\BudgetItem;
 use App\Models\Invoice;
+use Illuminate\Support\Facades\DB;
 use App\Models\Department;
 use Illuminate\Support\Facades\Auth;
 
@@ -315,6 +316,26 @@ class BudgetController extends Controller
 
         return redirect()->route('finance.budgets.index')
             ->with('success', 'Budget updated successfully.');
+    }
+
+    public function destroy(Budget $budget)
+    {
+        $this->authorize('delete budgets');
+
+        $locked = $budget->status !== 'pending'
+            || $budget->items()->where('status', '!=', 'pending')->exists()
+            || Invoice::where('budget_id', $budget->id)->exists();
+
+        if ($locked) {
+            return back()->with('error', 'Only pending budgets with no approved items or invoices can be deleted.');
+        }
+
+        DB::transaction(function () use ($budget) {
+            $budget->items()->delete();
+            $budget->delete();
+        });
+
+        return redirect()->route('finance.budgets.index')->with('success', 'Budget deleted.');
     }
 
     /**

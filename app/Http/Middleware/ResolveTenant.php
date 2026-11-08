@@ -16,6 +16,12 @@ class ResolveTenant
     {
         $school = $this->resolveSchool($request);
 
+        // A "remember me" login comes back with a fresh session and no school
+        // in it; use the user's own school, never the default one below.
+        if (!$school && ($user = auth()->user()) && !$user->isSuperAdmin() && $user->school_id) {
+            $school = School::find($user->school_id);
+        }
+
         if (!$school) {
             // In local dev without subdomains, fall back to .env TENANT_SCHOOL_ID
             $fallbackId = config('tenancy.default_school_id');

@@ -17,7 +17,7 @@
     </div>
 
     {{-- Add Category button --}}
-    @can('library.create')
+    @can('create categories')
         <a href="{{ route('library.categories.create') }}" class="btn btn-primary mb-3">
             <i class="fas fa-plus"></i> Add Category
         </a>
@@ -38,13 +38,13 @@
                         <tr>
                             <td>{{ $category->name }}</td>
                             <td>
-                                @can('library.edit')
+                                @can('edit categories')
                                     <a href="{{ route('library.categories.edit', $category) }}" class="btn btn-sm btn-warning">
                                         <i class="fas fa-edit"></i> Edit
                                     </a>
                                 @endcan
 
-                                @can('library.delete')
+                                @can('delete categories')
                                     <form action="{{ route('library.categories.destroy', $category) }}" method="POST" style="display:inline-block">
                                         @csrf
                                         @method('DELETE')

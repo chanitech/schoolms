@@ -264,7 +264,7 @@ return [
     'dashboard_url' => 'dashboard',
     'logout_url' => 'logout',
     'login_url' => 'login',
-    'register_url' => 'register',
+    'register_url' => false,
     'password_reset_url' => 'password/reset',
     'password_email_url' => 'password/email',
     'profile_url' => 'profile.edit',
@@ -603,7 +603,7 @@ return [
                 'submenu' => [
                     ['text' => 'Exams',              'url' => 'exams',                    'icon' => 'fas fa-file-alt',  'can' => 'view exams'],
                     ['text' => 'Marks',              'url' => 'marks',                    'icon' => 'fas fa-pen',       'can' => 'view marks'],
-                    ['text' => 'Exam Questions',     'url' => 'exam-questions/manage',    'icon' => 'fas fa-list-ol',   'can' => 'enter marks'],
+                    ['text' => 'Exam Questions',     'url' => 'exam-questions/manage',    'icon' => 'fas fa-list-ol',   'can' => 'manage-exam-questions'],
                     ['text' => 'Question Evaluation','url' => 'marks/question-evaluation','icon' => 'fas fa-chart-bar', 'can' => 'enter marks'],
                     ['text' => 'Grading & GPA',      'url' => 'grades',                  'icon' => 'fas fa-star',      'can' => 'view grading'],
                 ],

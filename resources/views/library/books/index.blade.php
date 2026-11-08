@@ -14,7 +14,7 @@
         <x-adminlte-info-box title="Categories" text="{{ $librarySummary['total_categories'] }}" icon="fas fa-tags" theme="info"/>
     </div>
 
-    @can('library.create')
+    @can('create books')
         <a href="{{ route('library.books.create') }}" class="btn btn-primary mb-2">Add Book</a>
     @endcan
 
@@ -38,10 +38,10 @@
                 <td>{{ $book->isbn ?? '-' }}</td>
                 <td>{{ $book->quantity }}</td>
                 <td>
-                    @can('library.edit')
+                    @can('edit books')
                         <a href="{{ route('library.books.edit', $book) }}" class="btn btn-sm btn-warning">Edit</a>
                     @endcan
-                    @can('library.delete')
+                    @can('delete books')
                         <form action="{{ route('library.books.destroy', $book) }}" method="POST" style="display:inline-block">
                             @csrf
                             @method('DELETE')

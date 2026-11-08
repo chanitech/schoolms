@@ -50,6 +50,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Matches TimetableController's own inline role check on
         // edit/update and TimetablePeriodController's constructor gate.
+        Gate::define('manage-exam-questions', fn ($user) => $user->hasAnyRole(['Admin', 'HOD']));
         Gate::define('is-timetable-admin', fn ($user) => $user->hasAnyRole(['Admin', 'Academic']));
 
         // Class coordinator: the staff member set as class_teacher of at

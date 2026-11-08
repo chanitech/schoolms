@@ -49,7 +49,7 @@
                 @endcan
 
                 {{-- Received Leaves button for Admin / HOD / Director --}}
-                @if(auth()->user()->hasRole('admin') || (auth()->user()->staff && (auth()->user()->staff->isHod() || auth()->user()->staff->isDirector())))
+                @if(auth()->user()->hasRole('Admin') || (auth()->user()->staff && (auth()->user()->staff->isHod() || auth()->user()->staff->isDirector())))
                     <a href="{{ route('leaves.received') }}" class="btn btn-warning">Received Leaves</a>
                 @endif
             </div>

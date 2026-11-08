@@ -80,7 +80,7 @@
                     </tr>
                     <tr>
                         <th>Note</th>
-                        <td>{{ $invoice->note ?? '-' }}</td>
+                        <td>{{ $invoice->notes ?? '-' }}</td>
                     </tr>
                 </table>
             </div>

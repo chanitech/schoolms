@@ -73,7 +73,7 @@ class SubjectController extends Controller
 
         // Teachers — subject_class.teacher_id is a foreign key to staff.id,
         // so the option values here must be Staff IDs, not User IDs.
-        $teachers = Staff::whereHas('user', fn ($q) => $q->role('teacher'))
+        $teachers = Staff::whereHas('user', fn ($q) => $q->role('Teacher'))
             ->get(['id', 'first_name', 'last_name']);
 
         return view('subjects.create', compact('classes', 'teachers', 'departments'));
@@ -137,7 +137,7 @@ class SubjectController extends Controller
         $classes = SchoolClass::all();
         $departments = Department::all();
         // subject_class.teacher_id is a foreign key to staff.id, not users.id.
-        $teachers = Staff::whereHas('user', fn ($q) => $q->role('teacher'))
+        $teachers = Staff::whereHas('user', fn ($q) => $q->role('Teacher'))
             ->get(['id', 'first_name', 'last_name']);
 
         $subject->load('classes', 'department');
@@ -273,7 +273,7 @@ class SubjectController extends Controller
             $q->orderBy('school_classes.name');
         }])->orderBy('name')->get();
 
-        $teachers = Staff::whereHas('user', fn ($q) => $q->role('teacher'))
+        $teachers = Staff::whereHas('user', fn ($q) => $q->role('Teacher'))
             ->get(['id', 'first_name', 'last_name'])
             ->sortBy(fn ($s) => $s->first_name . ' ' . $s->last_name);
 

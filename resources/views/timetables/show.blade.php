@@ -78,7 +78,7 @@
 @if(session($type))
 <div class="alert alert-{{ $type === 'error' ? 'danger' : $type }} alert-dismissible fade show">
     <button type="button" class="close" data-dismiss="alert">&times;</button>
-    {!! session($type) !!}
+    {{ session($type) }}
 </div>
 @endif
 @endforeach

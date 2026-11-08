@@ -123,7 +123,7 @@ Route::prefix('guardian')->name('guardian.')->group(function () {
 });
 
 // Authenticated routes
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'staff.only'])->group(function () {
 
     // ==================== NOTIFICATIONS ====================
     Route::prefix('notifications')->name('notifications.')->group(function () {
@@ -586,14 +586,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/leaves', [HRReportController::class, 'leaveReport'])->name('leaves')->middleware('permission:view leave report');
         Route::get('/leaves/export/excel', [HRReportController::class, 'exportLeaveExcel'])->name('leaves.export.excel')->middleware('permission:view leave report');
         Route::get('/leaves/export/pdf', [HRReportController::class, 'exportLeavePDF'])->name('leaves.export.pdf')->middleware('permission:view leave report');
-        Route::get('/jobcards', [HRReportController::class, 'jobCardReport'])->name('jobcards');
-        Route::get('/evaluation', [HRReportController::class, 'evaluationReport'])->name('evaluation');
-        Route::get('/evaluation/export', [HRReportController::class, 'exportEvaluation'])->name('evaluation.export');
+        Route::get('/jobcards', [HRReportController::class, 'jobCardReport'])->name('jobcards')->middleware('permission:view job cards report');
+        Route::get('/evaluation', [HRReportController::class, 'evaluationReport'])->name('evaluation')->middleware('permission:view evaluation report');
+        Route::get('/evaluation/export', [HRReportController::class, 'exportEvaluation'])->name('evaluation.export')->middleware('permission:view evaluation report');
         Route::get('/events', [HRReportController::class, 'eventReport'])->name('events')->middleware('permission:view event report');
         Route::get('/summary', [HRReportController::class, 'summaryDashboard'])->name('summary')->middleware('permission:view hr summary dashboard');
     });
 
-    Route::get('/hr-reports/evaluation/export', [HRReportController::class, 'exportEvaluation'])->name('hr.reports.export.evaluation');
+    Route::get('/hr-reports/evaluation/export', [HRReportController::class, 'exportEvaluation'])->name('hr.reports.export.evaluation')->middleware('permission:view evaluation report');
 
     // ==================== LIBRARY MODULE ====================
     Route::prefix('library')->name('library.')->group(function () {

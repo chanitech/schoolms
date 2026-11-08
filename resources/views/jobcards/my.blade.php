@@ -51,7 +51,7 @@
                         </td>
                         <td>{{ $job->due_date?->format('Y-m-d') ?? '-' }}</td>
                         <td>
-                            @if($job->assigned_to === Auth::user()->staff?->id && $job->status !== 'completed' && auth()->user()->can('update job status'))
+                            @if($job->assigned_to === Auth::user()->staff?->id && $job->status !== 'completed')
                                 <!-- Status update form for assignee -->
                                 <form action="{{ route('jobcards.updateStatus', $job->id) }}" method="POST">
                                     @csrf

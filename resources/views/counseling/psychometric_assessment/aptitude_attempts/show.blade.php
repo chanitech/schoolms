@@ -25,7 +25,7 @@
             <hr>
             @foreach($answers as $answer)
                 <div class="mb-3 border p-3 rounded">
-                    <p><strong>Q{{ $loop->iteration }}. {!! $answer->question->question !!}</strong></p>
+                    <p><strong>Q{{ $loop->iteration }}. {{ $answer->question->question_text }}</strong></p>
 
                     @if($answer->question->image)
                         <div class="mb-2">
@@ -44,7 +44,7 @@
                                 $display = $ans;
                             }
                         @endphp
-                        {!! $display !!}
+                        {{ $display }}
                     </p>
 
                     <p><strong>Marks Obtained:</strong> {{ $answer->obtained_marks }} / {{ $answer->question->marks }}</p>

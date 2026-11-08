@@ -94,7 +94,7 @@
                         <a href="{{ route('finance.budgets.show', $budget->id) }}" class="btn btn-info btn-sm">
                             <i class="fas fa-eye"></i> View
                         </a>
-                        @if(auth()->user()->can('approve budgets') && $budget->status == 'pending')
+                        @if(auth()->user()->can('approve budget items') && $budget->status == 'pending')
                             <a href="{{ route('finance.budgets.approve', $budget->id) }}" class="btn btn-success btn-sm">
                                 <i class="fas fa-check"></i> Approve
                             </a>

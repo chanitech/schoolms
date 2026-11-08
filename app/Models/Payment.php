@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Concerns\BelongsToSchool;
@@ -32,6 +33,16 @@ class Payment extends Model
     protected $casts = [
         'payment_date' => 'datetime',
     ];
+
+    // The column is `method`; the forms, controllers and views all say
+    // payment_method. Writing that name directly raised "Unknown column".
+    protected function paymentMethod(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value, $attributes) => $attributes['method'] ?? null,
+            set: fn ($value) => ['method' => $value],
+        );
+    }
 
     public function studentBill()
     {

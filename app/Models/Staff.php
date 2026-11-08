@@ -130,12 +130,13 @@ class Staff extends Model
 
     public function isHod(): bool
     {
-        return $this->hasRole('hod');
+        // Roles live on the linked User, never on Staff itself.
+        return (bool) $this->user?->hasRole('HOD');
     }
 
     public function isDirector(): bool
     {
-        return $this->hasRole('director');
+        return (bool) $this->user?->hasRole('director');
     }
 
     // ========== LOAN MANAGEMENT METHODS ==========

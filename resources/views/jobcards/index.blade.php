@@ -62,7 +62,7 @@
                         @endif
                     </td>
                     <td>
-                        @can('edit jobcards')
+                        @can('edit any jobcards')
                             <a href="{{ route('jobcards.edit', $job->id) }}" class="btn btn-sm btn-warning">Edit</a>
                         @endcan
                         @can('delete jobcards')

@@ -73,6 +73,10 @@ class AIAnalysisService
             return "⚠️ **GROQ_API_KEY not configured.**\n\nAdd it to your `.env` file:\n```\nGROQ_API_KEY=gsk_...\n```\nGet a free key at **console.groq.com/keys**";
         }
 
+        if ($cacheKey) {
+            $cacheKey = $this->scopedCacheKey($cacheKey);
+        }
+
         // Return cached response if available
         if ($cacheKey) {
             $cached = Cache::get($cacheKey);
@@ -153,6 +157,28 @@ class AIAnalysisService
                  . "2. GROQ_API_KEY is correct in .env\n"
                  . "3. The Groq service is online (https://status.groq.com)";
         }
+    }
+
+    // Per school (reports must never cross schools) and per generation, so
+    // Clear Cache drops one school's reports without touching anything else.
+    private function scopedCacheKey(string $key): string
+    {
+        return 'ai:' . $this->schoolId() . ':' . Cache::get($this->generationKey(), 0) . ':' . $key;
+    }
+
+    public function clearCache(): void
+    {
+        Cache::forever($this->generationKey(), Cache::get($this->generationKey(), 0) + 1);
+    }
+
+    private function generationKey(): string
+    {
+        return 'ai:generation:' . $this->schoolId();
+    }
+
+    private function schoolId(): int|string
+    {
+        return app()->bound('currentSchool') ? app('currentSchool')->id : 'none';
     }
 
     public function analyzeStudentPerformance(array $studentData): string

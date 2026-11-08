@@ -9,7 +9,6 @@ use App\Models\SchoolClass;
 use App\Models\PocketTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Cache;
 
 class AIAnalysisController extends Controller
 {
@@ -151,19 +150,7 @@ class AIAnalysisController extends Controller
      */
     public function clearCache(Request $request): JsonResponse
     {
-        $type = $request->input('type', 'all');
-
-        if ($type === 'finance' || $type === 'all') {
-            Cache::forget('ai_finance_' . date('Y-m-d'));
-        }
-        if ($type === 'student' || $type === 'all') {
-            // Student caches are per-student-id; flush via tag pattern not needed —
-            // user clears their own by simply re-running after marks update.
-            Cache::flush(); // safe for local; in prod use tagged cache
-        }
-        if ($type === 'class' || $type === 'all') {
-            Cache::flush();
-        }
+        $this->ai->clearCache();
 
         return response()->json(['success' => true]);
     }

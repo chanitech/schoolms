@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\LeavesExport;
+use App\Exports\EvaluationExport;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class HRReportController extends Controller
@@ -219,6 +220,9 @@ class HRReportController extends Controller
 
         $rolesCount = DB::table('model_has_roles')
             ->join('roles', 'roles.id', '=', 'model_has_roles.role_id')
+            ->join('users', 'users.id', '=', 'model_has_roles.model_id')
+            ->where('model_has_roles.model_type', \App\Models\User::class)
+            ->where('users.school_id', app('currentSchool')->id)
             ->select('roles.name', DB::raw('count(*) as total'))
             ->groupBy('roles.name')
             ->get();
@@ -231,11 +235,8 @@ class HRReportController extends Controller
     // -----------------------------
     public function eventReport()
     {
-        $events = Event::select('title', 'date', 'participants_count')
-            ->orderBy('date', 'desc')
-            ->get();
-
-        return view('hr-reports.events', compact('events'));
+        // hr-reports/events was never built (empty view, non-existent columns).
+        return redirect()->route('events.index');
     }
 
     // -----------------------------
@@ -269,7 +270,7 @@ class HRReportController extends Controller
 
 
 
-public function evaluationReport()
+private function buildEvaluations()
 {
     $staffList = Staff::with('department')->get();
 
@@ -378,6 +379,13 @@ public function evaluationReport()
     // Rank by performance
     $evaluations = $evaluations->sortByDesc('score')->values();
 
+    return $evaluations;
+}
+
+public function evaluationReport()
+{
+    $evaluations = $this->buildEvaluations();
+
     // Department-level performance
     $departmentScores = $evaluations->groupBy('department')
         ->map(function ($rows, $dept) {
@@ -391,6 +399,17 @@ public function evaluationReport()
         ->values();
 
     return view('hr-reports.evaluation', compact('evaluations', 'departmentScores'));
+}
+
+public function exportEvaluation(Request $request)
+{
+    $evaluations = $this->buildEvaluations();
+
+    if ($request->query('type') === 'pdf') {
+        return Pdf::loadView('hr-reports.evaluation-pdf', compact('evaluations'))->download('staff-evaluation.pdf');
+    }
+
+    return Excel::download(new EvaluationExport($evaluations), 'staff-evaluation.xlsx');
 }
 
 

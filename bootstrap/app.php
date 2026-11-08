@@ -30,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission'         => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
             'super_admin'        => \App\Http\Middleware\EnsureSuperAdmin::class,
+            'staff.only'         => \App\Http\Middleware\EnsureStaffMember::class,
             'api.key'            => \App\Http\Middleware\EnsureApiKey::class,
         ]);
     })

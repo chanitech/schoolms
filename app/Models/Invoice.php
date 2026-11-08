@@ -21,7 +21,7 @@ class Invoice extends Model
     'approved_by_do_id',
     'paid_by_finance_id',
     'payment_date',
-    'note',
+    'notes',
 ];
 
 

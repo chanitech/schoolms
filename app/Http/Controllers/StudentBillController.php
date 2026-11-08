@@ -79,6 +79,17 @@ public function update(Request $request, StudentBill $studentBill)
         return view('finance.student_bills.show', compact('studentBill'));
     }
 
+    public function destroy(StudentBill $studentBill)
+    {
+        if ($studentBill->payments()->exists()) {
+            return back()->with('error', 'This bill has payments recorded against it and cannot be deleted.');
+        }
+
+        $studentBill->delete();
+
+        return redirect()->route('finance.student-bills.index')->with('success', 'Student bill deleted.');
+    }
+
     public function updateBalance(StudentBill $studentBill, $amountPaid)
     {
         $studentBill->amount_paid += $amountPaid;
