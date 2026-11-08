@@ -632,6 +632,7 @@ class StudentResultController extends Controller
         })
         ->orderBy('term')
         ->orderBy('is_annual_exam')
+        ->orderBy('is_terminal_exam')
         ->orderBy('id')
         ->get();
     $examIds = $exams->pluck('id')->all();

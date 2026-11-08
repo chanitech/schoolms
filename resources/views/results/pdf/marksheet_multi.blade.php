@@ -116,7 +116,6 @@
             text-align: center;
             vertical-align: middle;
             font-size: 10px;
-            font-weight: bold;
         }
         th {
             background: #f0f0f0;
@@ -172,7 +171,6 @@
             display: inline-flex;
             align-items: center;
             gap: 4px;
-            font-weight: bold;
         }
 
         .signature-section {
