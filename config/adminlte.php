@@ -475,9 +475,10 @@ return [
         [
             'text' => 'Learning Profile',
             'icon' => 'fas fa-brain',
-            'can' => ['view interest inventories', 'view aptitude tests', 'create aptitude questions',
-                      'view multiple intelligence', 'view thinking style', 'view learning preferences',
-                      'view holland code', 'view mbti test', 'view learning profile reports'],
+            // Multiple Intelligence, Gregorc, Learning Preferences, Holland, MBTI and
+            // the Learning Profile Report were '#' placeholders that went nowhere;
+            // hidden until those instruments are built.
+            'can' => ['view interest inventories', 'view aptitude tests', 'create aptitude questions'],
             'submenu' => [
                 [
                     'text' => 'Interest Inventory',
@@ -496,42 +497,6 @@ return [
                     'icon' => 'far fa-circle',
                     'route' => 'aptitude.questions.create',
                     'can'  => 'create aptitude questions', // placeholder
-                ],
-                [
-                    'text' => 'Multiple Intelligence',
-                    'icon' => 'far fa-circle',
-                    'url'  => '#',
-                    'can'  => 'view multiple intelligence', // placeholder
-                ],
-                [
-                    'text' => 'Thinking Style (Gregorc)',
-                    'icon' => 'far fa-circle',
-                    'url'  => '#',
-                    'can'  => 'view thinking style',       // placeholder
-                ],
-                [
-                    'text' => 'Learning Preferences & Styles',
-                    'icon' => 'far fa-circle',
-                    'url'  => '#',
-                    'can'  => 'view learning preferences',  // placeholder
-                ],
-                [
-                    'text' => 'Holland Code (RIASEC)',
-                    'icon' => 'far fa-circle',
-                    'url'  => '#',
-                    'can'  => 'view holland code',         // placeholder
-                ],
-                [
-                    'text' => 'MBTI Test',
-                    'icon' => 'far fa-circle',
-                    'url'  => '#',
-                    'can'  => 'view mbti test',            // placeholder
-                ],
-                [
-                    'text' => 'Learning Profile Report',
-                    'icon' => 'far fa-circle',
-                    'url'  => '#',
-                    'can'  => 'view learning profile reports', // placeholder
                 ],
             ],
         ],

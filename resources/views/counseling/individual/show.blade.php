@@ -109,12 +109,15 @@
                         </tbody>
                     </table>
                 </div>
-            @else
+            @elseif(is_array($formulation))
                 <ul>
                     @foreach($formulation as $key => $value)
-                        <li><strong>{{ ucfirst($key) }}:</strong> {{ $value }}</li>
+                        <li><strong>{{ ucfirst($key) }}:</strong> {{ is_array($value) ? implode(', ', array_filter($value)) : $value }}</li>
                     @endforeach
                 </ul>
+            @else
+                {{-- some older reports stored the formulation as a single free-text note --}}
+                <p>{{ $formulation }}</p>
             @endif
         @endif
 

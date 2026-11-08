@@ -41,8 +41,8 @@
                     <td>{{ $item->approvedBy->name ?? '-' }}</td>
                     <td>{{ $item->note ?? $item->comment ?? '-' }}</td>
                     <td>
-                        @if(Auth::user()->role == 'hod' && $item->status == 'approved')
-                            <form method="POST" action="{{ route('finance.budgets.withdrawItem', $item->id) }}">
+                        @if(Auth::user()->hasAnyRole(['HOD', 'Admin']) && $item->status == 'approved')
+                            <form method="POST" action="{{ route('finance.budgets.withdraw', $item->id) }}">
                                 @csrf
                                 <button class="btn btn-success btn-sm">
                                     <i class="fas fa-hand-holding-usd"></i> Use / Withdraw

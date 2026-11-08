@@ -54,7 +54,7 @@
 
             {{-- MCQ QUESTIONS --}}
             @if($question->type == 'mcq')
-                @php $options = json_decode($question->options, true) ?? []; @endphp
+                @php $options = $question->options; @endphp
 
                 @foreach($options as $key => $opt)
                 <div class="form-check mb-2">

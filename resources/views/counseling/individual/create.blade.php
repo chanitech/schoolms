@@ -94,7 +94,7 @@
                 <label>Biopsychosocial Formulation (4P's)</label>
                 <div class="row">
                     <div class="col-md-3">
-                        <input type="text" name="biopsychosocial_formulation[predisposing]" class="form-control" placeholder="Predisposing" value="{{ old('biopsychosocial_formulation.prediposing') }}">
+                        <input type="text" name="biopsychosocial_formulation[predisposing]" class="form-control" placeholder="Predisposing" value="{{ old('biopsychosocial_formulation.predisposing') }}">
                     </div>
                     <div class="col-md-3">
                         <input type="text" name="biopsychosocial_formulation[precipitating]" class="form-control" placeholder="Precipitating" value="{{ old('biopsychosocial_formulation.precipitating') }}">

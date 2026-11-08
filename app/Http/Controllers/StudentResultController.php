@@ -35,6 +35,7 @@ class StudentResultController extends Controller
             'exportExcel', 'exportPDF',
             'exportExcelNoticeBoard', 'exportPDFNoticeBoard',
         ]);
+        $this->middleware('permission:export marksheets')->only(['showExportForm', 'exportResultsPdf']);
     }
 
     // ==================== INDEX ====================
@@ -578,6 +579,13 @@ class StudentResultController extends Controller
     ini_set('memory_limit', '2048M');
     set_time_limit(1800);
 
+    $request->validate([
+        'class_id'            => 'required|exists:school_classes,id',
+        'academic_session_id' => 'required|exists:academic_sessions,id',
+        'exam_id'             => 'required|exists:exams,id',
+        'department_id'       => 'nullable|exists:departments,id',
+    ]);
+
     $classId      = $request->input('class_id');
     $sessionId    = $request->input('academic_session_id');
     $departmentId = $request->input('department_id');
@@ -585,52 +593,61 @@ class StudentResultController extends Controller
     $class      = SchoolClass::findOrFail($classId);
     $session    = AcademicSession::findOrFail($sessionId);
     $department = $departmentId ? Department::find($departmentId) : null;
+    $selected   = Exam::findOrFail($request->input('exam_id'));
 
-    // ── Dynamic school info ──────────────────────────
-    $schoolInfo = \App\Models\SchoolInfo::first();
-
-    $school = (object)[
-        'name'    => $schoolInfo->name    ?? 'MEMA ASEP Learning Centre',
-        'motto'   => $schoolInfo->motto   ?? 'Maadili, Elimu, Maendeleo, Amani',
-        'address' => $schoolInfo->address ?? 'Kisarawe, Pwani',
-        'phone'   => $schoolInfo->phone   ?? '+255',
-        'email'   => $schoolInfo->email   ?? 'info@mema.or.tz',
-        'website' => $schoolInfo->website ?? 'www.mema.ac.tz',
+    // The template reads name/motto/contacts/logo straight off this record and
+    // handles missing fields itself — no fallbacks to another school's details.
+    // Schools that never filled in School Info still get their own registered name.
+    $school = SchoolInfo::first() ?? (object) [
+        'name' => app()->bound('currentSchool') ? app('currentSchool')->name : null,
+        'motto' => null, 'logo' => null, 'address' => null,
+        'phone' => null, 'email' => null, 'website' => null,
     ];
-
-    // ── Logos & watermark ────────────────────────────
-    $logoLeftPath  = $schoolInfo && $schoolInfo->logo
-                        ? public_path($schoolInfo->logo)
-                        : public_path('vendor/adminlte/dist/img/MEMA.png');
-    $logoRightPath = public_path('vendor/adminlte/dist/img/schoolms-icon.png');  // can also be stored in SchoolInfo
-    $watermarkPath = $schoolInfo && $schoolInfo->logo
-                        ? public_path($schoolInfo->logo)
-                        : public_path('vendor/adminlte/dist/img/MEMA.png');
-
-    $logoLeft  = file_exists($logoLeftPath)  ? 'data:image/png;base64,'  . base64_encode(file_get_contents($logoLeftPath))  : null;
-    $logoRight = file_exists($logoRightPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoRightPath)) : null;
-    $watermark = file_exists($watermarkPath) ? 'data:image/png;base64,'  . base64_encode(file_get_contents($watermarkPath)) : null;
-
-    $subjects   = $department
-        ? Subject::where('department_id', $department->id)->get()
-        : Subject::all();
-    $subjectIds = $subjects->pluck('id')->all();
 
     $grades    = Grade::all()->sortByDesc('min_mark')->values();
     $divisions = Division::all();
 
+    // Print the exam the user picked. A terminal exam also pulls in that
+    // term's exams ticked "Include in Term Final Average"; an annual exam pulls
+    // in the session's exams ticked "Include in Year/Annual Average".
     $exams = Exam::where('academic_session_id', $sessionId)
-        ->where(function ($q) {
-            $q->where('include_in_term_final', 1)
-              ->orWhere('include_in_year_final', 1)
-              ->orWhere('is_terminal_exam', 1)
-              ->orWhere('is_annual_exam', 1);
+        ->where(function ($q) use ($selected) {
+            $q->whereKey($selected->id);
+            if ($selected->is_annual_exam) {
+                $q->orWhere('include_in_year_final', 1);
+            } elseif ($selected->is_terminal_exam) {
+                $q->orWhere(fn ($t) => $t->where('term', $selected->term)->where('include_in_term_final', 1));
+            }
         })
-        ->orderByRaw("FIELD(term, 'Term 1', 'Term 2')")
-        ->orderBy('is_annual_exam', 'asc')
+        ->orderBy('term')
+        ->orderBy('is_annual_exam')
         ->orderBy('id')
         ->get();
     $examIds = $exams->pluck('id')->all();
+
+    // Enrollments, not students.academic_session_id: that column keeps the
+    // session a student first joined, so a new session matched nobody.
+    $studentIds = Enrollment::where('class_id', $classId)
+        ->where('academic_session_id', $sessionId)
+        ->where('status', 'active')
+        ->pluck('student_id');
+
+    if ($studentIds->isEmpty()) {
+        return back()->withInput()->with('warning', "No active students are enrolled in {$class->name} for {$session->name}.");
+    }
+
+    // Only this class's subjects (plus any subject someone actually has marks
+    // in) — listing every subject in the school pushed rows under the footer.
+    $markedSubjectIds = Mark::whereIn('student_id', $studentIds)->whereIn('exam_id', $examIds)
+        ->distinct()->pluck('subject_id');
+    $subjects = Subject::where(function ($q) use ($classId, $markedSubjectIds) {
+            $q->whereHas('classes', fn ($c) => $c->where('class_id', $classId))
+              ->orWhereIn('id', $markedSubjectIds);
+        })
+        ->when($department, fn ($q) => $q->where('department_id', $department->id))
+        ->orderBy('name')
+        ->get();
+    $subjectIds = $subjects->pluck('id')->all();
 
     $findGrade = function (?float $mark) use ($grades) {
         if ($mark === null) return null;
@@ -645,8 +662,7 @@ class StudentResultController extends Controller
     $studentsData = collect();
     $chunkSize    = 50;
 
-    Student::where('class_id', $classId)
-        ->where('academic_session_id', $sessionId)
+    Student::whereIn('id', $studentIds)
         ->chunk($chunkSize, function ($studentsChunk) use (
             $subjects, $subjectIds, $exams, $examIds, $findGrade, $divisions, &$studentsData
         ) {
@@ -747,11 +763,8 @@ class StudentResultController extends Controller
         'department'   => $department,
         'subjects'     => $subjects,
         'exams'        => $exams,
-        'logoLeft'     => $logoLeft,
-        'logoRight'    => $logoRight,
-        'watermark'    => $watermark,
         'grades'       => $grades,
-        'school'       => $school,    // <-- passed to blade
+        'school'       => $school,
     ])
     ->setPaper('a4', 'landscape')
     ->setOptions([
@@ -775,14 +788,11 @@ class StudentResultController extends Controller
 
     // ==================== TERMINAL REPORT ====================
 
+    // The results.terminal_report view was never built; the export form is the
+    // terminal/annual report, so keep old links working by sending them there.
     public function terminalReport(Request $request)
     {
-        return view('results.terminal_report', [
-            'classes'     => SchoolClass::all(),
-            'exams'       => Exam::all(),
-            'sessions'    => AcademicSession::all(),
-            'departments' => Department::all(),
-        ]);
+        return redirect()->route('results.export.form');
     }
 
     // ==================== PRIVATE HELPERS ====================

@@ -76,17 +76,17 @@ class AptitudeQuestionController extends Controller
 }
 
 
-    public function edit(AptitudeQuestion $aptitudeQuestion) {
+    public function edit(AptitudeQuestion $question) {
         $sections = ['Verbal Ability', 'Actor : Theatre', 'Analytical Ability'];
         $types = [
             'mcq' => 'MCQ',
             'true_false' => 'True/False',
             'numerical' => 'Numerical Input'
         ];
-        return view('counseling.psychometric_assessment.aptitude_questions.edit', compact('aptitudeQuestion','sections','types'));
+        return view('counseling.psychometric_assessment.aptitude_questions.edit', ['aptitudeQuestion' => $question, 'sections' => $sections, 'types' => $types]);
     }
 
-    public function update(Request $request, AptitudeQuestion $aptitudeQuestion) {
+    public function update(Request $request, AptitudeQuestion $question) {
         $request->validate([
             'section' => 'required|string',
             'question_text' => 'required|string',
@@ -100,10 +100,10 @@ class AptitudeQuestionController extends Controller
         $data = $request->only(['section','question_text','type','correct_answer','marks']);
 
         if($request->hasFile('image')){
-            if($aptitudeQuestion->image) {
-                Storage::disk('public')->delete($aptitudeQuestion->image);
+            if($question->image) {
+                Storage::disk('public')->delete($question->image);
             }
-            $schoolId = $aptitudeQuestion->school_id ?? 'unassigned';
+            $schoolId = $question->school_id ?? 'unassigned';
             $data['image'] = $request->file('image')->store("schools/{$schoolId}/aptitude_questions", 'public');
         }
 
@@ -113,16 +113,16 @@ class AptitudeQuestionController extends Controller
             $data['options'] = null;
         }
 
-        $aptitudeQuestion->update($data);
+        $question->update($data);
 
         return redirect()->route('aptitude.questions.index')->with('success','Question updated successfully.');
     }
 
-    public function destroy(AptitudeQuestion $aptitudeQuestion) {
-        if($aptitudeQuestion->image) {
-            Storage::disk('public')->delete($aptitudeQuestion->image);
+    public function destroy(AptitudeQuestion $question) {
+        if($question->image) {
+            Storage::disk('public')->delete($question->image);
         }
-        $aptitudeQuestion->delete();
+        $question->delete();
         return redirect()->route('aptitude.questions.index')->with('success','Question deleted successfully.');
     }
 }

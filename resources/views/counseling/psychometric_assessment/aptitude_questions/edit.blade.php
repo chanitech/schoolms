@@ -65,7 +65,7 @@
                 <label>Options</label>
                 <div id="options_wrapper">
                     @php
-                        $options = $aptitudeQuestion->options ? json_decode($aptitudeQuestion->options, true) : [];
+                        $options = $aptitudeQuestion->options;
                     @endphp
                     @foreach(['a','b','c','d'] as $key)
                     <div class="form-group option_row">

@@ -73,24 +73,26 @@ class IndividualSessionReportController extends Controller
     /**
      * Show a single report
      */
-    public function show(IndividualSessionReport $individualSessionReport)
+    // Route parameter is {report}; implicit binding only fills the model when
+    // the argument name matches, otherwise every action got an empty model.
+    public function show(IndividualSessionReport $report)
     {
-        return view('counseling.individual.show', compact('individualSessionReport'));
+        return view('counseling.individual.show', ['individualSessionReport' => $report]);
     }
 
     /**
      * Show form to edit a report
      */
-    public function edit(IndividualSessionReport $individualSessionReport)
+    public function edit(IndividualSessionReport $report)
     {
         $students = Student::all();
-        return view('counseling.individual.edit', compact('individualSessionReport', 'students'));
+        return view('counseling.individual.edit', ['individualSessionReport' => $report, 'students' => $students]);
     }
 
     /**
      * Update a report
      */
-    public function update(Request $request, IndividualSessionReport $individualSessionReport)
+    public function update(Request $request, IndividualSessionReport $report)
     {
         $data = $request->validate([
             'student_id' => 'required|exists:students,id',
@@ -107,7 +109,7 @@ class IndividualSessionReportController extends Controller
 
         $data['biopsychosocial_formulation'] = $request->biopsychosocial_formulation ?? [];
 
-        $individualSessionReport->update($data);
+        $report->update($data);
 
         return redirect()->route('counseling.individual.index')
                          ->with('success', 'Individual session report updated successfully.');
@@ -116,9 +118,9 @@ class IndividualSessionReportController extends Controller
     /**
      * Delete a report
      */
-    public function destroy(IndividualSessionReport $individualSessionReport)
+    public function destroy(IndividualSessionReport $report)
     {
-        $individualSessionReport->delete();
+        $report->delete();
         return back()->with('success', 'Individual session report deleted successfully.');
     }
 }

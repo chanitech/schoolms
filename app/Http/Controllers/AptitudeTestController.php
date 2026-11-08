@@ -54,16 +54,16 @@ class AptitudeTestController extends Controller
 
         $attempt->update(['total_score' => $totalScore]);
 
-        return redirect()->route('aptitude.index')->with('success', 'Attempt saved successfully.');
+        return redirect()->route('counseling.psychometric.aptitude.index')->with('success', 'Attempt saved successfully.');
     }
 
-    public function show(AptitudeAttempt $aptitudeAttempt) {
-        $aptitudeAttempt->load('answers.question', 'student', 'counselor');
+    public function show(AptitudeAttempt $attempt) {
+        $aptitudeAttempt = $attempt->load('answers.question', 'student', 'counselor');
         return view('counseling/psychometric_assessment/aptitude_attempts/show', compact('aptitudeAttempt'));
     }
 
-    public function pdf(AptitudeAttempt $aptitudeAttempt) {
-        $aptitudeAttempt->load('answers.question', 'student', 'counselor');
+    public function pdf(AptitudeAttempt $attempt) {
+        $aptitudeAttempt = $attempt->load('answers.question', 'student', 'counselor');
         $pdf = Pdf::loadView('counseling/psychometric_assessment/aptitude_attempts/pdf', compact('aptitudeAttempt'));
         return $pdf->download('Aptitude_Test_Report_'.$aptitudeAttempt->student->name.'.pdf');
     }

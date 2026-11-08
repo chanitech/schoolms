@@ -9,8 +9,9 @@
 @section('content')
 <div class="card">
     <div class="card-body">
-        @if(session('error'))
-            <div class="alert alert-danger">{{ session('error') }}</div>
+        @include('partials.flash')
+        @if($errors->any())
+            <div class="alert alert-danger">{{ $errors->first() }}</div>
         @endif
 
         <form action="{{ route('results.export.pdf') }}" method="POST">
@@ -47,6 +48,7 @@
                     <div class="form-group">
                         <label for="exam_type_filter">Exam Type</label>
                         <select id="exam_type_filter" class="form-control">
+                            <option value="all">All Exams</option>
                             <option value="both">Terminal + Annual Exams</option>
                             <option value="terminal">Terminal Exams Only</option>
                             <option value="annual">Annual Exams Only</option>
@@ -61,6 +63,10 @@
                         <select name="exam_id" id="exam_id" class="form-control" required>
                             <option value="">— First select session —</option>
                         </select>
+                        <small id="exam_hint" class="form-text text-muted" hidden>
+                            Open the exam under <strong>Exams → Edit</strong> and tick
+                            "Mark as Terminal Exam" or "Mark as Annual Exam" — or choose <strong>All Exams</strong> above.
+                        </small>
                     </div>
                 </div>
 
@@ -93,6 +99,7 @@
     const sessionSelect = document.getElementById('academic_session_id');
     const examSelect    = document.getElementById('exam_id');
     const examTypeFilter = document.getElementById('exam_type_filter');
+    const examHint       = document.getElementById('exam_hint');
 
     function loadExams() {
         const sessionId = sessionSelect.value;
@@ -118,9 +125,12 @@
                     exams.forEach(exam => {
                         options += `<option value="${exam.id}">${exam.name}</option>`;
                     });
+                } else if (examType === 'all') {
+                    options = '<option value="">No exams in this session yet</option>';
                 } else {
-                    options = '<option value="" disabled>No exams match the selected type</option>';
+                    options = '<option value="">No exams marked as ' + (examType === 'annual' ? 'Annual' : 'Terminal') + ' in this session</option>';
                 }
+                examHint.hidden = !(exams.length === 0 && examType !== 'all');
                 examSelect.innerHTML = options;
                 examSelect.disabled = false;
             })
