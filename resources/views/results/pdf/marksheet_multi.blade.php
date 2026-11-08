@@ -241,7 +241,7 @@
         <div>{{ collect([$school->address ?? null, $school->phone ?? null, $school->email ?? null, $school->website ?? null])->filter()->implode(' | ') }}</div>
     </div>
 
-    <h3 class="class-session">{{ $class->name ?? '' }} - {{ $session->name ?? '' }} Results Report</h3>
+    <h3 class="class-session">{{ $class->name ?? '' }} - {{ $session->name ?? '' }} - {{ $selectedExam->name }}</h3>
     @if($department)
         <div>Department: {{ $department->name }}</div>
     @endif
@@ -271,9 +271,9 @@
             @foreach($exams as $exam)
                 <th colspan="3">{{ $exam->name }}</th>
             @endforeach
-            <th rowspan="2">Total<br>Marks</th>
-            <th rowspan="2">Average<br>Points</th>
-            <th rowspan="2">GPA</th>
+            @if($exams->count() > 1)
+                <th colspan="3">Overall</th>
+            @endif
         </tr>
         <tr>
             @foreach($exams as $exam)
@@ -281,6 +281,11 @@
                 <th>Grade</th>
                 <th>Point</th>
             @endforeach
+            @if($exams->count() > 1)
+                <th>Average</th>
+                <th>Grade</th>
+                <th>Point</th>
+            @endif
         </tr>
     </thead>
     <tbody>
@@ -293,9 +298,7 @@
                         $highlight = true;
                     }
                 }
-                $subjectTotalMarks = 0;
-                $subjectTotalPoints = 0;
-                $countExamsWithMarks = 0;
+                $overallSub = $row['overallSubjects']->get($subject->id);
             @endphp
             <tr>
                 <td>{{ $i++ }}</td>
@@ -309,17 +312,12 @@
                     <td>{{ $sub['mark'] ?? '-' }}</td>
                     <td>{{ $sub['grade'] ?? '-' }}</td>
                     <td>{{ $sub['point'] ?? 0 }}</td>
-                    @php
-                        if(isset($sub['mark'])){
-                            $subjectTotalMarks += $sub['mark'];
-                            $subjectTotalPoints += $sub['point'];
-                            $countExamsWithMarks++;
-                        }
-                    @endphp
                 @endforeach
-                <td>{{ $subjectTotalMarks }}</td>
-                <td>{{ $countExamsWithMarks ? round($subjectTotalPoints / $countExamsWithMarks, 2) : 0 }}</td>
-                <td>{{ $countExamsWithMarks ? round($subjectTotalPoints / $countExamsWithMarks, 2) : 0 }}</td>
+                @if($exams->count() > 1)
+                    <td><strong>{{ $overallSub['mark'] ?? '-' }}</strong></td>
+                    <td><strong>{{ $overallSub['grade'] ?? '-' }}</strong></td>
+                    <td><strong>{{ $overallSub['point'] ?? '-' }}</strong></td>
+                @endif
             </tr>
         @endforeach
     </tbody>
@@ -327,7 +325,7 @@
 
 {{-- Summary --}}
 <div class="summary-box">
-    <strong>Total Marks (Best 7):</strong> {{ $row['total_marks'] }} &nbsp; | &nbsp;
+    <strong>{{ $exams->count() > 1 ? 'Overall Average' : 'Average' }} (Best 7):</strong> {{ $displayAvg }} &nbsp; | &nbsp;
     <strong>Total Points:</strong> {{ $displayPoints }} &nbsp; | &nbsp;
     <strong>GPA:</strong> {{ $displayGpa }} &nbsp; | &nbsp;
     <strong>Division:</strong> {{ $displayDiv }} &nbsp; | &nbsp;

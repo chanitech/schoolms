@@ -70,6 +70,15 @@
                     </div>
                 </div>
 
+                {{-- Exams counted in the report --}}
+                <div class="col-md-12 mt-2" id="included_exams_box" hidden>
+                    <div class="form-group mb-0">
+                        <label>Exams included in this report</label>
+                        <div id="included_exams"></div>
+                        <small class="form-text text-muted">Each ticked exam is shown in the report, and the overall result is worked out from them.</small>
+                    </div>
+                </div>
+
                 {{-- Department --}}
                 <div class="col-md-12 mt-2">
                     <div class="form-group">
@@ -141,6 +150,49 @@
             });
     }
 
+    const includedBox  = document.getElementById('included_exams_box');
+    const includedList = document.getElementById('included_exams');
+
+    function countsTowards(exam, selected) {
+        if (exam.id === selected.id) return true;
+        if (selected.is_annual_exam) return exam.include_in_year_final;
+        if (selected.is_terminal_exam) return exam.term === selected.term && exam.include_in_term_final;
+        return false;
+    }
+
+    function loadIncludedExams() {
+        includedList.textContent = '';
+        includedBox.hidden = true;
+        if (!examSelect.value || !sessionSelect.value) return;
+
+        fetch(`{{ route('marks.exams.by.session') }}?session_id=${sessionSelect.value}&exam_type=all`)
+            .then(response => response.json())
+            .then(exams => {
+                const selected = exams.find(e => String(e.id) === examSelect.value);
+                if (!selected) return;
+                exams.forEach(exam => {
+                    const row   = document.createElement('div');
+                    row.className = 'form-check form-check-inline';
+                    const box   = document.createElement('input');
+                    box.type = 'checkbox';
+                    box.className = 'form-check-input';
+                    box.name = 'include_exam_ids[]';
+                    box.id = `include_exam_${exam.id}`;
+                    box.value = exam.id;
+                    box.checked = countsTowards(exam, selected);
+                    if (exam.id === selected.id) box.addEventListener('click', e => e.preventDefault());
+                    const label = document.createElement('label');
+                    label.className = 'form-check-label';
+                    label.htmlFor = box.id;
+                    label.textContent = exam.name;
+                    row.append(box, label);
+                    includedList.append(row);
+                });
+                includedBox.hidden = false;
+            });
+    }
+
+    examSelect.addEventListener('change', loadIncludedExams);
     sessionSelect.addEventListener('change', loadExams);
     examTypeFilter.addEventListener('change', loadExams);
 

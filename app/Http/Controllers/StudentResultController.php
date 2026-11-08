@@ -584,6 +584,8 @@ class StudentResultController extends Controller
         'class_id'            => 'required|exists:school_classes,id',
         'academic_session_id' => 'required|exists:academic_sessions,id',
         'exam_id'             => 'required|exists:exams,id',
+        'include_exam_ids'    => 'nullable|array',
+        'include_exam_ids.*'  => 'integer',
         'department_id'       => 'nullable|exists:departments,id',
     ]);
 
@@ -606,15 +608,17 @@ class StudentResultController extends Controller
     ];
 
     $grades    = Grade::all()->sortByDesc('min_mark')->values();
-    $divisions = Division::all();
+    $requires7 = $department?->rank_requires_7_subjects ?? true;
 
-    // Print the exam the user picked. A terminal exam also pulls in that
-    // term's exams ticked "Include in Term Final Average"; an annual exam pulls
-    // in the session's exams ticked "Include in Year/Annual Average".
+    // The form's tick-list decides which exams count. Without it, a terminal
+    // exam pulls in that term's "Include in Term Final Average" exams and an
+    // annual exam the session's "Include in Year/Annual Average" exams.
     $exams = Exam::where('academic_session_id', $sessionId)
-        ->where(function ($q) use ($selected) {
+        ->where(function ($q) use ($selected, $request) {
             $q->whereKey($selected->id);
-            if ($selected->is_annual_exam) {
+            if ($request->has('include_exam_ids')) {
+                $q->orWhereIn('id', $request->input('include_exam_ids'));
+            } elseif ($selected->is_annual_exam) {
                 $q->orWhere('include_in_year_final', 1);
             } elseif ($selected->is_terminal_exam) {
                 $q->orWhere(fn ($t) => $t->where('term', $selected->term)->where('include_in_term_final', 1));
@@ -665,7 +669,7 @@ class StudentResultController extends Controller
 
     Student::whereIn('id', $studentIds)
         ->chunk($chunkSize, function ($studentsChunk) use (
-            $subjects, $subjectIds, $exams, $examIds, $findGrade, $divisions, &$studentsData
+            $subjects, $subjectIds, $exams, $examIds, $findGrade, $requires7, &$studentsData
         ) {
             $studentIds = $studentsChunk->pluck('id')->all();
 
@@ -680,9 +684,7 @@ class StudentResultController extends Controller
             }
 
             foreach ($studentsChunk as $student) {
-                $studentRow             = ['student' => $student, 'exams' => []];
-                $totalMarksAcrossExams  = 0.0;
-                $totalPointsAcrossExams = 0.0;
+                $studentRow = ['student' => $student, 'exams' => []];
 
                 foreach ($exams as $exam) {
                     $subjectsData = collect();
@@ -719,43 +721,70 @@ class StudentResultController extends Controller
                         'division'       => $gpaResult['division'],
                         'is_annual_exam' => (bool) $exam->is_annual_exam,
                     ];
-
-                    $totalMarksAcrossExams  += $bestSubjects->sum('mark');
-                    $totalPointsAcrossExams += $totalPoints;
                 }
 
-                $examCount = $exams->count() ?: 1;
+                // Overall: each subject's average across the included exams, graded
+                // on the school's scale, then the usual best-7 rules.
+                $overall = collect();
+                foreach ($subjects as $subject) {
+                    $marks = collect($studentRow['exams'])
+                        ->map(fn ($e) => $e['subjectsData']->firstWhere('subject_id', $subject->id)['mark'] ?? null)
+                        ->filter(fn ($m) => $m !== null);
 
-                $studentRow['total_marks']  = $totalMarksAcrossExams;
-                $studentRow['total_points'] = round($totalPointsAcrossExams / $examCount, 2);
+                    if ($marks->isEmpty()) continue;
 
-                $overallResult = StudentResultService::calculateFromPoints(
-                    (int) round($totalPointsAcrossExams / $examCount),
-                    7
-                );
-                $studentRow['gpa']      = $overallResult['gpa'];
-                $studentRow['division'] = $overallResult['division'];
-                $studentRow['position'] = null;
+                    $average = round($marks->avg(), 2);
+                    $grade   = $findGrade($average);
+
+                    $overall->put($subject->id, [
+                        'subject_id' => $subject->id,
+                        'mark'       => $average,
+                        'grade'      => $grade->name  ?? '-',
+                        'point'      => $grade->point ?? 0,
+                        'type'       => $subject->type ?? 'core',
+                    ]);
+                }
+
+                $core  = $overall->where('type', 'core')->sortBy('point');
+                $best  = $core->take(7)->merge($overall->where('type', 'elective')->sortBy('point')->take(max(0, 7 - $core->take(7)->count())));
+                $eligible = !($requires7 && $best->count() < 7);
+
+                $points = (int) round($best->sum('point'));
+                $result = $best->isNotEmpty() ? StudentResultService::calculateFromPoints($points, $best->count()) : ['gpa' => 0, 'division' => '-'];
+
+                $studentRow['overallSubjects']   = $overall;
+                $studentRow['average_mark']      = $best->count() ? round($best->avg('mark'), 2) : 0;
+                $studentRow['total_points']      = $points;
+                $studentRow['gpa']               = $result['gpa'];
+                $studentRow['division']          = $eligible ? $result['division'] : '-';
+                $studentRow['eligible_for_rank'] = $eligible;
+                $studentRow['position']          = '-';
 
                 $studentsData->push($studentRow);
             }
         });
 
-    // Rank by total_marks (unchanged for multi‑exam PDF)
-    $lastMarks    = null;
-    $lastPosition = null;
-    $studentsData = $studentsData->sortByDesc('total_marks')->values()
-        ->map(function ($student, $index) use (&$lastMarks, &$lastPosition) {
-            if ($lastMarks === null || $student['total_marks'] < $lastMarks) {
-                $position     = $index + 1;
-                $lastPosition = $position;
-            } else {
-                $position = $lastPosition;
-            }
-            $lastMarks          = $student['total_marks'];
-            $student['position'] = $position;
-            return $student;
-        });
+    // Same ranking as the on-screen class results; incomplete students unranked.
+    $byPoints = config('results.ranking_method', 'average') === 'points';
+    $ranked   = $studentsData->where('eligible_for_rank', true)
+        ->sortBy($byPoints
+            ? [['total_points', 'asc'], ['average_mark', 'desc']]
+            : [['average_mark', 'desc'], ['total_points', 'asc']])
+        ->values();
+
+    $position = 0;
+    $previous = null;
+    $ranked = $ranked->map(function ($row) use (&$position, &$previous) {
+        $current = [$row['average_mark'], $row['total_points']];
+        if ($current !== $previous) {
+            $position++;
+        }
+        $previous = $current;
+        $row['position'] = $position;
+        return $row;
+    });
+
+    $studentsData = $ranked->concat($studentsData->where('eligible_for_rank', false)->values());
 
     $pdf = Pdf::loadView('results.pdf.marksheet_multi', [
         'studentsData' => $studentsData,
@@ -764,6 +793,7 @@ class StudentResultController extends Controller
         'department'   => $department,
         'subjects'     => $subjects,
         'exams'        => $exams,
+        'selectedExam' => $selected,
         'grades'       => $grades,
         'school'       => $school,
     ])

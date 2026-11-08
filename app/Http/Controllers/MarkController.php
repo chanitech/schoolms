@@ -510,7 +510,7 @@ public function getExamsBySession(Request $request)
 
     // status included so entry forms can show published exams as locked
     $exams = $query->orderBy('name', 'asc')
-                   ->get(['id', 'name', 'status']);
+                   ->get(['id', 'name', 'status', 'term', 'is_terminal_exam', 'is_annual_exam', 'include_in_term_final', 'include_in_year_final']);
 
     return response()->json($exams);
 }
