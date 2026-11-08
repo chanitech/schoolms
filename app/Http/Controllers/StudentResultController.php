@@ -663,7 +663,9 @@ class StudentResultController extends Controller
     $findGrade = function (?float $mark) use ($grades) {
         if ($mark === null) return null;
         foreach ($grades as $g) {
-            if ($mark >= $g->min_mark && $mark <= $g->max_mark) {
+            // Highest grade reached: scales can have gaps (B ends 79, A starts 80)
+            // and averages like 79.5 must still get a grade. Sorted high to low.
+            if ($mark >= $g->min_mark) {
                 return $g;
             }
         }
@@ -761,6 +763,7 @@ class StudentResultController extends Controller
                 $result = $best->isNotEmpty() ? StudentResultService::calculateFromPoints($points, $best->count()) : ['gpa' => 0, 'division' => '-'];
 
                 $studentRow['overallSubjects']   = $overall;
+                $studentRow['bestSubjectIds']    = $best->pluck('subject_id');
                 $studentRow['average_mark']      = $best->count() ? round($best->avg('mark'), 2) : 0;
                 $studentRow['total_points']      = $points;
                 $studentRow['gpa']               = $result['gpa'];

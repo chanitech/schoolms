@@ -246,6 +246,7 @@
     $displayDiv    = $row['division'] ?? '-';
     $displayPos    = $row['position'] ?? '-';
     $displayAvg    = number_format($row['average_mark'] ?? 0, 2);
+    $hasExtraSubjects = $row['overallSubjects']->count() > $row['bestSubjectIds']->count();
 @endphp
 
 {{-- Header --}}
@@ -326,7 +327,7 @@
             @continue(!$overallSub && $row['overallSubjects']->isNotEmpty())
             <tr>
                 <td>{{ $i++ }}</td>
-                <td class="subject-name">{{ $subject->name }}</td>
+                <td class="subject-name">{{ $subject->name }}{{ $hasExtraSubjects && $row['bestSubjectIds']->contains($subject->id) ? ' *' : '' }}</td>
                 @foreach($exams as $exam)
                     @php
                         $examData = $row['exams'][$exam->id];
@@ -379,7 +380,9 @@
             <strong>{{ $g->name }}</strong> = {{ $g->min_mark }}–{{ $g->max_mark }}{{ $g->description ? ' ' . $g->description : '' }}
         </span>
     @endforeach
-    <span style="margin-left:10px; font-size:9px; color:#555;">* Best 7 subjects used</span>
+    @if($hasExtraSubjects)
+        <span style="margin-left:10px; font-size:9px; color:#555;">* Counted in the best 7 used for the result. All subjects taken are listed.</span>
+    @endif
 </div>
 @endif
 
