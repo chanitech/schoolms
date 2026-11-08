@@ -12,6 +12,11 @@ use Illuminate\Support\Facades\Auth;
 
 class AptitudeTestController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:view aptitude tests');
+    }
+
     public function index() {
         $attempts = AptitudeAttempt::with('student', 'counselor')->latest()->paginate(15);
         return view('counseling/psychometric_assessment/aptitude_attempts/index', compact('attempts'));

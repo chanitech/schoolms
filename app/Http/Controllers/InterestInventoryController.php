@@ -12,6 +12,7 @@ class InterestInventoryController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
+        $this->middleware('permission:view interest inventories');
     }
 
     // List / index (with optional filters)

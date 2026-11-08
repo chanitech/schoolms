@@ -82,6 +82,10 @@
                             <td class="text-center">{{ $school->students_count }}</td>
                             <td class="text-center">{{ $school->staff_count }}</td>
                             <td class="text-right">
+                                <form action="{{ route('super.schools.enter', $school->id) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    <button class="btn btn-sm btn-primary">Enter School</button>
+                                </form>
                                 <a href="{{ route('super.schools.show', $school->id) }}" class="btn btn-sm btn-outline-primary">
                                     <i class="fas fa-eye"></i>
                                 </a>

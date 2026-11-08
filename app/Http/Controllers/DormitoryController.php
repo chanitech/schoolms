@@ -17,7 +17,7 @@ class DormitoryController extends Controller
     public function __construct()
     {
         $this->middleware('permission:view dormitories')->only(['index', 'show', 'rooms', 'beds', 'dashboard', 'reports']);
-        $this->middleware('permission:create dormitories')->only(['create', 'store', 'createRoom', 'storeRoom', 'createBed', 'storeBed']);
+        $this->middleware('permission:create dormitories')->only(['create', 'store', 'createRoom', 'storeRoom', 'createBed', 'storeBed', 'bulkCreateBedsForm', 'bulkStoreBeds']);
         $this->middleware('permission:edit dormitories')->only(['edit', 'update', 'editRoom', 'updateRoom', 'editBed', 'updateBed']);
         $this->middleware('permission:delete dormitories')->only(['destroy', 'deleteRoom', 'deleteBed']);
         $this->middleware('permission:allocate dormitories')->only(['allocateBed', 'storeAllocation', 'deallocateBed']);

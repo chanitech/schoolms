@@ -46,6 +46,8 @@ class TimetableController extends Controller
     // ── Create form ───────────────────────────────────────────────────────
     public function create()
     {
+        abort_unless(Auth::user()->hasAnyRole(['Admin', 'Academic']), 403);
+
         $sessions = AcademicSession::orderBy('name')->get();
         $classes  = SchoolClass::orderBy('name')->get();
         $periods  = TimetablePeriod::where('is_active', true)->orderBy('order_no')->get();
@@ -57,6 +59,8 @@ class TimetableController extends Controller
     // ── Store (save config then generate) ─────────────────────────────────
     public function store(Request $request)
     {
+        abort_unless(Auth::user()->hasAnyRole(['Admin', 'Academic']), 403);
+
         $data = $request->validate([
             'title'               => 'required|string|max:200',
             'type'                => 'required|in:class,exam',

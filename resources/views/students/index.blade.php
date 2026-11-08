@@ -30,9 +30,11 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h3 class="card-title"><i class="fas fa-list"></i> Student Records</h3>
             <div>
+                @can('create students')
                 <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#importStudentModal">
                     <i class="fas fa-file-excel"></i> Import Excel
                 </button>
+                @endcan
                 <a href="{{ route('students.create') }}" class="btn btn-primary btn-sm ml-2">
                     <i class="fas fa-plus"></i> Add Student
                 </a>

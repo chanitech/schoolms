@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\School;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -233,6 +234,25 @@ class SchoolController extends Controller
         $targetUser->update(['password' => Hash::make($request->password)]);
 
         return back()->with('success', "Password reset for {$targetUser->email}.");
+    }
+
+    // Work inside any school with full access. Logged because it crosses schools.
+    public function enter(Request $request, School $school)
+    {
+        $request->session()->put('tenant_school_id', $school->id);
+        Log::info('Super admin entered school', ['user_id' => $request->user()->id, 'school_id' => $school->id]);
+
+        return redirect()->route('dashboard')->with('success', "You are now working inside {$school->name}.");
+    }
+
+    public function leave(Request $request)
+    {
+        $homeSchool = $request->user()->school_id;
+        $homeSchool
+            ? $request->session()->put('tenant_school_id', $homeSchool)
+            : $request->session()->forget('tenant_school_id');
+
+        return redirect()->route('super.schools.index');
     }
 
     // Add an extra admin user to an existing school

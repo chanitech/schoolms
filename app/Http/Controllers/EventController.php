@@ -101,7 +101,7 @@ class EventController extends Controller
             'start_date' => $request->start_date,
             'end_date' => $request->end_date,
             'description' => $request->description,
-            'created_by' => Auth::user()->staff->id,
+            'created_by' => Auth::user()->staff?->id,
         ]);
 
         return redirect()->route('events.index')

@@ -184,7 +184,7 @@ class LeaveController extends Controller
         $user = Auth::user();
         $query = Leave::with(['requester.department']);
 
-        if ($user->hasRole('Admin') || $user->hasRole('director')) {
+        if ($user->hasRole('Admin') || $user->hasRole('Principal')) {
             // admin and director can see all
         } elseif ($user->hasRole('HOD') && $user->staff) {
             $departmentId = $user->staff->department_id;
@@ -231,7 +231,7 @@ class LeaveController extends Controller
         $user = Auth::user();
         $staff = $user->staff;
 
-        if (($staff && $leave->requested_to !== $staff->id) && !$user->hasRole('Admin') && !$user->hasRole('director')) {
+        if (($staff && $leave->requested_to !== $staff->id) && !$user->hasRole('Admin') && !$user->hasRole('Principal')) {
             abort(403, 'You are not authorized to approve this leave.');
         }
 
@@ -250,7 +250,7 @@ class LeaveController extends Controller
         $user = Auth::user();
         $staff = $user->staff;
 
-        if (($staff && $leave->requested_to !== $staff->id) && !$user->hasRole('Admin') && !$user->hasRole('director')) {
+        if (($staff && $leave->requested_to !== $staff->id) && !$user->hasRole('Admin') && !$user->hasRole('Principal')) {
             abort(403, 'You are not authorized to reject this leave.');
         }
 
@@ -269,7 +269,7 @@ class LeaveController extends Controller
         $user = Auth::user();
         $staffId = $user->staff->id ?? null;
 
-        if (!$user->hasRole('Admin') && !$user->hasRole('director') && !$user->hasRole('HOD') && !$staffId) {
+        if (!$user->hasRole('Admin') && !$user->hasRole('Principal') && !$user->hasRole('HOD') && !$staffId) {
             abort(403, 'Unauthorized');
         }
 
@@ -284,7 +284,7 @@ class LeaveController extends Controller
         $user = Auth::user();
         $staff = $user->staff;
 
-        if (!$user->hasRole('Admin') && !$user->hasRole('director') && !$user->hasRole('HOD') && !$staff) {
+        if (!$user->hasRole('Admin') && !$user->hasRole('Principal') && !$user->hasRole('HOD') && !$staff) {
             abort(403, 'Unauthorized');
         }
 

@@ -136,7 +136,7 @@ class Staff extends Model
 
     public function isDirector(): bool
     {
-        return (bool) $this->user?->hasRole('director');
+        return (bool) $this->user?->hasRole('Principal');
     }
 
     // ========== LOAN MANAGEMENT METHODS ==========

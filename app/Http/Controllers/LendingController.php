@@ -13,6 +13,13 @@ use Illuminate\Support\Facades\Log;
 
 class LendingController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:view lendings')->only(['index']);
+        $this->middleware('permission:create lendings')->only(['create', 'store', 'getStudentsByClass', 'getStaffByRole']);
+        $this->middleware('permission:edit lendings')->only(['returnBook']);
+    }
+
     /**
      * Display a listing of the lendings.
      */

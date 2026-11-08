@@ -11,7 +11,7 @@ class BankStatementController extends Controller
     public function index()
     {
         $staff = Auth::user()->staff;
-        $statements = BankStatement::where('staff_id', $staff->id)->latest()->get();
+        $statements = $staff ? BankStatement::where('staff_id', $staff->id)->latest()->get() : collect();
         return view('staff.bank-statements.index', compact('statements'));
     }
 }

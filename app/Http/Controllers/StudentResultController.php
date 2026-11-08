@@ -36,6 +36,7 @@ class StudentResultController extends Controller
             'exportExcelNoticeBoard', 'exportPDFNoticeBoard',
         ]);
         $this->middleware('permission:export marksheets')->only(['showExportForm', 'exportResultsPdf']);
+        $this->middleware('permission:enter marks')->only(['importExcel']);
     }
 
     // ==================== INDEX ====================

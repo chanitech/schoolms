@@ -9,6 +9,11 @@ use Illuminate\Http\Request;
 
 class PromotionController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:manage promotions');
+    }
+
     // Show promotion form
     public function index()
     {

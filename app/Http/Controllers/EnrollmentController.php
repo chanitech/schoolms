@@ -10,6 +10,15 @@ use Illuminate\Http\Request;
 
 class EnrollmentController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:view enrollments')->only(['index']);
+        $this->middleware('permission:create enrollments')->only(['create', 'store']);
+        $this->middleware('permission:edit enrollments')->only(['edit', 'update']);
+        $this->middleware('permission:delete enrollments')->only(['destroy']);
+        $this->middleware('permission:manage promotions')->only(['promote']);
+    }
+
     /**
      * List enrollments
      */

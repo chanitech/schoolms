@@ -12,6 +12,8 @@ class GroupCounselingSessionReportController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
+        $this->middleware('permission:view group sessions')->only(['index', 'show']);
+        $this->middleware('permission:create group sessions')->only(['create', 'store', 'edit', 'update', 'destroy']);
     }
 
     /**

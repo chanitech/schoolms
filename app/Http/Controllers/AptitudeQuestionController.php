@@ -8,6 +8,11 @@ use Illuminate\Support\Facades\Storage;
 
 class AptitudeQuestionController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:create aptitude questions');
+    }
+
     public function index() {
         $questions = AptitudeQuestion::latest()->paginate(15);
         return view('counseling.psychometric_assessment.aptitude_questions.index', compact('questions'));

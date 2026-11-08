@@ -58,7 +58,7 @@ class ResolveTenant
         }
 
         // Gate: expired/cancelled subscriptions
-        if (!$school->isActive()) {
+        if (!$school->isActive() && !auth()->user()?->isSuperAdmin()) {
             $routeName = $request->route()?->getName();
             $isSafeRoute = in_array($routeName, self::BYPASS_ROUTES)
                 || $request->is('login', 'logout', 'subscription*');

@@ -14,6 +14,16 @@
 
         {{-- Custom left links --}}
         @yield('content_top_nav_left')
+
+        @if(auth()->user()?->isSuperAdmin() && app()->bound('currentSchool'))
+            <li class="nav-item d-flex align-items-center ml-2">
+                <span class="badge badge-warning">Super Admin: {{ app('currentSchool')->name }}</span>
+                <form action="{{ route('super.schools.leave') }}" method="POST" class="ml-2 mb-0">
+                    @csrf
+                    <button class="btn btn-xs btn-default">All Schools</button>
+                </form>
+            </li>
+        @endif
     </ul>
 
     {{-- Navbar right links --}}

@@ -12,6 +12,8 @@ class IndividualSessionReportController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
+        $this->middleware('permission:view session reports')->only(['index', 'show']);
+        $this->middleware('permission:create session reports')->only(['create', 'store', 'edit', 'update', 'destroy']);
     }
 
     /**

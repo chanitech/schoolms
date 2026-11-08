@@ -19,6 +19,9 @@ class AppServiceProvider extends ServiceProvider
         \Illuminate\Pagination\Paginator::useBootstrapFour();
 
         // Gate for super-admin menu visibility (used by AdminLTE `can` key)
+        // Super Admin passes every permission and gate check in the system.
+        Gate::before(fn ($user) => $user->isSuperAdmin() ? true : null);
+
         Gate::define('is-super-admin', fn ($user) => $user->isSuperAdmin());
 
         // AdminLTE's `can` menu key only checks Spatie PERMISSIONS via
@@ -50,6 +53,8 @@ class AppServiceProvider extends ServiceProvider
 
         // Matches TimetableController's own inline role check on
         // edit/update and TimetablePeriodController's constructor gate.
+        Gate::define('is-admin', fn ($user) => $user->hasRole('Admin'));
+        Gate::define('is-hod-or-admin', fn ($user) => $user->hasAnyRole(['HOD', 'Admin']));
         Gate::define('manage-exam-questions', fn ($user) => $user->hasAnyRole(['Admin', 'HOD']));
         Gate::define('is-timetable-admin', fn ($user) => $user->hasAnyRole(['Admin', 'Academic']));
 

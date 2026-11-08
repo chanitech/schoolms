@@ -144,13 +144,15 @@ Route::middleware(['auth', 'verified', 'staff.only'])->group(function () {
         Route::delete('/', [ProfileController::class, 'destroy'])->name('destroy');
     });
 
+    Route::middleware(['role:Admin|Principal'])->prefix('settings')->name('settings.')->group(function () {
+        Route::get('school-info', [SchoolInfoController::class, 'index'])->name('school.info.index');
+        Route::post('school-info', [SchoolInfoController::class, 'update'])->name('school.info.update');
+    });
+
     // ==================== SYSTEM SETTINGS (Admin only) ====================
     Route::middleware(['role:Admin'])->prefix('settings')->name('settings.')->group(function () {
         Route::resource('roles', RoleController::class);
         Route::resource('permissions', PermissionController::class);
-        Route::get('school-info', [SchoolInfoController::class, 'index'])->name('school.info.index');
-        Route::post('school-info', [SchoolInfoController::class, 'update'])->name('school.info.update');
-
         Route::get('biometric-devices', [BiometricSettingsController::class, 'index'])->name('biometric-devices.index');
         Route::post('biometric-devices/regenerate-key', [BiometricSettingsController::class, 'regenerateKey'])->name('biometric-devices.regenerate-key');
         Route::post('biometric-devices/map-unmatched', [BiometricSettingsController::class, 'mapUnmatched'])->name('biometric-devices.map-unmatched');
@@ -782,6 +784,9 @@ Route::middleware(['auth', 'verified', 'staff.only'])->group(function () {
                 'update'  => 'schools.update',
                 'destroy' => 'schools.destroy',
             ]);
+
+        Route::post('schools/leave', [SuperSchoolController::class, 'leave'])->name('schools.leave');
+        Route::post('schools/{school}/enter', [SuperSchoolController::class, 'enter'])->name('schools.enter');
 
         Route::post('schools/{school}/add-user', [SuperSchoolController::class, 'addUser'])
             ->name('schools.add-user');

@@ -121,7 +121,7 @@ class LoanApprovalController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        if (!$user->hasRole('treasurer')) {
+        if (!$user->hasRole('treasurer') && !$user->isSuperAdmin()) {
             abort(403, 'Only the treasurer can disburse loans.');
         }
 
@@ -145,7 +145,7 @@ class LoanApprovalController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        if (!$user->hasRole('treasurer')) {
+        if (!$user->hasRole('treasurer') && !$user->isSuperAdmin()) {
             abort(403, 'Only the treasurer can disburse loans.');
         }
 

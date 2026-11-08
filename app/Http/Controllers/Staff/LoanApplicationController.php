@@ -85,30 +85,34 @@ class LoanApplicationController extends Controller
                          ->with('success', 'Loan application submitted successfully.');
     }
 
+    private function authorizeLoanAccess(Loan $loan): void
+    {
+        $user = Auth::user();
+
+        abort_unless(
+            $loan->staff_id === $user->staff?->id || $user->can('is-loan-approver') || $user->hasRole('Principal'),
+            403
+        );
+    }
+
     public function show(Loan $loan)
     {
-        $staff = Auth::user()->staff;
-        if (!$staff || $loan->staff_id !== $staff->id) {
-            abort(403);
-        }
+        $this->authorizeLoanAccess($loan);
+
         return view('staff.loans.show', compact('loan'));
     }
 
     public function statement(Loan $loan)
     {
-        $staff = Auth::user()->staff;
-        if (!$staff || $loan->staff_id !== $staff->id) {
-            abort(403);
-        }
+        $this->authorizeLoanAccess($loan);
+
         return view('staff.loans.statement', compact('loan'));
     }
 
     public function downloadStatement(Loan $loan)
     {
-        $staff = Auth::user()->staff;
-        if (!$staff || $loan->staff_id !== $staff->id) {
-            abort(403);
-        }
+        $this->authorizeLoanAccess($loan);
+
         $pdf = Pdf::loadView('staff.loans.statement_pdf', compact('loan'));
         return $pdf->download("loan_statement_{$loan->id}.pdf");
     }

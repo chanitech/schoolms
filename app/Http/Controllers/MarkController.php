@@ -26,7 +26,7 @@ class MarkController extends Controller
     public function __construct()
     {
         $this->middleware('permission:view marks')->only(['index', 'getSubjectsByDepartment']);
-        $this->middleware('permission:enter marks')->only(['create', 'store', 'edit', 'update', 'getStudents']);
+        $this->middleware('permission:enter marks')->only(['create', 'store', 'edit', 'update', 'getStudents', 'importQuestionMarks']);
         $this->middleware('permission:delete marks')->only(['destroy']);
     }
 

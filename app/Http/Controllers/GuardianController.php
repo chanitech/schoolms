@@ -27,6 +27,14 @@ use App\Models\SchoolInfo;
 
 class GuardianController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:view guardians')->only(['index', 'show']);
+        $this->middleware('permission:create guardians')->only(['create', 'store']);
+        $this->middleware('permission:edit guardians')->only(['edit', 'update']);
+        $this->middleware('permission:delete guardians')->only(['destroy']);
+    }
+
     // ────────────────────────────
     //  ADMIN CRUD METHODS
     // ────────────────────────────
