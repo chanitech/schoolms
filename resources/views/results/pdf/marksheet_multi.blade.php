@@ -127,17 +127,21 @@
         /* Footer */
         .footer {
             position: fixed;
-            bottom: 0;
+            bottom: -14mm;
             left: 0;
             right: 0;
-            height: 40px;
-            font-size: 10px;
+            height: 16px;
+            font-size: 9px;
             color: #555;
             border-top: 0.5px solid #999;
             padding: 5px 10px;
             text-align: right;
         }
 
+        .dense th, .dense td { padding: 1.5px 3px; font-size: 9px; }
+        .dense-card .sign-comment { min-height: 0; margin-bottom: 2px; }
+        .dense-card .sign-space { height: 28px; }
+        .dense-card .sign-table, .dense-card .parent-line { margin-top: 5px; }
         .report-title { margin: 6px 0 0; font-size: 13px; font-weight: bold; letter-spacing: 1px; }
         .provisional { margin: 4px 0; padding: 3px; border: 1px solid #b00; color: #b00; text-align: center; font-weight: bold; font-size: 10px; }
         .sign-table { width: 100%; margin-top: 8px; border-collapse: collapse; }
@@ -283,7 +287,8 @@
 </div>
 
 {{-- Results Table --}}
-<table>
+<div class="{{ $subjects->count() > 11 ? 'dense-card' : '' }}">
+<table class="{{ $subjects->count() > 11 ? 'dense' : '' }}">
     <thead>
         <tr>
             <th rowspan="2">#</th>
@@ -322,7 +327,6 @@
                 }
                 $overallSub = $row['overallSubjects']->get($subject->id);
             @endphp
-            @continue(!$overallSub && $row['overallSubjects']->isNotEmpty())
             <tr>
                 <td>{{ $i++ }}</td>
                 <td class="subject-name">{{ $subject->name }}{{ $hasExtraSubjects && $row['bestSubjectIds']->contains($subject->id) ? ' *' : '' }}</td>
@@ -334,7 +338,7 @@
                     @endphp
                     <td>{{ $sub['mark'] ?? '-' }}</td>
                     <td>{{ $sub['grade'] ?? '-' }}</td>
-                    <td>{{ $sub['point'] ?? 0 }}</td>
+                    <td>{{ isset($sub['mark']) ? $sub['point'] : '-' }}</td>
                 @endforeach
                 @if($exams->count() > 1)
                     <td><strong>{{ $overallSub['mark'] ?? '-' }}</strong></td>
@@ -412,6 +416,7 @@
         Confirm this report is genuine at {{ route('verify.document') }}
     </div>
 @endif
+</div>
 
 
 @unless($loop->last)
