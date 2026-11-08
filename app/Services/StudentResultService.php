@@ -124,6 +124,51 @@ class StudentResultService
     }
 
     /**
+     * Report-card comments from the student's overall grade, placed on the
+     * school's own scale so they work with any number of grades.
+     *
+     * @return array{coordinator: string, head: string}
+     */
+    public static function reportComments(?string $firstName, Collection $subjects, ?Grade $overall, Collection $grades, bool $complete): array
+    {
+        $name = trim((string) $firstName) ?: 'This student';
+
+        if ($subjects->isEmpty() || !$overall) {
+            return ['coordinator' => 'No results were recorded for this report.', 'head' => ''];
+        }
+
+        $strongest = $subjects->sortByDesc('mark')->first()['name'];
+        $weakest   = $subjects->sortBy('mark')->first()['name'];
+
+        $ordered = $grades->sortByDesc('min_mark')->values();
+        $index   = (int) $ordered->search(fn ($g) => $g->id === $overall->id);
+        $band    = min(4, (int) floor($index * 5 / max($ordered->count(), 1)));
+
+        $coordinator = [
+            "{$name} has achieved an outstanding standard, with particular strength in {$strongest}. Keep up this excellent work and continue to aim high.",
+            "{$name} has performed very well, especially in {$strongest}. With a little more attention to {$weakest}, even higher results are within reach.",
+            "{$name} has made satisfactory progress and shows ability in {$strongest}. More regular revision, particularly in {$weakest}, will raise overall performance.",
+            "{$name} is capable of more. Greater effort in class and focused practice in {$weakest} are needed to improve.",
+            "{$name} has not yet reached the expected standard. Extra support in {$weakest}, with teachers and parents working together, is strongly recommended.",
+        ][$band];
+
+        if (!$complete) {
+            $coordinator .= ' Some required subjects have no marks, so no division has been awarded.';
+        }
+
+        return [
+            'coordinator' => $coordinator,
+            'head' => [
+                'Excellent results. Congratulations on this achievement.',
+                'Very good work. Keep up this standard.',
+                'A good effort. Aim higher in the next assessment.',
+                'More commitment is required in order to improve.',
+                'These results are a concern. Parents are asked to meet the school to agree a support plan.',
+            ][$band],
+        ];
+    }
+
+    /**
      * Legacy: accepts raw mark values, converts to points via Grade table,
      * picks best 7, returns result. Prefer computeFromSubjects() when you
      * already have grade points to avoid double-conversion.

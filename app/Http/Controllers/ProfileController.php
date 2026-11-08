@@ -23,6 +23,38 @@ class ProfileController extends Controller
         ]);
     }
 
+    // Kept on the private disk: a signature image must never be web-accessible.
+    public function updateSignature(Request $request): RedirectResponse
+    {
+        $request->validate(['signature' => 'required|image|mimes:png,jpg,jpeg|max:1024']);
+
+        $user = $request->user();
+        $this->deleteSignatureFile($user);
+
+        $user->signature = $request->file('signature')->store('signatures/' . ($user->school_id ?? 'unassigned'), 'local');
+        $user->save();
+
+        return Redirect::route('profile.edit')->with('status', 'signature-updated');
+    }
+
+    public function destroySignature(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        $this->deleteSignatureFile($user);
+
+        $user->signature = null;
+        $user->save();
+
+        return Redirect::route('profile.edit')->with('status', 'signature-removed');
+    }
+
+    private function deleteSignatureFile($user): void
+    {
+        if ($user->signature) {
+            Storage::disk('local')->delete($user->signature);
+        }
+    }
+
     /**
      * Update the user's profile information.
      */

@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Traits\HasRoles;
 use App\Models\Concerns\BelongsToSchool;
 
@@ -118,6 +119,17 @@ public function adminlte_profile_url()
             'password'          => 'hashed',
             'is_super_admin'    => 'boolean',
         ];
+    }
+
+    public function signatureDataUri(): ?string
+    {
+        $disk = Storage::disk('local');
+
+        if (!$this->signature || !$disk->exists($this->signature)) {
+            return null;
+        }
+
+        return 'data:' . $disk->mimeType($this->signature) . ';base64,' . base64_encode($disk->get($this->signature));
     }
 
     public function isSuperAdmin(): bool

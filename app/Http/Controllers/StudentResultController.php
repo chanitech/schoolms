@@ -22,6 +22,11 @@ use App\Models\AcademicSession;
 use Illuminate\Support\Collection;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Enrollment;
+use Illuminate\Support\Facades\DB;
+use App\Services\DocumentSignatureService;
+use App\Models\User;
+use App\Models\Staff;
+use App\Models\DocumentSignature;
 use App\Imports\MarksImport;
 use App\Exports\MarksTemplateExport;
 use App\Exports\MarksTemplateWithStudentsExport;
@@ -739,7 +744,9 @@ class StudentResultController extends Controller
                     $overall->put($subject->id, [
                         'subject_id' => $subject->id,
                         'mark'       => $average,
+                        'name'       => $subject->name,
                         'grade'      => $grade->name  ?? '-',
+                        'remark'     => $grade->description ?? '',
                         'point'      => $grade->point ?? 0,
                         'type'       => $subject->type ?? 'core',
                     ]);
@@ -786,6 +793,26 @@ class StudentResultController extends Controller
 
     $studentsData = $ranked->concat($studentsData->where('eligible_for_rank', false)->values());
 
+    $classSize  = $studentsData->count();
+    $isOfficial = $selected->isPublished();
+
+    $studentsData = $studentsData->map(function ($row) use ($findGrade, $grades, $class, $session, $selected, $classSize, $isOfficial) {
+        $grade = $findGrade($row['average_mark']);
+        $row['overallGrade']  = $grade;
+        $row['comments']      = StudentResultService::reportComments($row['student']->first_name, $row['overallSubjects'], $grade, $grades, $row['eligible_for_rank']);
+        $row['signature']     = $isOfficial ? $this->reportCardSignature($row, $class, $session, $selected, $classSize) : null;
+        return $row;
+    });
+
+    $subjectTeachers = DB::table('subject_class')->where('class_id', $classId)->whereNotNull('teacher_id')->pluck('teacher_id', 'subject_id');
+    $teacherNames    = Staff::whereIn('id', $subjectTeachers->values())->get()->keyBy('id');
+    $subjectTeachers = $subjectTeachers->map(fn ($id) => isset($teacherNames[$id])
+        ? strtoupper(substr($teacherNames[$id]->first_name, 0, 1) . substr($teacherNames[$id]->last_name, 0, 1))
+        : '');
+
+    $coordinator = $class->teacher;
+    $head        = User::role('Principal')->first();
+
     $pdf = Pdf::loadView('results.pdf.marksheet_multi', [
         'studentsData' => $studentsData,
         'class'        => $class,
@@ -794,6 +821,13 @@ class StudentResultController extends Controller
         'subjects'     => $subjects,
         'exams'        => $exams,
         'selectedExam' => $selected,
+        'classSize'    => $classSize,
+        'isOfficial'   => $isOfficial,
+        'coordinator'  => $coordinator,
+        'coordinatorSignature' => $isOfficial ? $coordinator?->user?->signatureDataUri() : null,
+        'head'         => $head,
+        'headSignature' => $isOfficial ? $head?->signatureDataUri() : null,
+        'subjectTeachers' => $subjectTeachers,
         'grades'       => $grades,
         'school'       => $school,
     ])
@@ -805,6 +839,19 @@ class StudentResultController extends Controller
 
     return $pdf->stream("Class_{$class->name}_Results.pdf");
 }
+
+    // Re-printing an unchanged report keeps its code; changed results get a new one.
+    private function reportCardSignature(array $row, $class, $session, Exam $exam, int $classSize): DocumentSignature
+    {
+        $student = $row['student'];
+        $title   = "Student Report: {$student->first_name} {$student->last_name} ({$student->admission_no})";
+        $summary = "{$class->name}, {$session->name}, {$exam->name}. Average {$row['average_mark']}, "
+            . "GPA {$row['gpa']}, Division {$row['division']}, Position {$row['position']} of {$classSize}.";
+
+        return DocumentSignature::where('doc_type', 'student_report')
+            ->where('title', $title)->where('summary', $summary)->first()
+            ?? app(DocumentSignatureService::class)->sign('student_report', $title, $summary, $row['overallSubjects']->values()->all());
+    }
 
     // ==================== AJAX ====================
 

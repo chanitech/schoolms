@@ -81,4 +81,42 @@
             </form>
         </div>
     </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-signature mr-1"></i> My Signature</h3>
+        </div>
+        <div class="card-body">
+            @if (session('status') === 'signature-updated')
+                <div class="alert alert-success">Signature saved.</div>
+            @elseif (session('status') === 'signature-removed')
+                <div class="alert alert-success">Signature removed.</div>
+            @endif
+            @error('signature')
+                <div class="alert alert-danger">{{ $message }}</div>
+            @enderror
+
+            <p class="text-muted">Printed on published student reports if you are a Class Coordinator or the Head of School. Use a clear photo or scan of your signature on white paper (PNG or JPG, up to 1 MB).</p>
+
+            @if ($signature = $user->signatureDataUri())
+                <div class="mb-3">
+                    <img src="{{ $signature }}" alt="Your signature" class="img-thumbnail" style="max-height:90px">
+                </div>
+            @endif
+
+            <form method="post" action="{{ route('profile.signature.update') }}" enctype="multipart/form-data" class="form-inline">
+                @csrf
+                <input type="file" name="signature" accept="image/png,image/jpeg" class="form-control-file mr-2" required>
+                <button type="submit" class="btn btn-primary btn-sm">{{ $signature ? 'Replace Signature' : 'Upload Signature' }}</button>
+            </form>
+
+            @if ($signature)
+                <form method="post" action="{{ route('profile.signature.destroy') }}" class="mt-2" onsubmit="return confirm('Remove your signature?')">
+                    @csrf
+                    @method('delete')
+                    <button type="submit" class="btn btn-outline-danger btn-sm">Remove Signature</button>
+                </form>
+            @endif
+        </div>
+    </div>
 @stop

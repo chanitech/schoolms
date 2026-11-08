@@ -142,6 +142,8 @@ Route::middleware(['auth', 'verified', 'staff.only'])->group(function () {
         Route::get('/', [ProfileController::class, 'edit'])->name('edit');
         Route::patch('/', [ProfileController::class, 'update'])->name('update');
         Route::delete('/', [ProfileController::class, 'destroy'])->name('destroy');
+        Route::post('signature', [ProfileController::class, 'updateSignature'])->name('signature.update');
+        Route::delete('signature', [ProfileController::class, 'destroySignature'])->name('signature.destroy');
     });
 
     Route::middleware(['role:Admin|Principal'])->prefix('settings')->name('settings.')->group(function () {
