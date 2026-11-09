@@ -801,8 +801,7 @@ class StudentResultController extends Controller
     $classSize  = $studentsData->count();
     $isOfficial = $selected->isPublished();
 
-    // Stops at publication so re-printing an old report gives the same figure.
-    $attendanceUpTo = $selected->published_at ?? now();
+    $attendanceUpTo = now();
     $attendance     = StudentAttendance::summaries($studentIds, $sessionId, $attendanceUpTo);
 
     $studentsData = $studentsData->map(function ($row) use ($findGrade, $grades, $class, $session, $selected, $classSize, $isOfficial, $attendance) {

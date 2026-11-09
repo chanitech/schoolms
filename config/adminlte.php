@@ -368,11 +368,12 @@ return [
     [
         'text' => 'Students Management',
         'icon' => 'fas fa-user-graduate',
-        'can' => ['view students', 'view guardians', 'view enrollments', 'manage promotions'],
+        'can' => ['view students', 'view guardians', 'view enrollments', 'manage promotions', 'is-class-coordinator'],
         'submenu' => [
             ['text' => 'Students',   'url' => 'students',    'icon' => 'fas fa-user-graduate',  'can' => 'view students'],
             ['text' => 'Guardians',  'url' => 'guardians',   'icon' => 'fas fa-users',          'can' => 'view guardians'],
             ['text' => 'Enrollments','url' => 'enrollments', 'icon' => 'fas fa-clipboard-list', 'can' => 'view enrollments'],
+            ['text' => 'Student Attendance', 'url' => 'student-attendance', 'icon' => 'fas fa-user-check', 'can' => 'is-class-coordinator'],
             ['text' => 'Promotion',  'url' => 'promotion',   'icon' => 'fas fa-level-up-alt',   'can' => 'manage promotions'],
         ],
     ],
@@ -579,12 +580,6 @@ return [
                             ['text' => 'All Lesson Plans',     'url' => 'topic-coverage',            'icon' => 'fas fa-list',       'can' => 'view lesson plans'],
                             ['text' => 'Evaluation & Progress','url' => 'topic-coverage/evaluation', 'icon' => 'fas fa-chart-line', 'can' => 'view lesson plans'],
                         ],
-                    ],
-                    [
-                        'text' => 'Student Attendance',
-                        'url'  => 'student-attendance',
-                        'icon' => 'fas fa-user-check',
-                        'can'  => 'is-class-coordinator',
                     ],
                     [
                         'text' => 'Class Attendance',
