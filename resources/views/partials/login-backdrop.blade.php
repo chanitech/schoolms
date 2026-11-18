@@ -1,18 +1,13 @@
-{{-- Login backdrop: Tanzania flag drawn in CSS (no image to download), softened so the form stays the focus.
-     "to bottom right" puts the 50% line on the bottom-left → top-right diagonal, as on the flag. --}}
+{{-- Login backdrop: dhow on the turquoise water of Zanzibar (Pexels, Taryn Elliott, free licence).
+     1280px / ~124 KB; the sea-blue fallback shows instantly while it loads. --}}
 <style>
 .login-backdrop {
     position: fixed; inset: 0; z-index: -1;
-    background: linear-gradient(to bottom right,
-        #1eb53a 0 37%,
-        #fcd116 37% 40.5%,
-        #000 40.5% 59.5%,
-        #fcd116 59.5% 63%,
-        #00a3dd 63% 100%);
+    background: #1d6f86 url("{{ asset('images/brand/login-znz.jpg') }}") center / cover no-repeat;
 }
 .login-backdrop::after {
     content: ""; position: absolute; inset: 0;
-    background: rgba(13, 20, 43, .35);
+    background: linear-gradient(rgba(19, 29, 61, .45), rgba(19, 29, 61, .30));
 }
 </style>
 <div class="login-backdrop" aria-hidden="true"></div>
