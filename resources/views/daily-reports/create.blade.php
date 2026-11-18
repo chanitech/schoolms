@@ -3,25 +3,22 @@
 
 @push('css')
 <style>
-.form-card { border: none; border-radius: 14px; box-shadow: 0 2px 16px rgba(0,0,0,.08); overflow: hidden; }
+.form-card { border: none; border-radius:.25rem; box-shadow:0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2); overflow: hidden; }
 .section-header {
     display: flex; align-items: center; gap: .6rem;
-    font-weight: 700; font-size: .82rem; text-transform: uppercase;
-    letter-spacing: .08em; color: #4e73df; margin-bottom: .75rem;
+    font-weight: 700; font-size: .82rem; text-transform: uppercase; color: #4e73df; margin-bottom: .75rem;
 }
 .section-header::after { content: ''; flex: 1; height: 1px; background: #e3e6f0; }
 .session-pill {
     display: flex; align-items: flex-start; gap: .75rem;
     padding: .75rem 1rem; border-bottom: 1px solid #f0f0f5;
-    transition: background .1s;
 }
 .session-pill:hover { background: #f8f9fc; }
 .session-pill:last-child { border-bottom: none; }
 .status-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
 .textarea-styled {
-    border: 1.5px solid #e3e6f0; border-radius: 10px; padding: .85rem 1rem;
+    border: 1.5px solid #e3e6f0; border-radius:.25rem; padding: .85rem 1rem;
     font-size: .9rem; line-height: 1.65; resize: vertical; width: 100%;
-    transition: border-color .2s, box-shadow .2s;
 }
 .textarea-styled:focus {
     outline: none; border-color: #4e73df;
@@ -32,9 +29,9 @@
     font-weight: 600; font-size: .82rem; color: #555; margin-bottom: .4rem;
 }
 .field-label .icon { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .65rem; flex-shrink: 0; }
-.activity-row { background: #f8f9fc; border-radius: 10px; padding: .75rem; margin-bottom: .5rem; border: 1.5px solid #e3e6f0; }
-.btn-action { border-radius: 10px; font-weight: 600; padding: .55rem 1.4rem; }
-.date-nav { background: #f8f9fc; border-radius: 10px; border: 1.5px solid #e3e6f0; padding: .4rem .8rem; font-size: .85rem; font-weight: 600; }
+.activity-row { background: #f8f9fc; border-radius:.25rem; padding: .75rem; margin-bottom: .5rem; border: 1.5px solid #e3e6f0; }
+.btn-action { border-radius:.25rem; font-weight: 600; padding: .55rem 1.4rem; }
+.date-nav { background: #f8f9fc; border-radius:.25rem; border: 1.5px solid #e3e6f0; padding: .4rem .8rem; font-size: .85rem; font-weight: 600; }
 </style>
 @endpush
 
@@ -52,17 +49,17 @@
     <div class="d-flex align-items-center" style="gap:.5rem">
         <div class="d-flex align-items-center" style="gap:.3rem">
             <a href="{{ route('daily-reports.create', ['date' => $date->copy()->subDay()->toDateString()]) }}"
-                class="btn btn-sm btn-light" style="border-radius:8px" title="Previous day">
+                class="btn btn-sm btn-light" style="border-radius:.25rem" title="Previous day">
                 <i class="fas fa-chevron-left"></i>
             </a>
             <input type="date" id="datePicker" class="date-nav form-control form-control-sm"
                 value="{{ $date->toDateString() }}" style="width:145px">
             <a href="{{ route('daily-reports.create', ['date' => $date->copy()->addDay()->toDateString()]) }}"
-                class="btn btn-sm btn-light" style="border-radius:8px" title="Next day">
+                class="btn btn-sm btn-light" style="border-radius:.25rem" title="Next day">
                 <i class="fas fa-chevron-right"></i>
             </a>
         </div>
-        <a href="{{ route('daily-reports.index') }}" class="btn btn-sm btn-outline-secondary" style="border-radius:8px">
+        <a href="{{ route('daily-reports.index') }}" class="btn btn-sm btn-outline-secondary" style="border-radius:.25rem">
             <i class="fas fa-list mr-1"></i>My Reports
         </a>
     </div>
@@ -73,7 +70,7 @@
 <div class="container-fluid">
 
 @if($errors->any())
-<div class="alert alert-danger border-0 mb-3" style="border-radius:10px;box-shadow:0 2px 8px rgba(220,53,69,.2)">
+<div class="alert alert-danger border-0 mb-3" style="border-radius:.25rem;box-shadow:0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2)">
     <i class="fas fa-exclamation-circle mr-2"></i>
     <strong>Please fix the following:</strong>
     <ul class="mb-0 mt-1">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
@@ -96,7 +93,7 @@
                 <div class="section-header">
                     <i class="fas fa-chalkboard-teacher" style="color:#36b9cc"></i>
                     Sessions Today
-                    <span class="badge badge-info ml-auto" style="font-size:.68rem;border-radius:20px;text-transform:none;letter-spacing:0">{{ $sessions->count() }}</span>
+                    <span class="badge badge-info ml-auto" style="font-size:.68rem;border-radius:20px;text-transform:none">{{ $sessions->count() }}</span>
                 </div>
             </div>
             @forelse($sessions as $sl)
@@ -136,7 +133,7 @@
 
             @if($sessions->count())
             <div class="px-3 pb-3 pt-2">
-                <a href="{{ route('timetables.my-sessions') }}" class="btn btn-xs btn-outline-secondary w-100" style="border-radius:8px;font-size:.77rem">
+                <a href="{{ route('timetables.my-sessions') }}" class="btn btn-xs btn-outline-secondary w-100" style="border-radius:.25rem;font-size:.77rem">
                     <i class="fas fa-plus mr-1"></i>Update Session Logs
                 </a>
             </div>
@@ -153,7 +150,7 @@
                     Extra Activities
                 </div>
                 <button type="button" id="addActivity"
-                    class="btn btn-xs btn-primary ml-2" style="border-radius:8px;flex-shrink:0">
+                    class="btn btn-xs btn-primary ml-2" style="border-radius:.25rem;flex-shrink:0">
                     <i class="fas fa-plus"></i>
                 </button>
             </div>
@@ -163,32 +160,32 @@
                 <div class="activity-row">
                     <div class="row no-gutters" style="gap:.3rem 0">
                         <div class="col-7 pr-1">
-                            <select name="activities[{{ $i }}][type]" class="form-control form-control-sm" style="border-radius:7px">
+                            <select name="activities[{{ $i }}][type]" class="form-control form-control-sm" style="border-radius:.25rem">
                                 @foreach(['meeting'=>'Meeting','duty'=>'Duty','exam_invigilation'=>'Exam Invigilation','training'=>'Training','other'=>'Other'] as $val => $lbl)
                                 <option value="{{ $val }}" {{ $act->type===$val ? 'selected' : '' }}>{{ $lbl }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="col-5 pl-1 text-right">
-                            <button type="button" class="btn btn-xs btn-outline-danger remove-activity" style="border-radius:7px">
+                            <button type="button" class="btn btn-xs btn-outline-danger remove-activity" style="border-radius:.25rem">
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
                         <div class="col-12 mt-1">
                             <input type="text" name="activities[{{ $i }}][title]" class="form-control form-control-sm"
-                                placeholder="Activity title" value="{{ $act->title }}" style="border-radius:7px">
+                                placeholder="Activity title" value="{{ $act->title }}" style="border-radius:.25rem">
                         </div>
                         <div class="col-6 pr-1 mt-1">
                             <input type="time" name="activities[{{ $i }}][time_from]" class="form-control form-control-sm"
-                                value="{{ $act->time_from }}" style="border-radius:7px" placeholder="From">
+                                value="{{ $act->time_from }}" style="border-radius:.25rem" placeholder="From">
                         </div>
                         <div class="col-6 pl-1 mt-1">
                             <input type="time" name="activities[{{ $i }}][time_to]" class="form-control form-control-sm"
-                                value="{{ $act->time_to }}" style="border-radius:7px" placeholder="To">
+                                value="{{ $act->time_to }}" style="border-radius:.25rem" placeholder="To">
                         </div>
                         <div class="col-12 mt-1">
                             <input type="text" name="activities[{{ $i }}][description]" class="form-control form-control-sm"
-                                placeholder="Brief description (optional)" value="{{ $act->description }}" style="border-radius:7px">
+                                placeholder="Brief description (optional)" value="{{ $act->description }}" style="border-radius:.25rem">
                         </div>
                     </div>
                 </div>
@@ -208,7 +205,7 @@
 {{-- ─── RIGHT COLUMN ─────────────────────────────────────────────── --}}
 <div class="col-lg-8 mb-3">
     <div class="form-card">
-        <div style="background:linear-gradient(135deg,#4e73df,#224abe);padding:1.25rem 1.5rem;color:#fff">
+        <div style="background:#6f42c1;padding:1.25rem 1.5rem;color:#fff">
             <h5 class="mb-1 font-weight-bold"><i class="fas fa-file-alt mr-2"></i>Report Narrative</h5>
             <p class="mb-0" style="font-size:.82rem;opacity:.85">Complete all sections for a comprehensive report</p>
         </div>
@@ -344,22 +341,22 @@ function makeRow(i) {
     return `<div class="activity-row">
         <div class="row no-gutters" style="gap:.3rem 0">
             <div class="col-7 pr-1">
-                <select name="activities[${i}][type]" class="form-control form-control-sm" style="border-radius:7px">${typeOptions}</select>
+                <select name="activities[${i}][type]" class="form-control form-control-sm" style="border-radius:.25rem">${typeOptions}</select>
             </div>
             <div class="col-5 pl-1 text-right">
-                <button type="button" class="btn btn-xs btn-outline-danger remove-activity" style="border-radius:7px"><i class="fas fa-times"></i></button>
+                <button type="button" class="btn btn-xs btn-outline-danger remove-activity" style="border-radius:.25rem"><i class="fas fa-times"></i></button>
             </div>
             <div class="col-12 mt-1">
-                <input type="text" name="activities[${i}][title]" class="form-control form-control-sm" placeholder="Activity title" required style="border-radius:7px">
+                <input type="text" name="activities[${i}][title]" class="form-control form-control-sm" placeholder="Activity title" required style="border-radius:.25rem">
             </div>
             <div class="col-6 pr-1 mt-1">
-                <input type="time" name="activities[${i}][time_from]" class="form-control form-control-sm" style="border-radius:7px">
+                <input type="time" name="activities[${i}][time_from]" class="form-control form-control-sm" style="border-radius:.25rem">
             </div>
             <div class="col-6 pl-1 mt-1">
-                <input type="time" name="activities[${i}][time_to]" class="form-control form-control-sm" style="border-radius:7px">
+                <input type="time" name="activities[${i}][time_to]" class="form-control form-control-sm" style="border-radius:.25rem">
             </div>
             <div class="col-12 mt-1">
-                <input type="text" name="activities[${i}][description]" class="form-control form-control-sm" placeholder="Brief description" style="border-radius:7px">
+                <input type="text" name="activities[${i}][description]" class="form-control form-control-sm" placeholder="Brief description" style="border-radius:.25rem">
             </div>
         </div>
     </div>`;

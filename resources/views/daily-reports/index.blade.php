@@ -5,15 +5,14 @@
 <style>
 .report-card {
     border: none;
-    border-radius: 12px;
-    box-shadow: 0 2px 12px rgba(0,0,0,.07);
-    transition: transform .15s, box-shadow .15s;
+    border-radius:.25rem;
+    box-shadow:0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
     overflow: hidden;
 }
-.report-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.12); }
+.report-card:hover { box-shadow:0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2); }
 .status-bar { height: 4px; width: 100%; }
-.day-badge { font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
-.kpi-mini { background: #f8f9fc; border-radius: 8px; padding: .6rem 1rem; text-align: center; }
+.day-badge { font-size: .7rem; text-transform: uppercase; font-weight: 600; }
+.kpi-mini { background: #f8f9fc; border-radius:.25rem; padding: .6rem 1rem; text-align: center; }
 .kpi-mini .num { font-size: 1.5rem; font-weight: 700; line-height: 1.1; }
 .empty-state { padding: 4rem 0; text-align: center; color: #9ca3af; }
 .empty-state i { font-size: 3rem; margin-bottom: 1rem; opacity: .4; }
@@ -29,7 +28,7 @@
         <p class="text-muted mb-0" style="font-size:.82rem">Track and submit your teaching activity each day</p>
     </div>
     <a href="{{ route('daily-reports.create') }}" class="btn btn-primary"
-        style="border-radius:8px;font-weight:600;padding:.45rem 1.2rem">
+        style="border-radius:.25rem;font-weight:600;padding:.45rem 1.2rem">
         <i class="fas fa-plus mr-1"></i>Write Today's Report
     </a>
 </div>
@@ -39,7 +38,7 @@
 <div class="container-fluid">
 
 @if(session('success'))
-<div class="alert alert-success border-0 shadow-sm" style="border-radius:10px">
+<div class="alert alert-success border-0 shadow-sm" style="border-radius:.25rem">
     <i class="fas fa-check-circle mr-2"></i>{{ session('success') }}
 </div>
 @endif
@@ -86,23 +85,23 @@
 {{-- Today alert --}}
 @if(!$todayReport)
 <div class="d-flex align-items-center justify-content-between p-3 mb-4"
-    style="background:linear-gradient(135deg,#4e73df,#224abe);border-radius:12px;color:#fff">
+    style="background:#6f42c1;border-radius:.25rem;color:#fff">
     <div>
         <strong><i class="fas fa-bell mr-2"></i>No report for today — {{ now()->format('l, d F Y') }}</strong>
         <div style="font-size:.82rem;opacity:.85;margin-top:2px">Keep management informed by submitting your daily report.</div>
     </div>
-    <a href="{{ route('daily-reports.create') }}" class="btn btn-light btn-sm font-weight-bold ml-3" style="border-radius:8px;white-space:nowrap">
+    <a href="{{ route('daily-reports.create') }}" class="btn btn-light btn-sm font-weight-bold ml-3" style="border-radius:.25rem;white-space:nowrap">
         Write Now
     </a>
 </div>
 @elseif($todayReport->status === 'draft')
 <div class="d-flex align-items-center justify-content-between p-3 mb-4"
-    style="background:linear-gradient(135deg,#f6c23e,#dda520);border-radius:12px;color:#fff">
+    style="background:#ffc107;border-radius:.25rem;color:#fff">
     <div>
         <strong><i class="fas fa-pencil-alt mr-2"></i>Today's report is saved as draft</strong>
         <div style="font-size:.82rem;opacity:.9;margin-top:2px">Submit it to your HOD before the end of the day.</div>
     </div>
-    <a href="{{ route('daily-reports.edit', $todayReport) }}" class="btn btn-light btn-sm font-weight-bold ml-3" style="border-radius:8px">
+    <a href="{{ route('daily-reports.edit', $todayReport) }}" class="btn btn-light btn-sm font-weight-bold ml-3" style="border-radius:.25rem">
         Complete & Submit
     </a>
 </div>
@@ -114,7 +113,7 @@
     <i class="fas fa-clipboard-list d-block"></i>
     <h5 class="text-muted">No reports yet</h5>
     <p class="text-muted mb-3">Start by writing your first daily report.</p>
-    <a href="{{ route('daily-reports.create') }}" class="btn btn-primary" style="border-radius:8px">Write First Report</a>
+    <a href="{{ route('daily-reports.create') }}" class="btn btn-primary" style="border-radius:.25rem">Write First Report</a>
 </div>
 @else
 <div class="row">
@@ -182,12 +181,12 @@
                 </small>
                 <div style="gap:.3rem;display:flex">
                     <a href="{{ route('daily-reports.show', $rpt) }}"
-                        class="btn btn-sm btn-outline-info" style="border-radius:8px;font-size:.78rem">
+                        class="btn btn-sm btn-outline-info" style="border-radius:.25rem;font-size:.78rem">
                         <i class="fas fa-eye mr-1"></i>View
                     </a>
                     @unless($isSubmitted)
                     <a href="{{ route('daily-reports.edit', $rpt) }}"
-                        class="btn btn-sm btn-outline-warning" style="border-radius:8px;font-size:.78rem">
+                        class="btn btn-sm btn-outline-warning" style="border-radius:.25rem;font-size:.78rem">
                         <i class="fas fa-edit mr-1"></i>Edit
                     </a>
                     @endunless

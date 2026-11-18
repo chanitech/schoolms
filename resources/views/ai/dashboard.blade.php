@@ -146,7 +146,7 @@
         .result-box {
             background: #f8fafc;
             border: 1px solid #dee2e6;
-            border-radius: 8px;
+            border-radius:.25rem;
             padding: 16px;
             position: relative;
             font-size: 14px;
@@ -177,8 +177,8 @@
             display: flex; flex-direction: column; align-items: center;
             justify-content: center; padding: 30px; gap: 10px; color: #6c757d;
         }
-        .ai-loading .spinner { font-size: 28px; color: #007bff; animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        .ai-loading .spinner { font-size: 28px; color: #007bff; }
+        
         .ai-loading .loading-text { font-size: 13px; font-weight: 500; }
         .ai-loading .loading-sub { font-size: 11px; color: #adb5bd; }
 
@@ -219,7 +219,7 @@
         function showLoading(boxId, label) {
             $('#' + boxId).show().html(`
                 <div class="ai-loading">
-                    <i class="fas fa-cog spinner"></i>
+                    <i class="fas fa-cog fa-spin spinner"></i>
                     <div class="loading-text">AI is ${label}…</div>
                     <div class="loading-sub">This may take 10–30 seconds</div>
                 </div>`);

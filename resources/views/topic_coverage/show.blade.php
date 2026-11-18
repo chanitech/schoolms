@@ -102,7 +102,7 @@
                                         data-subtopic-id="{{ $sub->id }}"
                                         data-subtopic-title="{{ $sub->title }}"
                                         data-has-plan="{{ $sub->lesson_plan_content ? '1' : '0' }}">
-                                    <i class="fas fa-file-alt mr-1"></i>{{ $sub->lesson_plan_content ? 'Plan ✓' : 'Plan' }}
+                                    <i class="fas fa-file-alt mr-1"></i>Plan @if($sub->lesson_plan_content)<i class="fas fa-check ml-1"></i>@endif
                                 </button>
                             @endif
                             @if($canEdit)
@@ -741,7 +741,7 @@ $(function () {
                 // Update button to show plan exists
                 $(`.btn-generate-plan[data-subtopic-id="${currentSubtopicId}"]`)
                     .attr('data-has-plan', '1')
-                    .html('<i class="fas fa-file-alt mr-1"></i>Plan ✓')
+                    .html('<i class="fas fa-file-alt mr-1"></i>Plan <i class="fas fa-check ml-1"></i>')
                     .attr('title', 'View / Regenerate Lesson Plan');
             } else {
                 lpShowForm();
@@ -789,12 +789,12 @@ function printLessonPlan() {
         <title>Lesson Plan</title>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
         <style>
-            body { font-size:11pt; padding:20px; }
+            
             table { width:100%; border-collapse:collapse; margin-bottom:1rem; }
             table td, table th { border:1px solid #000; padding:6px 8px; vertical-align:top; }
             table th { background:#f0f0f0; font-weight:bold; }
             h5 { font-weight:bold; margin-top:1rem; border-bottom:1px solid #333; padding-bottom:3px; font-size:11pt; text-transform:uppercase; }
-            @media print { body { margin:10mm; } }
+            @media print {  }
         </style>
     </head><body>${content}</body></html>`);
     win.document.close();

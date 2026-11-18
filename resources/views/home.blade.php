@@ -504,7 +504,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
-    const SS_ICONS = { assembly:'🏁', prayer:'🕌', break:'☕', self_study:'📚', sports:'⚽', sdp:'📖', debate:'🗣️', free:'🌙' };
+    const SS_ICONS = { assembly:'fa-flag-checkered', prayer:'fa-mosque', break:'fa-coffee', self_study:'fa-book', sports:'fa-futbol', sdp:'fa-book-open', debate:'fa-comments', free:'fa-moon' };
     const SS_ROW_CLASS = { assembly:'table-secondary', prayer:'table-info', break:'table-warning', self_study:'table-success', sports:'table-danger', sdp:'', debate:'table-primary', free:'table-light' };
     const STATUS_CFG = {
         attended: { label:'Attended', btnClass:'btn-success',   icon:'fa-check-circle' },
@@ -587,9 +587,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
             data.entries.forEach(e => {
                 if (e.is_special) {
-                    const icon = SS_ICONS[e.type] || '📌';
+                    const icon = SS_ICONS[e.type] || 'fa-thumbtack';
                     const rc   = SS_ROW_CLASS[e.type] || 'table-light';
-                    html += `<tr class="${rc}"><td colspan="${cols}" class="text-center small font-italic font-weight-bold text-muted py-1">${icon}&nbsp;${e.period}&nbsp;—&nbsp;${e.time}</td></tr>`;
+                    html += `<tr class="${rc}"><td colspan="${cols}" class="text-center small font-italic font-weight-bold text-muted py-1"><i class="fas ${icon}"></i>&nbsp;${e.period}&nbsp;—&nbsp;${e.time}</td></tr>`;
                 } else {
                     const highlight = e.log_status ? ({attended:'table-success',late:'table-warning',absent:'table-danger'}[e.log_status] || '') : '';
                     const statusTd = hasStatus

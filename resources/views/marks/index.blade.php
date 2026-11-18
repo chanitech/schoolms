@@ -418,23 +418,21 @@
         gap: 4px;
     }
     .page-link {
-        border-radius: 8px !important;
+        border-radius:.25rem !important;
         margin: 0 2px;
         color: #1F7A63;
         border: 1px solid #e0e0e0;
-        transition: all 0.2s ease;
         padding: 6px 12px;
     }
     .page-link:hover {
         background-color: #1F7A63;
         border-color: #1F7A63;
         color: white;
-        transform: translateY(-1px);
     }
     .page-item.active .page-link {
         background-color: #1F7A63;
         border-color: #1F7A63;
-        box-shadow: 0 2px 4px rgba(31, 122, 99, 0.3);
+        box-shadow:0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
     }
     .page-item.disabled .page-link {
         color: #adb5bd;
@@ -444,11 +442,11 @@
     }
     .page-item:first-child .page-link,
     .page-item:last-child .page-link {
-        border-radius: 8px !important;
+        border-radius:.25rem !important;
     }
     /* Table hover effect */
     .table-hover tbody tr:hover {
-        background-color: rgba(31, 122, 99, 0.05);
+        background:#f8f9fa;
     }
     /* Badge styles */
     .badge-success {

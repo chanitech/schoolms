@@ -37,7 +37,7 @@
                         <option value="">— None —</option>
                         @foreach($inventoryItems as $item)
                             <option value="{{ $item->id }}" data-name="{{ $item->name }}" {{ optional($stockRequest)->inventory_item_id === $item->id ? 'selected' : '' }}>
-                                {{ $item->name }} ({{ $item->category->name ?? 'Uncategorized' }}) — in stock: {{ $item->quantity_in_stock }}{{ $item->isLowStock() ? ' ⚠️ LOW' : '' }}
+                                {{ $item->name }} ({{ $item->category->name ?? 'Uncategorized' }}) — in stock: {{ $item->quantity_in_stock }}{{ $item->isLowStock() ? ' (LOW STOCK)' : '' }}
                             </option>
                         @endforeach
                     </select>

@@ -107,7 +107,7 @@
                     <div class="bubble-avatar"><i class="fas fa-robot"></i></div>
                     <div>
                         <div class="bubble-content">
-                            <strong>👋 Hello! I'm Chani Technologies AI</strong>
+                            <strong>Hello, I'm the Chani Technologies AI assistant.</strong>
                             <span class="badge badge-info ml-1" style="font-size:10px;">Powered by Chani Technologies</span>
                             <br><br>
                             I have <strong>live access</strong> to all school data — students, marks, classes, finance, staff, library, dormitories, loans, and more.
@@ -155,7 +155,7 @@
 @push('css')
 <style>
 /* ── Layout ── */
-.content-wrapper { overflow: hidden; }
+
 
 /* ── Bubbles ── */
 .ai-bubble, .user-bubble {
@@ -179,7 +179,7 @@
     border-radius: 0 14px 14px 14px;
     padding: 10px 14px;
     margin: 0 10px;
-    box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    box-shadow:0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
     font-size: 13.5px;
     line-height: 1.65;
     word-break: break-word;
@@ -187,7 +187,7 @@
 }
 .user-bubble .bubble-content {
     background: #007bff; color: #fff;
-    border-radius: 14px 0 14px 14px;
+    border-radius: .25rem 0 .25rem .25rem;
 }
 
 /* ── Markdown in AI bubbles ── */
@@ -232,18 +232,7 @@
 .bubble-time { font-size: 11px; color: #adb5bd; margin-top: 4px; padding: 0 10px; }
 .user-bubble .bubble-time { text-align: right; }
 
-/* ── Typing dots ── */
-.typing-dots span {
-    display:inline-block; width:8px; height:8px; border-radius:50%;
-    background: #adb5bd; margin: 0 2px;
-    animation: bounce-dot 1.3s infinite;
-}
-.typing-dots span:nth-child(2) { animation-delay:.15s; }
-.typing-dots span:nth-child(3) { animation-delay:.3s; }
-@keyframes bounce-dot {
-    0%,60%,100% { transform:translateY(0); }
-    30%          { transform:translateY(-7px); }
-}
+
 
 /* ── Tool call details ── */
 .tool-call-details {
@@ -256,10 +245,10 @@
 .tool-call-details li { color: #495057; }
 
 /* ── Conversation items ── */
-.conv-item { border-left: 3px solid transparent; transition: border-color .15s; }
+.conv-item { border-left: 3px solid transparent; }
 .conv-item.active { border-left-color: #007bff; background: #f0f5ff; }
 .conv-item:hover { background: #f8f9fa; }
-.delete-conv-btn { opacity: 0; transition: opacity .15s; }
+.delete-conv-btn { opacity: 0; }
 .conv-item:hover .delete-conv-btn { opacity: 1; }
 
 /* ── Quick prompts ── */
@@ -408,7 +397,7 @@ function sendMessage() {
         removeTyping();
         setStatus('error');
         const err = xhr.responseJSON?.message || 'Connection error. Please try again.';
-        appendMessage('assistant', '⚠️ ' + err, '', null);
+        appendMessage('assistant', err, '', null);
         setTimeout(() => setStatus('online'), 3000);
     })
     .always(function () {
@@ -430,7 +419,7 @@ function appendMessage(role, content, time, functionCalls) {
             try { args = JSON.stringify(JSON.parse(fc.function.arguments), null, 2); } catch(e) { args = fc.function.arguments; }
             return `<li><code>${escHtml(fc.function.name)}</code><pre style="font-size:10px;max-height:80px;overflow-y:auto;">${escHtml(args)}</pre></li>`;
         }).join('');
-        toolHtml = `<details class="tool-call-details"><summary>🔧 ${functionCalls.length} tool call(s) used</summary><ul>${items}</ul></details>`;
+        toolHtml = `<details class="tool-call-details"><summary><i class="fas fa-wrench mr-1"></i>${functionCalls.length} tool call(s) used</summary><ul>${items}</ul></details>`;
     }
 
     // Copy button (AI only)
@@ -466,8 +455,9 @@ function showTyping() {
     $('#chat-messages').append(`
         <div class="ai-bubble" id="typing-indicator">
             <div class="bubble-avatar"><i class="fas fa-robot"></i></div>
-            <div class="bubble-content typing-dots" style="padding:14px 18px;">
-                <span></span><span></span><span></span>
+            <div class="bubble-content" style="padding:14px 18px;">
+                <span class="spinner-border spinner-border-sm text-secondary" role="status"></span>
+                <span class="text-muted ml-1">Thinking…</span>
             </div>
         </div>`);
     scrollBottom();
@@ -501,7 +491,7 @@ function welcomeHtml() {
         <div class="bubble-avatar"><i class="fas fa-robot"></i></div>
         <div>
             <div class="bubble-content">
-                <strong>👋 Hello! I'm Chani Technologies AI</strong>
+                <strong>Hello, I'm the Chani Technologies AI assistant.</strong>
                 <span class="badge badge-info ml-1" style="font-size:10px;">Powered by Chani Technologies</span>
                 <br><br>
                 I have <strong>live access</strong> to all school data.<br>Ask me anything about students, marks, fees, staff, library, or dormitories.

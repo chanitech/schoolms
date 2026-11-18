@@ -5,23 +5,22 @@
 <style>
 /* ── KPI cards ─────────────────────────────────────────────────────── */
 .perf-card {
-    border-radius: 14px; border: none; overflow: hidden;
-    box-shadow: 0 3px 16px rgba(0,0,0,.08);
-    transition: transform .15s, box-shadow .15s;
+    border-radius:.25rem; border: none; overflow: hidden;
+    box-shadow:0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
 }
-.perf-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.13); }
+.perf-card:hover { box-shadow:0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2); }
 .perf-card .inner { padding: 1.2rem 1.4rem; }
 .perf-card .num  { font-size: 2.2rem; font-weight: 800; line-height: 1; }
-.perf-card .lbl  { font-size: .73rem; text-transform: uppercase; letter-spacing: .07em; margin-top: 4px; opacity: .85; }
+.perf-card .lbl  { font-size: .73rem; text-transform: uppercase; margin-top: 4px; opacity: .85; }
 .perf-card .foot { background: rgba(0,0,0,.10); padding: .4rem 1.4rem; font-size: .74rem; }
 .perf-card .icon-wrap { font-size: 2.6rem; opacity: .18; position: absolute; right: 1rem; top: .8rem; }
 
 /* ── Section cards ─────────────────────────────────────────────────── */
-.sec-card { border-radius: 12px; border: 1.5px solid #e3e6f0; box-shadow: 0 2px 10px rgba(0,0,0,.05); }
+.sec-card { border-radius:.25rem; border: 1.5px solid #e3e6f0; box-shadow:0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2); }
 .sec-card .card-header {
     background: #fff; border-bottom: 2px solid #e8ecf5;
     padding: .8rem 1.2rem; font-weight: 700; font-size: .88rem; color: #1a3c6e;
-    border-radius: 12px 12px 0 0;
+    border-radius: .25rem .25rem 0 0;
 }
 .sec-card .card-body { padding: 1rem 1.2rem; }
 
@@ -40,7 +39,7 @@
 .cov-plan { margin-bottom: .9rem; }
 .cov-label { display: flex; justify-content: space-between; font-size: .8rem; font-weight: 600; margin-bottom: 3px; }
 .cov-bar { height: 7px; border-radius: 6px; background: #eef0f8; overflow: hidden; }
-.cov-fill { height: 100%; border-radius: 6px; transition: width .5s; }
+.cov-fill { height: 100%; border-radius: 6px; }
 
 /* ── Report grid ───────────────────────────────────────────────────── */
 .report-dot-grid { display: flex; flex-wrap: wrap; gap: 4px; }
@@ -53,22 +52,18 @@
 .tip-trigger { position: relative; }
 .tip-trigger:hover::after {
     content: attr(data-tip);
-    position: absolute; bottom: 120%; left: 50%; transform: translateX(-50%);
+    position: absolute; bottom: 120%; left: 50%;
     background: #222; color: #fff; font-size: .7rem; padding: 3px 7px;
     border-radius: 5px; white-space: nowrap; z-index: 10;
 }
 
 /* ── Greeting banner ───────────────────────────────────────────────── */
 .greeting-banner {
-    background: linear-gradient(135deg, #1a3c6e 0%, #2e74c0 100%);
-    border-radius: 14px; color: #fff; padding: 1.4rem 1.8rem;
+    background:#6c757d;
+    border-radius:.25rem; color: #fff; padding: 1.4rem 1.8rem;
     margin-bottom: 1.4rem; position: relative; overflow: hidden;
 }
-.greeting-banner::after {
-    content: ''; position: absolute; right: -30px; top: -30px;
-    width: 180px; height: 180px; border-radius: 50%;
-    background: rgba(255,255,255,.06);
-}
+.greeting-banner::after {display:none}
 .greeting-banner .time  { font-size: .8rem; opacity: .75; }
 .greeting-banner .name  { font-size: 1.5rem; font-weight: 800; margin: 2px 0; }
 .greeting-banner .dept  { font-size: .82rem; opacity: .8; }
@@ -89,7 +84,7 @@
         </h1>
         <p class="text-muted mb-0" style="font-size:.8rem">{{ now()->format('l, d F Y') }}</p>
     </div>
-    <a href="{{ route('daily-reports.create') }}" class="btn btn-primary btn-sm" style="border-radius:9px;font-weight:600">
+    <a href="{{ route('daily-reports.create') }}" class="btn btn-primary btn-sm" style="border-radius:.25rem;font-weight:600">
         <i class="fas fa-edit mr-1"></i>Write Today's Report
     </a>
 </div>
@@ -134,7 +129,7 @@
 
     {{-- Attendance rate --}}
     <div class="col-6 col-md-3 mb-3">
-        <div class="perf-card h-100 position-relative" style="background:linear-gradient(135deg,{{ $attColor }},{{ $attColor }}cc);color:#fff">
+        <div class="perf-card h-100 position-relative" style="background:{{ $attColor }};color:#fff">
             <div class="icon-wrap"><i class="fas fa-user-check"></i></div>
             <div class="inner">
                 <div class="num">{{ $attRate }}%</div>
@@ -146,7 +141,7 @@
 
     {{-- Sessions this month --}}
     <div class="col-6 col-md-3 mb-3">
-        <div class="perf-card h-100 position-relative" style="background:linear-gradient(135deg,#4e73df,#224abe);color:#fff">
+        <div class="perf-card h-100 position-relative" style="background:#6f42c1;color:#fff">
             <div class="icon-wrap"><i class="fas fa-chalkboard-teacher"></i></div>
             <div class="inner">
                 <div class="num">{{ $monthSessionCount }}</div>
@@ -158,7 +153,7 @@
 
     {{-- Curriculum coverage --}}
     <div class="col-6 col-md-3 mb-3">
-        <div class="perf-card h-100 position-relative" style="background:linear-gradient(135deg,{{ $covColor }},{{ $covColor }}bb);color:#fff">
+        <div class="perf-card h-100 position-relative" style="background:{{ $covColor }};color:#fff">
             <div class="icon-wrap"><i class="fas fa-book-open"></i></div>
             <div class="inner">
                 <div class="num">{{ $coveragePct }}%</div>
@@ -175,7 +170,7 @@
             $reportPct = $reportDaysInMonth > 0 ? min(100, round(($submittedCount / $reportDaysInMonth) * 100)) : 0;
             $repColor  = $reportPct >= 80 ? '#1cc88a' : ($reportPct >= 50 ? '#f6c23e' : '#e74a3b');
         @endphp
-        <div class="perf-card h-100 position-relative" style="background:linear-gradient(135deg,{{ $repColor }},{{ $repColor }}cc);color:#fff">
+        <div class="perf-card h-100 position-relative" style="background:{{ $repColor }};color:#fff">
             <div class="icon-wrap"><i class="fas fa-clipboard-check"></i></div>
             <div class="inner">
                 <div class="num">{{ $submittedCount }}</div>
@@ -244,7 +239,7 @@
     <div class="card sec-card mb-3">
         <div class="card-header d-flex justify-content-between align-items-center">
             <span><i class="fas fa-book-open mr-2" style="color:#4e73df"></i>Curriculum Coverage by Subject</span>
-            <a href="{{ route('topic-coverage.index') }}" class="btn btn-outline-primary btn-sm" style="border-radius:8px;font-size:.75rem">View All</a>
+            <a href="{{ route('topic-coverage.index') }}" class="btn btn-outline-primary btn-sm" style="border-radius:.25rem;font-size:.75rem">View All</a>
         </div>
         <div class="card-body">
             @forelse($lessonPlans as $plan)
@@ -334,7 +329,7 @@
                 </div>
             </div>
             <div class="mt-3">
-                <a href="{{ route('leaves.create') }}" class="btn btn-block btn-outline-primary btn-sm" style="border-radius:8px;font-size:.8rem">
+                <a href="{{ route('leaves.create') }}" class="btn btn-block btn-outline-primary btn-sm" style="border-radius:.25rem;font-size:.8rem">
                     <i class="fas fa-plus mr-1"></i>Apply for Leave
                 </a>
             </div>
@@ -382,7 +377,7 @@
                 @foreach($links as $lnk)
                 <div class="col-6 p-1">
                     <a href="{{ route($lnk['route']) }}"
-                        style="display:flex;flex-direction:column;align-items:center;padding:.75rem .5rem;border-radius:10px;background:{{ $lnk['color'] }}12;border:1.5px solid {{ $lnk['color'] }}30;text-decoration:none;transition:background .15s"
+                        style="display:flex;flex-direction:column;align-items:center;padding:.75rem .5rem;border-radius:.25rem;background:#f8f9fa;border:1.5px solid {{ $lnk['color'] }}30;text-decoration:none;transition:background .15s"
                         onmouseover="this.style.background='{{ $lnk['color'] }}22'" onmouseout="this.style.background='{{ $lnk['color'] }}12'">
                         <i class="{{ $lnk['icon'] }}" style="font-size:1.3rem;color:{{ $lnk['color'] }};margin-bottom:4px"></i>
                         <span style="font-size:.72rem;font-weight:600;color:#333;text-align:center">{{ $lnk['label'] }}</span>

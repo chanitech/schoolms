@@ -156,7 +156,7 @@ $statusCfg = [
                         $planColor = $planPct >= 80 ? 'success' : ($planPct >= 50 ? 'primary' : ($planPct >= 25 ? 'warning' : 'danger'));
                     @endphp
                     <div class="col-md-6 col-lg-4 mb-3">
-                        <div class="card card-body p-3 border h-100" style="border-radius:8px">
+                        <div class="card card-body p-3 border h-100" style="border-radius:.25rem">
                             <div class="d-flex align-items-start justify-content-between mb-2">
                                 <div>
                                     <strong class="d-block" style="font-size:.9rem">{{ $plan->subject?->name ?? '—' }}</strong>
@@ -538,7 +538,7 @@ $statusCfg = [
     .badge-pill { font-size:.7rem; }
 
     .subtopic-checklist { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:.4rem; }
-    .subtopic-item { display:flex; align-items:flex-start; gap:.4rem; padding:.4rem .6rem; border:1px solid #e9ecef; border-radius:6px; cursor:pointer; transition:background .15s; }
+    .subtopic-item { display:flex; align-items:flex-start; gap:.4rem; padding:.4rem .6rem; border:1px solid #e9ecef; border-radius:6px; cursor:pointer; }
     .subtopic-item:hover { background:#f0f4ff; }
     .subtopic-item.is-covered { background:#f0fdf4; border-color:#86efac; }
     .subtopic-item input[type=checkbox] { margin-top:.1rem; flex-shrink:0; }

@@ -9,7 +9,7 @@
     @if($notifications->total() > 0)
     <form action="{{ route('notifications.mark-all-read') }}" method="POST">
         @csrf
-        <button class="btn btn-sm btn-outline-primary" style="border-radius:8px;font-size:.8rem">
+        <button class="btn btn-sm btn-outline-primary" style="border-radius:.25rem;font-size:.8rem">
             <i class="fas fa-check-double mr-1"></i>Mark all read
         </button>
     </form>
@@ -27,7 +27,7 @@
     $colors = ['success'=>'#28a745','danger'=>'#dc3545','warning'=>'#f59e0b','info'=>'#17a2b8','secondary'=>'#6c757d'];
     $bg    = $colors[$data['color'] ?? 'info'] ?? '#4e73df';
 @endphp
-<div class="card mb-2 shadow-sm" style="border-radius:10px;border:1.5px solid {{ $read ? '#e3e6f0' : '#c3cfe2' }};{{ $read ? '' : 'background:#f0f4ff' }}">
+<div class="card mb-2 shadow-sm" style="border:1px solid {{ $read ? '#e3e6f0' : '#c3cfe2' }};{{ $read ? '' : 'background:#f8f9fa' }}">
     <div class="card-body py-3 d-flex align-items-start" style="gap:.9rem">
         <div style="width:38px;height:38px;border-radius:50%;background:{{ $bg }};display:flex;align-items:center;justify-content:center;flex-shrink:0">
             <i class="{{ $data['icon'] ?? 'fas fa-bell' }} text-white" style="font-size:.8rem"></i>

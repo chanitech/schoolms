@@ -411,14 +411,14 @@
 
             // Icon map for special session types
             $ssIcons = [
-                'assembly'   => '🏁',
-                'prayer'     => '🕌',
-                'break'      => '☕',
-                'self_study' => '📚',
-                'sports'     => '⚽',
-                'sdp'        => '📖',
-                'debate'     => '🗣️',
-                'free'       => '🌙',
+                'assembly'   => 'fa-flag-checkered',
+                'prayer'     => 'fa-mosque',
+                'break'      => 'fa-coffee',
+                'self_study' => 'fa-book',
+                'sports'     => 'fa-futbol',
+                'sdp'        => 'fa-book-open',
+                'debate'     => 'fa-comments',
+                'free'       => 'fa-moon',
             ];
             $ssBg = [
                 'assembly'   => 'table-secondary',
@@ -502,7 +502,7 @@
                                                     @foreach($cellEntries as $ce)
                                                     @php $teacherName = $ce->teacher ? ($ce->teacher->name ?: trim($ce->teacher->first_name.' '.$ce->teacher->last_name)) : null; @endphp
                                                     <div class="subject-pill bg-warning text-dark rounded p-1 mb-1">
-                                                        @if($loop->first)<div style="font-size:0.58rem;font-weight:700;letter-spacing:0.5px">⬡ COMBO</div>@endif
+                                                        @if($loop->first)<div style="font-size:0.58rem;font-weight:700">⬡ COMBO</div>@endif
                                                         <div class="font-weight-bold" style="font-size:0.78rem">{{ $ce->subject?->name ?? '—' }}</div>
                                                         @if($teacherName)<div style="font-size:0.65rem;opacity:0.85">{{ $teacherName }}</div>@endif
                                                     </div>
@@ -514,7 +514,7 @@
                                                     @php $entry = $cellEntries[0]; @endphp
                                                     <div class="subject-pill {{ $isDouble ? 'bg-success' : 'bg-primary' }} text-white rounded p-1">
                                                         @if($isDouble)
-                                                        <div style="font-size:0.6rem;opacity:0.9;letter-spacing:0.5px">◆ DOUBLE</div>
+                                                        <div style="font-size:0.6rem;opacity:0.9">◆ DOUBLE</div>
                                                         @endif
                                                         <div class="font-weight-bold" style="font-size:0.78rem">
                                                             {{ $entry->subject?->name ?? '—' }}
@@ -549,12 +549,12 @@
                                             // Representative session for the row header label
                                             $repSs   = $allSessions[0] ?? null;
                                             $repType = $repSs ? ($repSs['type'] ?? 'free') : 'free';
-                                            $repIcon = $ssIcons[$repType] ?? '📌';
+                                            $repIcon = $ssIcons[$repType] ?? 'fa-thumbtack';
                                             $label   = $isSame ? $repSs['name'] : implode(' / ', $uniqueNames);
                                         @endphp
                                         <tr class="special-session-row">
                                             <td class="font-weight-bold small align-middle">
-                                                <span style="font-size:1rem">{{ $repIcon }}</span>
+                                                <span style="font-size:1rem"><i class="fas {{ $repIcon }}"></i></span>
                                                 {{ $label }}
                                                 <div class="text-muted" style="font-size:0.7rem">
                                                     {{ $band['start'] }}–{{ $band['end'] }}
@@ -566,10 +566,10 @@
                                                     $ss     = $dayMap[$d];
                                                     $ssT    = $ss['type'] ?? 'free';
                                                     $cellBg = $ssBg[$ssT] ?? 'table-light';
-                                                    $icon   = $ssIcons[$ssT] ?? '📌';
+                                                    $icon   = $ssIcons[$ssT] ?? 'fa-thumbtack';
                                                 @endphp
                                                 <td class="text-center align-middle {{ $cellBg }} small font-italic">
-                                                    {{ $icon }} {{ strtoupper($ss['name']) }}
+                                                    <i class="fas {{ $icon }} mr-1"></i>{{ strtoupper($ss['name']) }}
                                                     @if(!$isSame)
                                                     <div style="font-size:0.65rem;opacity:0.8">{{ $ss['start_time'] }}–{{ $ss['end_time'] }}</div>
                                                     @endif
@@ -632,11 +632,11 @@
                             [$slotStart, $slotEnd] = explode('|', $slotKey);
                             $anySession = array_values($slotDayMap)[0];
                             $repType = $anySession['type'] ?? 'free';
-                            $repIcon = $ssIcons[$repType] ?? '📌';
+                            $repIcon = $ssIcons[$repType] ?? 'fa-thumbtack';
                         @endphp
                         <tr>
                             <td class="font-weight-bold small align-middle">
-                                <span style="font-size:.9rem">{{ $repIcon }}</span>
+                                <span style="font-size:.9rem"><i class="fas {{ $repIcon }}"></i></span>
                                 {{ $anySession['name'] }}
                                 <div class="text-muted" style="font-size:.68rem">{{ $slotStart }}–{{ $slotEnd }}</div>
                             </td>
@@ -645,12 +645,12 @@
                                 $ss    = $slotDayMap[$d] ?? null;
                                 $ssT   = $ss ? ($ss['type'] ?? 'free') : null;
                                 $cellBg = $ss ? ($ssBg[$ssT] ?? 'table-light') : '';
-                                $icon  = $ss ? ($ssIcons[$ssT] ?? '📌') : '';
+                                $icon  = $ss ? ($ssIcons[$ssT] ?? 'fa-thumbtack') : '';
                             @endphp
                             <td class="text-center small align-middle {{ $cellBg }}">
                                 @if($ss)
                                     <span class="font-italic font-weight-bold">
-                                        {{ $icon }} {{ strtoupper($ss['name']) }}
+                                        <i class="fas {{ $icon }} mr-1"></i>{{ strtoupper($ss['name']) }}
                                     </span>
                                     @if($ss['start_time'] !== $slotStart || $ss['end_time'] !== $slotEnd)
                                     <div style="font-size:.65rem;opacity:.8">{{ $ss['start_time'] }}–{{ $ss['end_time'] }}</div>
@@ -684,7 +684,7 @@
                     @endphp
                     <span class="badge badge-{{ $ss['color'] ?? 'secondary' }} py-1 px-2"
                           title="{{ $isInline ? 'Shown inline in grid' : 'Shown in Daily Programme below' }}">
-                        {{ $ssIcons[$ssType] ?? '📌' }} {{ $ss['name'] }}
+                        <i class="fas {{ $ssIcons[$ssType] ?? 'fa-thumbtack' }} mr-1"></i>{{ $ss['name'] }}
                         <small class="ml-1 opacity-75">{{ $ss['start_time'] }}–{{ $ss['end_time'] }}</small>
                         <small class="ml-1">({{ implode(',', $dayShort) }})</small>
                         @if(!$isInline)

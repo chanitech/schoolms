@@ -41,7 +41,7 @@
                     <td>
                         @if($job->status === 'completed')
                             @if($job->rating)
-                                ⭐ {{ $job->rating }}/5
+                                <i class="fas fa-star text-warning"></i> {{ $job->rating }}/5
                             @elseif(Auth::user()->staff && Auth::user()->staff->id === $job->assigned_by && auth()->user()->can('rate jobcards'))
                                 <form action="{{ route('jobcards.rateTask', $job->id) }}" method="POST" class="d-inline">
                                     @csrf

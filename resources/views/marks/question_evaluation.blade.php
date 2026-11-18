@@ -223,7 +223,7 @@
                         <td class="text-center text-danger font-weight-bold">{{ $qs['struggling'] }}</td>
                         <td>
                             <div class="d-flex align-items-center">
-                                <div class="progress flex-fill mr-2" style="height:14px; border-radius:7px;">
+                                <div class="progress flex-fill mr-2" style="height:14px; border-radius:.25rem;">
                                     <div class="progress-bar bg-{{ $color }}"
                                          style="width:{{ $barPct }}%; border-radius:7px;"
                                          title="{{ $pct !== null ? $pct.'%' : 'N/A' }}">
@@ -386,10 +386,10 @@
     .no-print, .main-sidebar, .main-header, .content-header .btn,
     .breadcrumb-wrapper, nav, footer { display: none !important; }
     .print-header, .print-footer { display: block !important; }
-    .card { box-shadow: none !important; border: 1px solid #dee2e6 !important; }
-    body { font-size: 12px; }
+    .card { box-shadow:0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2); border: 1px solid #dee2e6 !important; }
+    
     .badge { border: 1px solid #ccc; }
-    .content-wrapper { margin-left: 0 !important; }
+    
     @page { margin: 1.5cm; }
 }
 .progress { background: #e9ecef; }

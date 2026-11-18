@@ -8,12 +8,12 @@
 /* ── Screen styles ──────────────────────────────────── */
 .doc-wrapper {
     max-width: 820px; margin: 0 auto;
-    background: #fff; border-radius: 14px;
-    box-shadow: 0 4px 30px rgba(0,0,0,.1);
+    background: #fff; border-radius:.25rem;
+    box-shadow:0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
     overflow: hidden;
 }
 .doc-header {
-    background: linear-gradient(135deg, #1a3c6e 0%, #2b5ba8 100%);
+    background:#343a40;
     color: #fff; padding: 1.5rem 2rem 1rem;
     display: flex; align-items: center; gap: 1.25rem;
 }
@@ -22,27 +22,26 @@
 .doc-title-band {
     background: #f0f4ff; border-bottom: 2px solid #d0d9f0;
     text-align: center; padding: .6rem 2rem;
-    font-weight: 700; font-size: .9rem; letter-spacing: .12em;
+    font-weight: 700; font-size: .9rem;
     text-transform: uppercase; color: #1a3c6e;
 }
 .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
 .meta-cell { padding: .7rem 1.5rem; border-right: 1px solid #e8ecf5; border-bottom: 1px solid #e8ecf5; }
 .meta-cell:nth-child(2n) { border-right: none; }
-.meta-label { font-size: .68rem; text-transform: uppercase; letter-spacing: .07em; color: #7c8db5; font-weight: 600; }
+.meta-label { font-size: .68rem; text-transform: uppercase; color: #7c8db5; font-weight: 600; }
 .meta-value { font-size: .88rem; font-weight: 600; color: #1a2d5a; margin-top: 1px; }
 .section-block { padding: 1.25rem 2rem; border-bottom: 1px solid #eef0f8; }
 .section-block:last-child { border-bottom: none; }
 .sec-title {
     display: flex; align-items: center; gap: .5rem;
-    font-size: .72rem; font-weight: 700; text-transform: uppercase;
-    letter-spacing: .1em; color: #4e73df; margin-bottom: .75rem;
+    font-size: .72rem; font-weight: 700; text-transform: uppercase; color: #4e73df; margin-bottom: .75rem;
 }
 .sec-title::after { content: ''; flex: 1; height: 1.5px; background: #e3e6f0; }
 .sessions-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
-.sessions-table th { background: #f0f4ff; color: #1a3c6e; font-weight: 700; padding: .45rem .75rem; text-align: left; font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; }
+.sessions-table th { background: #f0f4ff; color: #1a3c6e; font-weight: 700; padding: .45rem .75rem; text-align: left; font-size: .72rem; text-transform: uppercase; }
 .sessions-table td { padding: .5rem .75rem; border-bottom: 1px solid #f0f0f8; vertical-align: middle; }
 .sessions-table tr:last-child td { border-bottom: none; }
-.status-chip { display: inline-block; padding: .2rem .55rem; border-radius: 20px; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.status-chip { display: inline-block; padding: .2rem .55rem; border-radius: 20px; font-size: .68rem; font-weight: 700; text-transform: uppercase; }
 .narrative-text { font-size: .88rem; line-height: 1.75; color: #2d3748; white-space: pre-line; }
 .empty-field { font-size: .82rem; color: #a0aec0; font-style: italic; }
 .sig-block { display: flex; justify-content: space-between; padding: 1.5rem 2rem 1rem; gap: 2rem; }
@@ -51,7 +50,7 @@
 .doc-footer-bar { background: #f0f4ff; border-top: 2px solid #d0d9f0; padding: .5rem 2rem; text-align: center; font-size: .7rem; color: #7c8db5; }
 .status-submitted-banner { background: #d4edda; border-left: 4px solid #28a745; padding: .6rem 1rem; font-size: .82rem; color: #155724; display: flex; align-items: center; gap: .5rem; }
 .status-draft-banner { background: #fff3cd; border-left: 4px solid #ffc107; padding: .6rem 1rem; font-size: .82rem; color: #856404; display: flex; align-items: center; gap: .5rem; }
-.activity-chip { display: inline-flex; align-items: center; gap: .35rem; background: #f0f4ff; border: 1px solid #d0d9f0; border-radius: 8px; padding: .3rem .65rem; font-size: .78rem; margin: .2rem; }
+.activity-chip { display: inline-flex; align-items: center; gap: .35rem; background: #f0f4ff; border: 1px solid #d0d9f0; border-radius:.25rem; padding: .3rem .65rem; font-size: .78rem; margin: .2rem; }
 
 /* ── Screen action toolbar (hidden in print) ──────── */
 .print-toolbar {
@@ -59,17 +58,17 @@
     display: flex; justify-content: space-between; align-items: center;
     flex-wrap: wrap; gap: .4rem;
 }
-.btn-toolbar-item { border-radius: 10px; font-size: .83rem; font-weight: 600; padding: .4rem 1rem; }
+.btn-toolbar-item { border-radius:.25rem; font-size: .83rem; font-weight: 600; padding: .4rem 1rem; }
 
 /* ── PRINT STYLES ───────────────────────────────────── */
 @media print {
-    body { background: #fff !important; }
+    
     .main-header, .main-sidebar, .main-footer,
     .content-header, .print-toolbar,
     .breadcrumb-holder, .alert { display: none !important; }
-    .content-wrapper { margin: 0 !important; background: #fff !important; padding: 0 !important; }
+    
     .doc-wrapper {
-        box-shadow: none !important; border-radius: 0 !important;
+        box-shadow:0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2); border-radius: 0 !important;
         max-width: 100% !important;
     }
     .doc-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -87,7 +86,7 @@
 <div class="container-fluid py-2">
 
 @if(session('success'))
-<div class="alert alert-success border-0 shadow-sm mb-3" style="border-radius:10px;max-width:820px;margin:0 auto .75rem">
+<div class="alert alert-success border-0 shadow-sm mb-3" style="border-radius:.25rem;max-width:820px;margin:0 auto .75rem">
     <i class="fas fa-check-circle mr-2"></i>{{ session('success') }}
 </div>
 @endif
@@ -151,7 +150,7 @@
         <div class="school-logo-placeholder"><i class="fas fa-school fa-lg" style="opacity:.7"></i></div>
         @endif
         <div class="flex-grow-1">
-            <div style="font-size:.7rem;opacity:.75;letter-spacing:.12em;text-transform:uppercase">Official Report</div>
+            <div style="font-size:.7rem;opacity:.75;text-transform:uppercase">Official Report</div>
             <h4 class="mb-0 font-weight-bold" style="font-size:1.15rem;line-height:1.2">
                 {{ $school->name ?? 'School Name' }}
             </h4>
@@ -167,7 +166,7 @@
             @endif
         </div>
         <div style="text-align:right;flex-shrink:0;opacity:.85">
-            <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em">Report No.</div>
+            <div style="font-size:.65rem;text-transform:uppercase">Report No.</div>
             <div style="font-size:.9rem;font-weight:700">DR-{{ str_pad($dailyReport->id, 5, '0', STR_PAD_LEFT) }}</div>
             <div style="font-size:.65rem;margin-top:.3rem;opacity:.8">{{ $dailyReport->created_at->format('d/m/Y') }}</div>
         </div>

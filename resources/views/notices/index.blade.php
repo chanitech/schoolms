@@ -50,34 +50,33 @@
 @section('css')
 <style>
 .nb-sec-lbl{
-    font-size:.68rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+    font-size:.68rem; font-weight:700; text-transform:uppercase;
     color:#94a3b8; margin:0 0 .7rem; display:flex; align-items:center;
 }
 .nb-sec-lbl:not(:first-child){ margin-top:1.6rem; }
 
 .nb-new{
     display:inline-block; background:#dcfce7; color:#15803d; font-size:.6rem; font-weight:700;
-    text-transform:uppercase; letter-spacing:.04em; border-radius:20px; padding:.1rem .5rem;
+    text-transform:uppercase; border-radius:20px; padding:.1rem .5rem;
     vertical-align:middle; margin-left:.4rem;
 }
 
 .nb-card{
     display:flex; align-items:flex-start; gap:1rem;
-    background:#fff; border-radius:10px; border-left:4px solid #cbd5e1;
-    box-shadow:0 1px 3px rgba(0,0,0,.06),0 4px 10px rgba(0,0,0,.04);
+    background:#fff; border-radius:.25rem; border-left:4px solid #cbd5e1;
+    box-shadow:0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
     padding:1.1rem 1.3rem; margin-bottom:1rem; position:relative;
-    transition:transform .15s ease, box-shadow .15s ease;
 }
-.nb-card:hover{ transform:translateY(-2px); box-shadow:0 4px 16px rgba(0,0,0,.09); }
+.nb-card:hover{ box-shadow:0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2); }
 .nb-card.nb-all{ border-left-color:#6366f1; }
 .nb-card.nb-staff{ border-left-color:#0284c7; }
 .nb-card.nb-guardians{ border-left-color:#059669; }
-.nb-card.nb-pinned{ background:linear-gradient(135deg,#fffbeb 0%,#ffffff 45%); border-left-color:#d97706; }
+.nb-card.nb-pinned{ background:#f8f9fa; border-left-color:#d97706; }
 
 .nb-ribbon{
     position:absolute; top:-9px; right:16px; background:#d97706; color:#fff;
-    font-size:.62rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
-    padding:.22rem .6rem; border-radius:20px; box-shadow:0 2px 6px rgba(217,119,6,.4);
+    font-size:.62rem; font-weight:700; text-transform:uppercase;
+    padding:.22rem .6rem; border-radius:20px; box-shadow:0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
 }
 
 .nb-avatar{
@@ -92,7 +91,7 @@
 .nb-head{ display:flex; align-items:center; justify-content:space-between; gap:.6rem; flex-wrap:wrap; }
 .nb-title{ font-weight:700; color:#1e293b; margin:0; font-size:.98rem; }
 .nb-audience{
-    font-size:.62rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em;
+    font-size:.62rem; font-weight:700; text-transform:uppercase;
     color:#64748b; background:#f1f5f9; border-radius:20px; padding:.16rem .58rem; white-space:nowrap;
 }
 .nb-body{ color:#475569; font-size:.86rem; margin:.45rem 0 .55rem; white-space:pre-line; }

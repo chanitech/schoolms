@@ -19,12 +19,12 @@
 .step-dot.pending { background:#e9ecef; color:#aaa; }
 .step-line { flex:1; height:2px; background:#e9ecef; min-width:30px; }
 .step-line.done { background:#28a745; }
-.exam-card { border-radius:12px; border:1.5px solid #e3e6f0; box-shadow:0 2px 10px rgba(0,0,0,.05); margin-bottom:.8rem; overflow:hidden; }
+.exam-card { border-radius:.25rem; border:1.5px solid #e3e6f0; box-shadow:0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2); margin-bottom:.8rem; overflow:hidden; }
 .exam-card .card-left { width:5px; flex-shrink:0; }
 .exam-card.status-draft     .card-left { background:#dee2e6; }
 .exam-card.status-reviewed  .card-left { background:#ffc107; }
 .exam-card.status-published .card-left { background:#28a745; }
-.action-btn { border-radius:8px; font-size:.78rem; font-weight:600; padding:.3rem .75rem; }
+.action-btn { border-radius:.25rem; font-size:.78rem; font-weight:600; padding:.3rem .75rem; }
 </style>
 @endpush
 
@@ -37,7 +37,7 @@
         <p class="text-muted mb-0" style="font-size:.82rem">Manage exams and control result visibility for parents</p>
     </div>
     @can('create exams')
-    <a href="{{ route('exams.create') }}" class="btn btn-primary btn-sm" style="border-radius:9px;font-weight:600">
+    <a href="{{ route('exams.create') }}" class="btn btn-primary btn-sm" style="border-radius:.25rem;font-weight:600">
         <i class="fas fa-plus mr-1"></i>New Exam
     </a>
     @endcan
@@ -48,18 +48,18 @@
 <div class="container-fluid">
 
 @if(session('success'))
-<div class="alert alert-success border-0 shadow-sm mb-3" style="border-radius:10px">
+<div class="alert alert-success border-0 shadow-sm mb-3" style="border-radius:.25rem">
     <i class="fas fa-check-circle mr-2"></i>{{ session('success') }}
 </div>
 @endif
 @if(session('error'))
-<div class="alert alert-danger border-0 shadow-sm mb-3" style="border-radius:10px">
+<div class="alert alert-danger border-0 shadow-sm mb-3" style="border-radius:.25rem">
     <i class="fas fa-exclamation-circle mr-2"></i>{{ session('error') }}
 </div>
 @endif
 
 {{-- Workflow legend ──────────────────────────────────────────────────────── --}}
-<div class="card mb-3" style="border-radius:12px;border:1.5px solid #e3e6f0">
+<div class="card mb-3" style="border-radius:.25rem;border:1.5px solid #e3e6f0">
     <div class="card-body py-3">
         <div class="step-bar">
             <div class="step-item">

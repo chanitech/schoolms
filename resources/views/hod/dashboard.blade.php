@@ -95,7 +95,7 @@
 
         {{-- Today's quick status --}}
         <div class="px-3 pt-3 pb-2">
-            <h6 class="text-muted mb-2" style="font-size:.78rem;text-transform:uppercase;letter-spacing:.05em">Today's Status</h6>
+            <h6 class="text-muted mb-2" style="font-size:.78rem;text-transform:uppercase">Today's Status</h6>
             <div class="d-flex flex-wrap" style="gap:.4rem">
                 @foreach($staffDetails as $sd)
                 @php

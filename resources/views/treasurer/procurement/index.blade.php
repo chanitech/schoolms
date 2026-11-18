@@ -56,7 +56,7 @@
                     <tbody>
                         @forelse($requests as $request)
                         <tr>
-                            <td>{{ $request->item }}{{ $request->threshold_flag ? ' ⚠️' : '' }}</td>
+                            <td>{{ $request->item }}@if($request->threshold_flag) <span class="badge badge-warning">Over threshold</span>@endif</td>
                             <td>{{ $request->quantity }}</td>
                             <td>{{ number_format($request->estimated_cost, 2) }}</td>
                             <td>{{ $request->actual_cost ? number_format($request->actual_cost, 2) : '—' }}</td>

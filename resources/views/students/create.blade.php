@@ -363,7 +363,7 @@ $('#dormitory_id').change(function() {
         bedSelect.html('<option value="">First select a room</option>').prop('disabled', true);
         
         $.ajax({
-            url: "{{ route('students.get-rooms') }}",   // ✅ Fixed route name
+            url: "{{ route('students.get-rooms') }}",
             type: 'GET',
             data: { dormitory_id: dormitoryId },
             success: function(data) {
@@ -404,7 +404,7 @@ $('#room_id').change(function() {
         bedSelect.html('<option value="">Loading...</option>').prop('disabled', true);
         
         $.ajax({
-            url: "{{ route('students.get-beds') }}",    // ✅ Fixed route name
+            url: "{{ route('students.get-beds') }}", 
             type: 'GET',
             data: { room_id: roomId },
             success: function(data) {

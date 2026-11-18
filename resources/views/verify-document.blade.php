@@ -7,19 +7,19 @@
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     min-height: 100vh; background: #0f2942; color: #2d3748;
     display: flex; align-items: center; justify-content: center; padding: 1rem;
 }
-.card { background: #fff; border-radius: 14px; padding: 2rem; width: 100%; max-width: 460px; box-shadow: 0 10px 40px rgba(0,0,0,.3); }
+.card { background: #fff; border-radius:.25rem; padding: 2rem; width: 100%; max-width: 460px; box-shadow:0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2); }
 h1 { font-size: 1.25rem; color: #0f2942; margin-bottom: .25rem; }
 p.sub { color: #718096; font-size: .85rem; margin-bottom: 1.25rem; }
 input[type=text] {
-    width: 100%; padding: .8rem; font-size: 1.05rem; letter-spacing: 2px; text-transform: uppercase;
-    border: 2px solid #cbd5e0; border-radius: 8px; font-family: monospace;
+    width: 100%; padding: .8rem; font-size: 1.05rem; text-transform: uppercase;
+    border: 2px solid #cbd5e0; border-radius:.25rem; font-family: monospace;
 }
-button { margin-top: .75rem; width: 100%; padding: .8rem; border: 0; border-radius: 8px; background: #c9a24b; color: #0f2942; font-weight: 700; font-size: 1rem; cursor: pointer; }
-.result { margin-top: 1.25rem; padding: 1rem; border-radius: 10px; font-size: .9rem; }
+button { margin-top: .75rem; width: 100%; padding: .8rem; border: 0; border-radius:.25rem; background: #c9a24b; color: #0f2942; font-weight: 700; font-size: 1rem; cursor: pointer; }
+.result { margin-top: 1.25rem; padding: 1rem; border-radius:.25rem; font-size: .9rem; }
 .valid   { background: #e6f4ea; border: 1.5px solid #1f7a3f; }
 .invalid { background: #fdecea; border: 1.5px solid #c0392b; }
 .result h2 { font-size: 1rem; margin-bottom: .5rem; }
@@ -30,7 +30,7 @@ button { margin-top: .75rem; width: 100%; padding: .8rem; border: 0; border-radi
 </head>
 <body>
 <div class="card">
-    <h1>🔏 Document Verification</h1>
+    <h1>Document Verification</h1>
     <p class="sub">Enter the verification code printed on the document's digital signature block.</p>
     <form method="GET">
         <input type="text" name="code" placeholder="DOC-XXXXXXXXXX" value="{{ request('code') }}" required maxlength="20" autofocus>
@@ -40,7 +40,7 @@ button { margin-top: .75rem; width: 100%; padding: .8rem; border: 0; border-radi
     @if(request()->filled('code'))
         @if($signature)
         <div class="result valid">
-            <h2>✅ Authentic document</h2>
+            <h2>Authentic document</h2>
             <dl>
                 <dt>Document</dt><dd>{{ $signature->title }}</dd>
                 <dt>Contents</dt><dd>{{ $signature->summary }}</dd>
@@ -55,7 +55,7 @@ button { margin-top: .75rem; width: 100%; padding: .8rem; border: 0; border-radi
         </div>
         @else
         <div class="result invalid">
-            <h2>❌ Unknown code</h2>
+            <h2>Unknown code</h2>
             <p>No document with code <strong>{{ strtoupper(request('code')) }}</strong> was ever issued
             by this system. The document is not authentic, or the code was mistyped.</p>
         </div>

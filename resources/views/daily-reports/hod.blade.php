@@ -4,18 +4,18 @@
 @push('css')
 <style>
 .kpi-box {
-    border-radius: 14px; border: none; overflow: hidden;
-    box-shadow: 0 2px 14px rgba(0,0,0,.07);
+    border-radius:.25rem; border: none; overflow: hidden;
+    box-shadow:0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
 }
 .kpi-box .inner { padding: 1.1rem 1.3rem; }
 .kpi-box .num { font-size: 2rem; font-weight: 800; line-height: 1.1; }
-.kpi-box .lbl { font-size: .75rem; text-transform: uppercase; letter-spacing: .07em; opacity: .8; margin-top: 2px; }
+.kpi-box .lbl { font-size: .75rem; text-transform: uppercase; opacity: .8; margin-top: 2px; }
 .kpi-box .foot { background: rgba(0,0,0,.08); padding: .4rem 1.3rem; font-size: .75rem; }
 
 .report-table { border-collapse: collapse; width: 100%; }
 .report-table thead th {
     background: #f0f4ff; color: #1a3c6e; font-weight: 700;
-    font-size: .72rem; text-transform: uppercase; letter-spacing: .06em;
+    font-size: .72rem; text-transform: uppercase;
     padding: .65rem 1rem; border-bottom: 2px solid #d0d9f0;
 }
 .report-table tbody td { padding: .6rem 1rem; border-bottom: 1px solid #f0f0f8; font-size: .84rem; vertical-align: middle; }
@@ -23,12 +23,12 @@
 .report-table tbody tr:last-child td { border-bottom: none; }
 
 .missing-pill { display: inline-flex; align-items: center; gap: .3rem; background: #fff3cd; border: 1px solid #ffc107; color: #856404; border-radius: 20px; padding: .2rem .65rem; font-size: .75rem; font-weight: 600; }
-.filter-card { border-radius: 12px; border: 1.5px solid #e3e6f0; box-shadow: none; margin-bottom: 1.2rem; }
+.filter-card { border-radius:.25rem; border: 1.5px solid #e3e6f0; box-shadow: none; margin-bottom: 1.2rem; }
 .filter-card .card-body { padding: .85rem 1.2rem; }
-.table-card { border-radius: 12px; border: 1.5px solid #e3e6f0; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+.table-card { border-radius:.25rem; border: 1.5px solid #e3e6f0; overflow: hidden; box-shadow:0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2); }
 .table-card .card-header { background: #fff; border-bottom: 2px solid #e3e6f0; padding: .85rem 1.2rem; font-weight: 700; font-size: .9rem; color: #1a3c6e; }
 .flag-icon { font-size: .85rem; }
-.btn-view { border-radius: 8px; font-size: .78rem; font-weight: 600; }
+.btn-view { border-radius:.25rem; font-size: .78rem; font-weight: 600; }
 </style>
 @endpush
 
@@ -43,7 +43,7 @@
         </p>
     </div>
     <a href="{{ route('daily-reports.create') }}" class="btn btn-primary"
-        style="border-radius:10px;font-weight:600;padding:.45rem 1.2rem">
+        style="border-radius:.25rem;font-weight:600;padding:.45rem 1.2rem">
         <i class="fas fa-edit mr-1"></i>Write My Report
     </a>
 </div>
@@ -53,7 +53,7 @@
 <div class="container-fluid">
 
 @if(session('success'))
-<div class="alert alert-success border-0 shadow-sm mb-3" style="border-radius:10px">
+<div class="alert alert-success border-0 shadow-sm mb-3" style="border-radius:.25rem">
     <i class="fas fa-check-circle mr-2"></i>{{ session('success') }}
 </div>
 @endif
@@ -61,7 +61,7 @@
 {{-- KPI Row ──────────────────────────────────────────────────────────────── --}}
 <div class="row mb-4">
     <div class="col-md-4 mb-3">
-        <div class="kpi-box" style="background:linear-gradient(135deg,#1cc88a,#169a6a);color:#fff">
+        <div class="kpi-box" style="background:#20c997;color:#fff">
             <div class="inner">
                 <div class="num">{{ $todaySubmitted }}</div>
                 <div class="lbl">Submitted Today</div>
@@ -75,7 +75,7 @@
         </div>
     </div>
     <div class="col-md-4 mb-3">
-        <div class="kpi-box" style="background:linear-gradient(135deg,#f6c23e,#c69500);color:#fff">
+        <div class="kpi-box" style="background:#ffc107;color:#fff">
             <div class="inner">
                 <div class="num">{{ $pendingDrafts }}</div>
                 <div class="lbl">Saved as Draft</div>
@@ -90,7 +90,7 @@
     </div>
     <div class="col-md-4 mb-3">
         @php $notReported = max(0, $teachers->count() - $todaySubmitted); @endphp
-        <div class="kpi-box" style="background:linear-gradient(135deg,#e74a3b,#b52b1e);color:#fff">
+        <div class="kpi-box" style="background:#dc3545;color:#fff">
             <div class="inner">
                 <div class="num">{{ $notReported }}</div>
                 <div class="lbl">Not Reported Today</div>
@@ -107,7 +107,7 @@
 
 {{-- Missing staff alert ──────────────────────────────────────────────────── --}}
 @if($missingTeachers->count())
-<div class="p-3 mb-4" style="background:#fff8e1;border:1.5px solid #ffc107;border-radius:12px">
+<div class="p-3 mb-4" style="background:#fff8e1;border:1.5px solid #ffc107;border-radius:.25rem">
     <div class="d-flex align-items-center mb-2" style="gap:.5rem">
         <i class="fas fa-exclamation-triangle text-warning"></i>
         <strong style="font-size:.85rem;color:#856404">Staff who have not submitted today's report:</strong>
@@ -119,7 +119,7 @@
     </div>
 </div>
 @else
-<div class="p-3 mb-4" style="background:#d4edda;border:1.5px solid #28a745;border-radius:12px;display:flex;align-items:center;gap:.6rem">
+<div class="p-3 mb-4" style="background:#d4edda;border:1.5px solid #28a745;border-radius:.25rem;display:flex;align-items:center;gap:.6rem">
     <i class="fas fa-check-circle text-success fa-lg"></i>
     <strong style="color:#155724">All staff have submitted today's report.</strong>
 </div>
@@ -131,25 +131,25 @@
         <form method="GET" class="form-inline flex-wrap align-items-center" style="gap:.5rem">
             <div class="input-group input-group-sm" style="width:145px">
                 <div class="input-group-prepend">
-                    <span class="input-group-text" style="border-radius:8px 0 0 8px"><i class="fas fa-calendar"></i></span>
+                    <span class="input-group-text"><i class="fas fa-calendar"></i></span>
                 </div>
                 <input type="date" name="date" class="form-control" value="{{ request('date') }}" style="border-radius:0 8px 8px 0">
             </div>
-            <select name="teacher" class="form-control form-control-sm" style="border-radius:8px;min-width:180px">
+            <select name="teacher" class="form-control form-control-sm" style="border-radius:.25rem;min-width:180px">
                 <option value="">All Teachers</option>
                 @foreach($teachers as $t)
                 <option value="{{ $t->id }}" {{ request('teacher')==$t->id ? 'selected' : '' }}>{{ $t->name }}</option>
                 @endforeach
             </select>
-            <select name="status" class="form-control form-control-sm" style="border-radius:8px;width:130px">
+            <select name="status" class="form-control form-control-sm" style="border-radius:.25rem;width:130px">
                 <option value="">All Status</option>
-                <option value="submitted" {{ request('status')=='submitted' ? 'selected' : '' }}>✓ Submitted</option>
-                <option value="draft"     {{ request('status')=='draft' ? 'selected' : '' }}>✎ Draft</option>
+                <option value="submitted" {{ request('status')=='submitted' ? 'selected' : '' }}>Submitted</option>
+                <option value="draft"     {{ request('status')=='draft' ? 'selected' : '' }}>Draft</option>
             </select>
-            <button class="btn btn-primary btn-sm" style="border-radius:8px">
+            <button class="btn btn-primary btn-sm" style="border-radius:.25rem">
                 <i class="fas fa-filter mr-1"></i>Filter
             </button>
-            <a href="{{ route('daily-reports.hod') }}" class="btn btn-light btn-sm" style="border-radius:8px">
+            <a href="{{ route('daily-reports.hod') }}" class="btn btn-light btn-sm" style="border-radius:.25rem">
                 <i class="fas fa-times mr-1"></i>Clear
             </a>
         </form>

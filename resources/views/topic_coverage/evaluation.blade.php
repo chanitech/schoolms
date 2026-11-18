@@ -163,7 +163,7 @@ $ratingCfg = [
         $attColor   = $td['att_rate'] === null ? 'secondary' : ($td['att_rate'] >= 85 ? 'success' : ($td['att_rate'] >= 70 ? 'warning' : 'danger'));
     @endphp
     <div class="col-lg-6 col-xl-4 mb-4">
-        <div class="card shadow h-100" style="border-left:4px solid var(--bs-{{ $rc['color'] }},#6c757d);border-radius:8px">
+        <div class="card shadow h-100" style="border-left:4px solid var(--bs-{{ $rc['color'] }},#6c757d)">
             <div class="card-header d-flex align-items-center py-2" style="background:{{ $rc['bg'] }}">
                 <div class="flex-grow-1">
                     <strong class="d-block" style="font-size:.95rem">{{ $td['teacher']->name }}</strong>
@@ -329,7 +329,7 @@ $ratingCfg = [
 @endphp
 
 {{-- ── Hero Banner ── --}}
-<div class="card mb-4 shadow border-0" style="border-radius:12px;overflow:hidden;background:linear-gradient(135deg,#1a237e,#1976d2)">
+<div class="card mb-4 shadow border-0" style="border-radius:.25rem;overflow:hidden;background:#17a2b8">
     <div class="card-body py-4 px-4 d-flex align-items-center flex-wrap" style="gap:1.5rem;color:#fff">
         <div class="d-flex align-items-center justify-content-center rounded-circle shadow"
              style="width:72px;height:72px;background:rgba(255,255,255,.15);flex-shrink:0;font-size:1.8rem">
@@ -345,7 +345,7 @@ $ratingCfg = [
             @endif
         </div>
         <div class="text-center">
-            <div class="badge badge-{{ $rc['color'] }} px-3 py-2" style="font-size:.9rem;border-radius:8px">
+            <div class="badge badge-{{ $rc['color'] }} px-3 py-2" style="font-size:.9rem;border-radius:.25rem">
                 <i class="fas {{ $rc['icon'] }} mr-1"></i>{{ $rc['label'] }}
             </div>
             <small class="d-block mt-1 opacity-75">Overall Rating</small>
@@ -533,7 +533,7 @@ $ratingCfg = [
 @push('css')
 <style>
 .info-box { margin-bottom:1rem; }
-.card { border-radius:8px; }
+.card { border-radius:.25rem; }
 </style>
 @endpush
 

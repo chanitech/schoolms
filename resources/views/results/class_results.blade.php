@@ -11,13 +11,13 @@
     <div class="card-body">
 
         @if(session('error'))
-        <div class="alert alert-danger d-flex align-items-center" style="border-radius:8px;gap:.6rem">
+        <div class="alert alert-danger d-flex align-items-center" style="border-radius:.25rem;gap:.6rem">
             <i class="fas fa-exclamation-circle"></i> {{ session('error') }}
         </div>
         @endif
 
         @if(isset($resultNotPublished) && $resultNotPublished)
-        <div class="alert d-flex align-items-center mb-3" style="background:linear-gradient(135deg,#fef3c7,#fde68a);border:none;border-left:4px solid #f59e0b;color:#92400e;border-radius:8px;gap:.8rem">
+        <div class="alert d-flex align-items-center mb-3" style="background:#f8f9fa;border:none;border-left:4px solid #f59e0b;color:#92400e;border-radius:.25rem;gap:.8rem">
             <i class="fas fa-lock fa-lg" style="flex-shrink:0"></i>
             <div>
                 <strong>Results Not Yet Published</strong><br>
@@ -27,7 +27,7 @@
         @endif
 
         @if(isset($examIsPublished) && !$examIsPublished && isset($selectedExamObj) && $selectedExamObj)
-        <div class="alert d-flex align-items-center mb-3" style="background:linear-gradient(135deg,#dbeafe,#bfdbfe);border:none;border-left:4px solid #3b82f6;color:#1e3a5f;border-radius:8px;gap:.8rem">
+        <div class="alert d-flex align-items-center mb-3" style="background:#f8f9fa;border:none;border-left:4px solid #3b82f6;color:#1e3a5f;border-radius:.25rem;gap:.8rem">
             <i class="fas fa-eye-slash fa-lg" style="flex-shrink:0"></i>
             <div style="flex:1">
                 <strong>Not Published Yet</strong> &mdash; This exam is in
@@ -567,11 +567,11 @@
 <style>
     table.table td, table.table th { vertical-align: middle; padding: 6px; }
     .small-box .progress { margin-top: 5px; height: 5px; }
-    .bg-gradient-warning { background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); }
-    .bg-gradient-primary { background: linear-gradient(135deg, #1F7A63 0%, #166c58 100%); }
-    .bg-gradient-danger  { background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%); }
-    .bg-gradient-success { background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%); }
-    .bg-gradient-info    { background: linear-gradient(135deg, #17a2b8 0%, #0f6b7a 100%); }
+    .bg-gradient-warning { background:#fd7e14; }
+    .bg-gradient-primary { background:#28a745; }
+    .bg-gradient-danger  { background:#dc3545; }
+    .bg-gradient-success { background:#28a745; }
+    .bg-gradient-info    { background:#17a2b8; }
     .badge-primary   { background-color: #1F7A63; }
     .badge-warning   { background-color: #f39c12; }
     .badge-secondary { background-color: #6c757d; }

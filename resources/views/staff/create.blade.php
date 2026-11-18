@@ -101,7 +101,7 @@
                         </div>
                     </div>
 
-                    <!-- ✅ NEW: Basic Salary -->
+                    <!-- Basic Salary -->
                     <div class="col-md-6">
                         <div class="form-group">
                             <label>Basic Salary (TZS) <span class="text-danger">*</span></label>
@@ -121,7 +121,7 @@
                         </div>
                     </div>
 
-                    <!-- ✅ NEW: Hire Date -->
+                    <!-- Hire Date -->
                     <div class="col-md-6">
                         <div class="form-group">
                             <label>Hire Date <span class="text-danger">*</span></label>

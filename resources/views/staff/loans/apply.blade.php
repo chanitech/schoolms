@@ -215,22 +215,20 @@
             font-size: 1.1rem;
         }
         .bg-gradient-primary {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
+            background:#343a40;
         }
         .bg-gradient-light {
-            background: linear-gradient(135deg, #f5f7fa 0%, #f0f2f5 100%);
+            background:#f8f9fa;
         }
         .btn-primary {
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            background:#343a40;
             border: none;
-            transition: all 0.3s ease;
         }
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow:0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
         }
         .card.shadow-lg {
-            box-shadow: 0 1rem 3rem rgba(0,0,0,.175);
+            box-shadow:0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
         }
         .callout {
             border-radius: 0.5rem;

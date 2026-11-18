@@ -33,7 +33,7 @@
         @foreach($featured->take(4) as $doc)
         <div class="col-md-3 mb-2">
             <a href="{{ route('documents.show', $doc->id) }}" class="text-decoration-none">
-                <div class="card border-warning h-100" style="border-width:2px!important;border-radius:8px">
+                <div class="card border-warning h-100" style="border-width:2px!important;border-radius:.25rem">
                     <div class="card-body py-2 px-3 d-flex align-items-center" style="gap:.7rem">
                         <i class="{{ $doc->icon_class }}" style="font-size:1.6rem;flex-shrink:0"></i>
                         <div style="min-width:0">
@@ -161,7 +161,7 @@
 <div class="row" id="docsGrid">
     @foreach($documents as $doc)
     <div class="col-md-4 col-lg-3 mb-3">
-        <div class="card h-100 shadow-sm" style="border-radius:10px;border:1px solid #e9ecef;transition:box-shadow .15s"
+        <div class="card h-100 shadow-sm" style="border-radius:.25rem;border:1px solid #e9ecef"
              onmouseenter="this.style.boxShadow='0 4px 18px rgba(0,0,0,.11)'"
              onmouseleave="this.style.boxShadow=''">
 
