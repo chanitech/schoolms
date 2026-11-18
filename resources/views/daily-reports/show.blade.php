@@ -205,7 +205,7 @@
                 @if($dailyReport->isSubmitted())
                 <span style="color:#28a745">&#10003; Submitted — {{ $dailyReport->submitted_at->format('H:i') }}</span>
                 @else
-                <span style="color:#e6a817">&#9998; Draft (pending submission)</span>
+                <span style="color:#e6a817"><i class="fas fa-pen"></i> Draft (pending submission)</span>
                 @endif
             </div>
         </div>

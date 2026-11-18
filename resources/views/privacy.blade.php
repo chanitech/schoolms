@@ -14,23 +14,23 @@ body {
     line-height: 1.7;
 }
 header {
-    background: #0f2942;
+    background: #1b2956;
     color: #fff;
     padding: 2.5rem 1.5rem;
     text-align: center;
 }
 header h1 { margin: 0 0 0.25rem; font-size: 1.8rem; }
-header p { margin: 0; color: #c9a24b; }
+header p { margin: 0; color: #fbb516; }
 main {
     max-width: 760px;
     margin: 0 auto;
     padding: 2rem 1.5rem 4rem;
 }
 h2 {
-    color: #0f2942;
+    color: #1b2956;
     margin-top: 2.2rem;
     padding-bottom: 0.3rem;
-    border-bottom: 2px solid #c9a24b;
+    border-bottom: 2px solid #fbb516;
     font-size: 1.2rem;
 }
 a { color: #1f5c3f; }

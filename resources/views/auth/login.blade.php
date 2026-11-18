@@ -10,21 +10,21 @@
 body {
     font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     min-height: 100vh;
-    background:#343a40;
+    background:#f4f6f9;
     display: flex; align-items: center; justify-content: center;
     padding: 1rem;
 }
 
 .card {
     background: #fff;
-    border-radius: 20px;
+    border-radius: .5rem;
     width: 100%; max-width: 400px;
     box-shadow:0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
     overflow: hidden;
 }
 
 .card-top {
-    background:#001f3f;
+    background:#1b2956;
     padding: 2.2rem 2rem 1.8rem;
     text-align: center; color: #fff;
 }
@@ -57,7 +57,7 @@ input[type="text"], input[type="email"], input[type="password"] {
     outline: none;
 }
 input:focus {
-    border-color: #c9a24b;
+    border-color: #fbb516;
     box-shadow: 0 0 0 3px rgba(201,162,75,.18);
 }
 input.is-invalid { border-color: #ef4444; }
@@ -79,12 +79,12 @@ input.is-invalid { border-color: #ef4444; }
     display: flex; align-items: center; gap: .5rem;
     margin-bottom: 1.4rem;
 }
-.remember-row input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: #1f5c3f; }
+.remember-row input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: #1b2956; }
 .remember-row label { font-size: .82rem; color: #64748b; text-transform: none; font-weight: 500; margin: 0; cursor: pointer; }
 
 .btn-login {
     width: 100%; padding: .85rem;
-    background:#343a40;
+    background:#1b2956;
     color: #fff; border: none; border-radius:.25rem;
     font-size: 1rem; font-weight: 700; cursor: pointer;
 }
@@ -97,12 +97,12 @@ input.is-invalid { border-color: #ef4444; }
 .staff-link {
     text-align: center; font-size: .8rem; color: #94a3b8;
 }
-.staff-link a { color: #1f5c3f; font-weight: 600; text-decoration: none; }
+.staff-link a { color: #1b2956; font-weight: 600; text-decoration: none; }
 .staff-link a:hover { text-decoration: underline; }
 
 .forgot-row { text-align: right; margin-top: -.7rem; margin-bottom: 1.1rem; }
 .forgot-row a { font-size: .78rem; color: #94a3b8; text-decoration: none; }
-.forgot-row a:hover { color: #1f5c3f; text-decoration: underline; }
+.forgot-row a:hover { color: #1b2956; text-decoration: underline; }
 
 .demo-box {
     background:#f8f9fa;
@@ -127,11 +127,12 @@ input.is-invalid { border-color: #ef4444; }
 }
 .demo-box-btn {
     width: 100%; margin-top: .7rem; padding: .55rem;
-    background: #fff; border: 1.5px solid #c9a24b; border-radius:.25rem;
+    background: #fff; border: 1.5px solid #fbb516; border-radius:.25rem;
     color: #92700f; font-size: .8rem; font-weight: 700; cursor: pointer;
 }
 .demo-box-btn:hover { background: #fdf3dd; }
 </style>
+    <link rel="stylesheet" href="{{ asset('vendor/fontawesome-free/css/all.min.css') }}">
 </head>
 <body>
 
@@ -146,7 +147,7 @@ input.is-invalid { border-color: #ef4444; }
 
         @if($errors->any())
         <div class="error-msg">
-            <span>&#9888;</span>
+            <span><i class="fas fa-exclamation-triangle"></i></span>
             <span>{{ $errors->first() }}</span>
         </div>
         @endif
@@ -160,7 +161,7 @@ input.is-invalid { border-color: #ef4444; }
 
         @if($demoAvailable ?? false)
         <div class="demo-box">
-            <div class="demo-box-head"><span>&#11088;</span> Want to look around first?</div>
+            <div class="demo-box-head"><i class="fas fa-info-circle"></i> Want to look around first?</div>
             <div class="demo-box-creds">
                 School Code: <code>{{ $demoSlug }}</code><br>
                 Email: <code>{{ $demoEmail }}</code><br>
@@ -176,7 +177,7 @@ input.is-invalid { border-color: #ef4444; }
             <div class="form-group">
                 <label for="school_code">School Code</label>
                 <div class="input-wrap">
-                    <span class="icon">&#127979;</span>
+                    <span class="icon"><i class="fas fa-school"></i></span>
                     <input
                         type="text"
                         id="school_code"
@@ -193,7 +194,7 @@ input.is-invalid { border-color: #ef4444; }
             <div class="form-group">
                 <label for="email">Email or Phone</label>
                 <div class="input-wrap">
-                    <span class="icon">&#128100;</span>
+                    <span class="icon"><i class="fas fa-user"></i></span>
                     <input
                         type="text"
                         id="email"
@@ -210,7 +211,7 @@ input.is-invalid { border-color: #ef4444; }
             <div class="form-group">
                 <label for="password">Password</label>
                 <div class="input-wrap">
-                    <span class="icon">&#128274;</span>
+                    <span class="icon"><i class="fas fa-lock"></i></span>
                     <input
                         type="password"
                         id="password"
@@ -220,7 +221,7 @@ input.is-invalid { border-color: #ef4444; }
                         class="{{ $errors->has('password') ? 'is-invalid' : '' }}"
                     >
                     <button type="button" class="toggle-pass" onclick="togglePass()" title="Show/hide password">
-                        <span id="toggleIcon">&#128065;</span>
+                        <span id="toggleIcon"><i class="fas fa-eye"></i></span>
                     </button>
                 </div>
             </div>

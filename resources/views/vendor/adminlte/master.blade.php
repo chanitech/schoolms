@@ -104,6 +104,9 @@
         @endif
     @endif
 
+    {{-- ShulePRO brand theme; versioned so the 7-day browser cache picks up changes --}}
+    <link rel="stylesheet" href="{{ asset('css/shulepro-theme.css') }}?v={{ filemtime(public_path('css/shulepro-theme.css')) }}">
+
     {{-- Custom Stylesheets (post AdminLTE) --}}
     @yield('adminlte_css')
 

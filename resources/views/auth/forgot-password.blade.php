@@ -10,21 +10,21 @@
 body {
     font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     min-height: 100vh;
-    background:#343a40;
+    background:#f4f6f9;
     display: flex; align-items: center; justify-content: center;
     padding: 1rem;
 }
 
 .card {
     background: #fff;
-    border-radius: 20px;
+    border-radius: .5rem;
     width: 100%; max-width: 400px;
     box-shadow:0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
     overflow: hidden;
 }
 
 .card-top {
-    background:#001f3f;
+    background:#1b2956;
     padding: 2.2rem 2rem 1.8rem;
     text-align: center; color: #fff;
 }
@@ -59,7 +59,7 @@ input[type="text"], input[type="email"] {
     outline: none;
 }
 input:focus {
-    border-color: #c9a24b;
+    border-color: #fbb516;
     box-shadow: 0 0 0 3px rgba(201,162,75,.18);
 }
 input.is-invalid { border-color: #ef4444; }
@@ -79,7 +79,7 @@ input.is-invalid { border-color: #ef4444; }
 
 .btn-login {
     width: 100%; padding: .85rem;
-    background:#343a40;
+    background:#1b2956;
     color: #fff; border: none; border-radius:.25rem;
     font-size: 1rem; font-weight: 700; cursor: pointer;
 }
@@ -90,9 +90,10 @@ input.is-invalid { border-color: #ef4444; }
 .divider { border: none; border-top: 1px solid #f1f5f9; margin: 1.3rem 0 1rem; }
 
 .staff-link { text-align: center; font-size: .8rem; color: #94a3b8; }
-.staff-link a { color: #1f5c3f; font-weight: 600; text-decoration: none; }
+.staff-link a { color: #1b2956; font-weight: 600; text-decoration: none; }
 .staff-link a:hover { text-decoration: underline; }
 </style>
+    <link rel="stylesheet" href="{{ asset('vendor/fontawesome-free/css/all.min.css') }}">
 </head>
 <body>
 
@@ -109,14 +110,14 @@ input.is-invalid { border-color: #ef4444; }
 
         @if(session('status'))
         <div class="success-msg">
-            <span>&#9989;</span>
+            <span><i class="fas fa-check-circle"></i></span>
             <span>{{ session('status') }}</span>
         </div>
         @endif
 
         @if($errors->any())
         <div class="error-msg">
-            <span>&#9888;</span>
+            <span><i class="fas fa-exclamation-triangle"></i></span>
             <span>{{ $errors->first() }}</span>
         </div>
         @endif
@@ -127,7 +128,7 @@ input.is-invalid { border-color: #ef4444; }
             <div class="form-group">
                 <label for="login">Email or Phone</label>
                 <div class="input-wrap">
-                    <span class="icon">&#128100;</span>
+                    <span class="icon"><i class="fas fa-user"></i></span>
                     <input
                         type="text"
                         id="login"
