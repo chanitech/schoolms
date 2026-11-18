@@ -128,7 +128,7 @@
                 </div>
             </div>
             <div class="card-body p-0">
-                <div id="todayScheduleBody">
+                <div id="todayScheduleBody" class="schedule-scroll">
                     <div class="text-center text-muted py-4">
                         <i class="fas fa-spinner fa-spin mr-1"></i> Loading today's schedule…
                     </div>
@@ -363,6 +363,14 @@
 
 @stop
 
+@section('css')
+<style>
+    /* Long schedules scroll inside the card, not the whole page */
+    .schedule-scroll { max-height: 460px; overflow: auto; }
+    .schedule-scroll .table-responsive { overflow: visible; }
+    .schedule-scroll thead th { position: sticky; top: 0; z-index: 2; background: #e9ecef; box-shadow: 0 1px 0 #dee2e6; }
+</style>
+@stop
 
 @section('js')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -581,7 +589,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const thStatus  = hasStatus ? '<th class="text-center" style="min-width:310px">Status</th>' : '';
             const cols      = hasStatus ? 7 : 6;
             let html = `<div class="table-responsive"><table class="table table-sm table-hover mb-0">
-                <thead class="thead-light"><tr>
+                <thead class="thead-light schedule-sticky"><tr>
                     <th>Period / Session</th><th>Time</th><th>Subject</th><th>Class</th><th>Teacher</th><th>Room</th>${thStatus}
                 </tr></thead><tbody>`;
 
