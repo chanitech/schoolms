@@ -10,7 +10,8 @@
 body {
     font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     min-height: 100vh;
-    background:#f4f6f9;
+    background: #1b2956 url("{{ asset('images/brand/login-bg.jpg') }}") center / cover no-repeat;
+    background-image: linear-gradient(rgba(19, 29, 61, .82), rgba(27, 41, 86, .72)), url("{{ asset('images/brand/login-bg.jpg') }}");
     display: flex; align-items: center; justify-content: center;
     padding: 1rem;
 }
