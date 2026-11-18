@@ -10,8 +10,7 @@
 body {
     font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     min-height: 100vh;
-    background: #1b2956 url("{{ asset('images/brand/login-bg-tz.jpg') }}") center / cover no-repeat;
-    background-image: linear-gradient(rgba(19, 29, 61, .80), rgba(27, 41, 86, .66)), url("{{ asset('images/brand/login-bg-tz.jpg') }}");
+    background: #1b2956;
     display: flex; align-items: center; justify-content: center;
     padding: 1rem;
 }
@@ -95,6 +94,7 @@ input.is-invalid { border-color: #ef4444; }
     <link rel="stylesheet" href="{{ asset('vendor/fontawesome-free/css/all.min.css') }}">
 </head>
 <body>
+@include('partials.login-backdrop')
 
 <div class="card">
     <div class="card-top">
