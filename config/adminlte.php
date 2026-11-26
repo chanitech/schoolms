@@ -699,6 +699,7 @@ return [
             'can'     => 'send sms',
             'submenu' => [
                 ['text' => 'Compose / Send', 'url' => 'sms/compose', 'icon' => 'fas fa-paper-plane', 'can' => 'send sms'],
+                ['text' => 'Automatic SMS',  'url' => 'sms/automatic', 'icon' => 'fas fa-robot', 'can' => 'send sms'],
                 ['text' => 'Sent Messages',  'url' => 'sms',         'icon' => 'fas fa-history',      'can' => 'send sms'],
             ],
         ],

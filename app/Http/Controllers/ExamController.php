@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\ParentSms;
+
 use App\Models\Exam;
 use App\Models\AcademicSession;
 use App\Models\User;
@@ -176,6 +178,8 @@ class ExamController extends Controller
         User::role(['Admin', 'Principal', 'Academic', 'HOD', 'Teacher'])->each(
             fn($u) => $u->notify($notify)
         );
+
+        ParentSms::afterResponse(fn (ParentSms $sms) => $sms->resultsPublished($exam));
 
         return back()->with('success', "Results for \"{$exam->name}\" are now published and visible to parents.");
     }

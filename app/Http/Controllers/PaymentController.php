@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\ParentSms;
+
 use App\Models\Payment;
 use App\Models\StudentBill;
 use App\Models\Student;
@@ -116,6 +118,8 @@ class PaymentController extends Controller
         // Update StudentBill balance and status
         $studentBill->amount_paid += $validated['amount'];
         $studentBill->updateBalanceAndStatus();
+
+        ParentSms::afterResponse(fn (ParentSms $sms) => $sms->paymentReceipt($payment));
 
         return redirect()
             ->route('finance.payments.receipt', $payment->id)

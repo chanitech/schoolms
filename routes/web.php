@@ -93,6 +93,8 @@ Route::middleware(['auth', 'verified'])->prefix('sms')->name('sms.')->group(func
     Route::get('/', [\App\Http\Controllers\SmsController::class, 'index'])->name('index');
     Route::get('/compose', [\App\Http\Controllers\SmsController::class, 'compose'])->name('compose');
     Route::post('/send', [\App\Http\Controllers\SmsController::class, 'send'])->name('send');
+    Route::get('/automatic', [\App\Http\Controllers\SmsController::class, 'automatic'])->name('automatic');
+    Route::post('/automatic', [\App\Http\Controllers\SmsController::class, 'saveAutomatic'])->name('automatic.save');
 });
 
 // Public document verification — checks the digital-signature code printed

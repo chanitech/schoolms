@@ -55,5 +55,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('loans:mark-overdue')->dailyAt('00:00');
         // Mark overdue Finance Office task logs daily at midnight
         $schedule->command('finance:mark-overdue-tasks')->dailyAt('00:00');
+        // Fee reminder SMS to parents each morning (schools that switched it on)
+        $schedule->command('sms:fee-reminders')->dailyAt('08:00')->withoutOverlapping();
     })
     ->create();

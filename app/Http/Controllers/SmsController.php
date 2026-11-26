@@ -6,6 +6,7 @@ use App\Models\Guardian;
 use App\Models\SchoolClass;
 use App\Models\SmsLog;
 use App\Models\Staff;
+use App\Services\ParentSms;
 use App\Services\SmsService;
 use Illuminate\Http\Request;
 
@@ -62,6 +63,48 @@ class SmsController extends Controller
         if ($result['failed']) $summary .= ", {$result['failed']} failed";
 
         return redirect()->route('sms.index')->with('success', "Message sent — {$summary}.");
+    }
+
+    /** Per-school switches for automatic parent SMS. */
+    public function automatic()
+    {
+        abort_unless(app()->bound('currentSchool'), 404, 'Open a school first.');
+        $school = app('currentSchool');
+        $settings = ParentSms::settings($school);
+        $previews = ParentSms::previews($school, $settings);
+        $configured = $this->sms->isConfigured();
+        $counts = SmsLog::whereIn('category', ['absence', 'results', 'receipt', 'fee_reminder'])
+            ->where('created_at', '>=', now()->subDays(30))->where('status', 'sent')
+            ->selectRaw('category, count(*) as n')->groupBy('category')->pluck('n', 'category');
+
+        return view('sms.automatic', compact('school', 'settings', 'previews', 'configured', 'counts'));
+    }
+
+    public function saveAutomatic(Request $request)
+    {
+        abort_unless($request->user()->hasAnyRole(['Admin', 'Principal']) || $request->user()->is_super_admin, 403,
+            'Only the head of school or an admin can change automatic SMS, since each message is paid for.');
+
+        $data = $request->validate([
+            'language'      => 'required|in:sw,en',
+            'reminder_days' => 'required|integer|in:1,2,3,5,7,14',
+            'signature'     => 'nullable|string|max:30',
+        ]);
+
+        abort_unless(app()->bound('currentSchool'), 404, 'Open a school first.');
+        $school = app('currentSchool');
+        $school->sms_settings = [
+            'absence'       => $request->boolean('absence'),
+            'results'       => $request->boolean('results'),
+            'receipt'       => $request->boolean('receipt'),
+            'fee_reminder'  => $request->boolean('fee_reminder'),
+            'language'      => $data['language'],
+            'reminder_days' => (int) $data['reminder_days'],
+            'signature'     => $data['signature'] ?: null,
+        ];
+        $school->save();
+
+        return redirect()->route('sms.automatic')->with('success', 'Automatic SMS settings saved.');
     }
 
     public function index(Request $request)

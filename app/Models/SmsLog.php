@@ -10,7 +10,7 @@ class SmsLog extends Model
     use BelongsToSchool;
 
     protected $fillable = [
-        'school_id', 'batch_id', 'category', 'recipient_name', 'recipient_phone',
+        'school_id', 'batch_id', 'category', 'dedupe_key', 'recipient_name', 'recipient_phone',
         'message', 'status', 'provider_request_id', 'error_message', 'sent_by',
     ];
 

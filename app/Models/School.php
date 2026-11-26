@@ -12,10 +12,12 @@ class School extends Model
         'address', 'motto', 'website',
         'subscription_status', 'subscription_expires_at', 'plan',
         'biometric_api_key',
+        'sms_settings',
     ];
 
     protected $casts = [
         'subscription_expires_at' => 'datetime',
+        'sms_settings'            => 'array',
     ];
 
     public function isActive(): bool

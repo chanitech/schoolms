@@ -18,9 +18,10 @@ class SmsService
      * per-number — so every valid number is logged with the same outcome.
      *
      * @param  array  $recipients  [['phone' => '0712345678', 'name' => 'Jane Doe'], ...]
+     * @param  ?string  $dedupeKey  stored on every log row so automatic messages can be sent once per event
      * @return array{batch_id: string, sent: int, invalid: int, failed: int, error: ?string}
      */
-    public function sendBulk(array $recipients, string $message, string $category): array
+    public function sendBulk(array $recipients, string $message, string $category, ?string $dedupeKey = null): array
     {
         $batchId = (string) Str::uuid();
         $senderId = Auth::id();
@@ -34,6 +35,7 @@ class SmsService
                 SmsLog::create([
                     'batch_id' => $batchId,
                     'category' => $category,
+                    'dedupe_key' => $dedupeKey,
                     'recipient_name' => $r['name'] ?? null,
                     'recipient_phone' => $r['phone'] ?? '',
                     'message' => $message,
@@ -59,7 +61,7 @@ class SmsService
 
         if (! $apiKey || ! $secretKey) {
             foreach ($valid as $v) {
-                $this->logResult($batchId, $category, $v, $message, 'failed', null, 'SMS gateway not configured (missing BEEM_API_KEY/BEEM_SECRET_KEY)', $senderId);
+                $this->logResult($batchId, $category, $v, $message, 'failed', null, 'SMS gateway not configured (missing BEEM_API_KEY/BEEM_SECRET_KEY)', $senderId, $dedupeKey);
             }
             return ['batch_id' => $batchId, 'sent' => 0, 'invalid' => $invalidCount, 'failed' => count($valid), 'error' => 'SMS gateway not configured'];
         }
@@ -85,7 +87,7 @@ class SmsService
             $requestId = $body['request_id'] ?? null;
 
             foreach ($valid as $v) {
-                $this->logResult($batchId, $category, $v, $message, $status, $requestId, $error, $senderId);
+                $this->logResult($batchId, $category, $v, $message, $status, $requestId, $error, $senderId, $dedupeKey);
             }
 
             return [
@@ -97,22 +99,28 @@ class SmsService
             ];
         } catch (\Throwable $e) {
             foreach ($valid as $v) {
-                $this->logResult($batchId, $category, $v, $message, 'failed', null, $e->getMessage(), $senderId);
+                $this->logResult($batchId, $category, $v, $message, 'failed', null, $e->getMessage(), $senderId, $dedupeKey);
             }
             return ['batch_id' => $batchId, 'sent' => 0, 'invalid' => $invalidCount, 'failed' => count($valid), 'error' => $e->getMessage()];
         }
     }
 
-    public function sendSingle(string $phone, string $message, string $category = 'custom', ?string $name = null): array
+    public function sendSingle(string $phone, string $message, string $category = 'custom', ?string $name = null, ?string $dedupeKey = null): array
     {
-        return $this->sendBulk([['phone' => $phone, 'name' => $name]], $message, $category);
+        return $this->sendBulk([['phone' => $phone, 'name' => $name]], $message, $category, $dedupeKey);
     }
 
-    private function logResult(string $batchId, string $category, array $v, string $message, string $status, ?string $requestId, ?string $error, ?int $senderId): void
+    public function isConfigured(): bool
+    {
+        return (bool) (config('services.beem.api_key') && config('services.beem.secret_key'));
+    }
+
+    private function logResult(string $batchId, string $category, array $v, string $message, string $status, ?string $requestId, ?string $error, ?int $senderId, ?string $dedupeKey = null): void
     {
         SmsLog::create([
             'batch_id' => $batchId,
             'category' => $category,
+            'dedupe_key' => $dedupeKey,
             'recipient_name' => $v['name'],
             'recipient_phone' => $v['normalized'],
             'message' => $message,

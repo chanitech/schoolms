@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\ParentSms;
+use Carbon\Carbon;
+
 use App\Models\AcademicSession;
 use App\Models\Enrollment;
 use App\Models\SchoolClass;
@@ -53,6 +56,10 @@ class StudentAttendanceController extends Controller
         // Only students actually enrolled in this class are written, whatever was posted.
         $students = $this->enrolledStudents($data['class_id'], $session->id);
 
+        // Who was already marked absent on this date, so only new absences text a parent.
+        $wasAbsent = StudentAttendance::whereIn('student_id', $students->pluck('id'))
+            ->whereDate('date', $data['date'])->where('status', 'absent')->pluck('student_id')->flip();
+
         DB::transaction(function () use ($students, $data, $session) {
             foreach ($students as $student) {
                 if (isset($data['attendance'][$student->id])) {
@@ -68,6 +75,15 @@ class StudentAttendanceController extends Controller
                 }
             }
         });
+
+        // Parent SMS only for today's register: a teacher filling in last
+        // week's attendance should not text parents about old absences.
+        $newlyAbsent = $students->filter(fn ($st) => ($data['attendance'][$st->id] ?? null) === 'absent' && ! $wasAbsent->has($st->id));
+        if ($newlyAbsent->isNotEmpty() && Carbon::parse($data['date'])->isToday()) {
+            $className = SchoolClass::find($data['class_id'])?->name ?? '';
+            $date = $data['date'];
+            ParentSms::afterResponse(fn (ParentSms $sms) => $sms->absences($newlyAbsent, $date, $className));
+        }
 
         return redirect()
             ->route('student-attendance.index', ['class_id' => $data['class_id'], 'date' => $data['date']])
