@@ -398,8 +398,17 @@ return [
               'create group sessions', 'view group sessions', 'view classroom guidance',
               'view interest inventories', 'view aptitude tests', 'create aptitude questions',
               'view multiple intelligence', 'view thinking style', 'view learning preferences',
-              'view holland code', 'view mbti test', 'view learning profile reports'],
+              'view holland code', 'view mbti test', 'view learning profile reports',
+              'view career guidance', 'is-class-coordinator'],
     'submenu' => [
+
+        // Combination, career and university-course predictions per student
+        [
+            'text' => 'Career Guidance',
+            'route' => 'career-guidance.index',
+            'icon' => 'fas fa-compass',
+            'can'  => ['view career guidance', 'is-class-coordinator'],
+        ],
 
         // ============================
         //  INDIVIDUAL COUNSELING

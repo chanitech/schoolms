@@ -7,140 +7,248 @@ use App\Models\AptitudeAttempt;
 use App\Models\Grade;
 use App\Models\InterestInventory;
 use App\Models\Mark;
+use App\Models\SchoolClass;
 use App\Models\Student;
+use Illuminate\Support\Collection;
 
 /**
- * Evidence for subject-combination and career advice: per-subject
- * performance against the class, aptitude by section, interest-inventory
- * answers, and how well each Tanzanian A-level combination fits the
- * student's O-level results. The AI turns this into the written advice.
+ * Career guidance engine shared by the Career Guidance pages, the printed
+ * report and the AI assistant: per-subject performance against the class,
+ * aptitude by section, interest answers, and how well each A-level
+ * combination (config/career.php) fits the student's results.
  */
 class CareerGuidance
 {
-    /** A-level combination => [O-level subjects it builds on, careers it leads to, aptitude it leans on] */
-    public const COMBINATIONS = [
-        'PCM' => [['Physics', 'Chemistry', 'Basic Mathematics'], 'Engineering (civil, electrical, mechanical), architecture, computer science, ICT, actuarial science, aviation', 'Numerical'],
-        'PCB' => [['Physics', 'Chemistry', 'Biology'], 'Medicine, dentistry, pharmacy, nursing, laboratory and biomedical sciences', 'Numerical'],
-        'PGM' => [['Physics', 'Geography', 'Basic Mathematics'], 'Engineering, land surveying, meteorology, geology, mining, urban planning', 'Spatial'],
-        'CBG' => [['Chemistry', 'Biology', 'Geography'], 'Agriculture, environmental science, veterinary, food science, wildlife and forestry', 'Spatial'],
-        'EGM' => [['Basic Mathematics', 'Geography', 'Commerce'], 'Economics, statistics, finance, banking, planning, actuarial', 'Numerical'],
-        'ECA' => [['Commerce', 'Book-keeping', 'Basic Mathematics'], 'Accounting (CPA), business administration, banking, procurement, tax', 'Numerical'],
-        'HGE' => [['History', 'Geography', 'Basic Mathematics'], 'Law, economics, public administration, development studies, planning', 'Verbal'],
-        'HGK' => [['History', 'Geography', 'Kiswahili'], 'Teaching, journalism, public administration, community development, tourism', 'Verbal'],
-        'HGL' => [['History', 'Geography', 'English Language'], 'Law, international relations, journalism, tourism, diplomacy', 'Verbal'],
-        'HKL' => [['History', 'Kiswahili', 'English Language'], 'Law, mass communication, languages, translation, teaching', 'Verbal'],
-    ];
+    public const INTEREST_LABELS = [1 => 'Most interesting subject', 2 => 'Most challenging subject', 3 => 'Enjoys most at school',
+        6 => 'Activities outside school', 7 => 'Describes self as', 8 => 'Careers of interest', 9 => 'Ideal job', 17 => 'Would like to learn more about'];
 
-    private const CLUSTERS = [
-        'Sciences'   => ['Physics', 'Chemistry', 'Biology'],
-        'Mathematics'=> ['Basic Mathematics', 'Additional Mathematics'],
-        'Languages'  => ['English Language', 'Kiswahili', 'French', 'Literature in English'],
-        'Humanities' => ['History', 'Geography', 'Civics'],
-        'Business'   => ['Commerce', 'Book-keeping'],
-    ];
+    public const ADVICE_INSTRUCTIONS = 'Write career guidance from this evidence: (1) top 2–3 combinations with reasons citing the grades, aptitude and interests; '
+        . '(2) careers and typical university degrees each opens; (3) the subjects to improve and the mark needed for a credit; '
+        . '(4) one line saying it is advice to discuss with the student, parents and career teacher. '
+        . 'Do not invent marks. If evidence is thin (few exams, no aptitude or interests), say what to collect next.';
+
+    private ?float $credit = null;
+    private ?Collection $grades = null;
 
     public function __construct(private AIDataAccess $access) {}
 
-    public function forStudent(string $query): array
+    public static function combinations(): array
+    {
+        return config('career.combinations', []);
+    }
+
+    public function creditMark(): float
+    {
+        // Lowest mark that still earns a C (credit) on this school's scale; NECTA default 45
+        return $this->credit ??= (float) (Grade::where('name', 'C')->value('min_mark') ?? 45);
+    }
+
+    public function grade(float $mark): string
+    {
+        $this->grades ??= Grade::orderByDesc('min_mark')->get(['name', 'min_mark']);
+        return optional($this->grades->first(fn ($g) => $mark >= $g->min_mark))->name ?? '-';
+    }
+
+    public static function formLevel(?string $className): ?int
+    {
+        if (! $className || ! preg_match('/form\s*(VI|IV|V|III|II|I|[1-6])\b/i', $className, $m)) return null;
+        return ['I' => 1, 'II' => 2, 'III' => 3, 'IV' => 4, 'V' => 5, 'VI' => 6][strtoupper($m[1])] ?? (int) $m[1];
+    }
+
+    public function findStudent(string $query): ?Student
     {
         $query = trim($query);
-        if ($query === '') return ['_exact_summary' => 'Which student? Give a name or admission number.'];
-        $s = Student::with('schoolClass')
+        if ($query === '') return null;
+        return Student::with('schoolClass')
             ->where(fn ($q) => $q->where('admission_no', $query)->orWhere('id', is_numeric($query) ? (int) $query : 0)
                 ->orWhereRaw("CONCAT(first_name, ' ', COALESCE(middle_name, ''), ' ', last_name) LIKE ?", ["%{$query}%"])
                 ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$query}%"]))
             ->first();
-        if (! $s) return ['_exact_summary' => "No student found for '{$query}'."];
+    }
 
-        $className = $s->schoolClass->name ?? 'Unknown class';
-        $form = $this->formLevel($className);
-        $L = ["STUDENT: {$s->first_name} {$s->last_name} (ID {$s->id}), {$className}" . ($form ? " — Form {$form}" : '')];
+    /**
+     * Full analysis of one student.
+     *
+     * @param  array{marks?:bool, aptitude?:bool, interests?:bool}  $can  which sections the viewer may see
+     */
+    public function analyse(Student $s, array $can = []): array
+    {
+        $can += ['marks' => true, 'aptitude' => true, 'interests' => true];
+        $s->loadMissing('schoolClass');
+        $form = self::formLevel($s->schoolClass->name ?? null);
 
-        $subjects = [];
-        if ($this->access->canModel('Mark')) {
-            $subjects = $this->subjectPerformance($s);
-            if ($subjects) {
-                $L[] = "\nSUBJECT PERFORMANCE (average of all exams; class average; trend first→latest exam; grade on the school's scale):";
-                foreach ($subjects as $name => $p) {
-                    $diff = $p['class_avg'] !== null ? sprintf('%+.1f vs class %.1f', $p['avg'] - $p['class_avg'], $p['class_avg']) : 'no class comparison';
-                    $L[] = sprintf('• %s: %.1f (%s), grade %s, trend %s, %d exam(s)', $name, $p['avg'], $diff, $p['grade'], $p['trend'], $p['exams']);
-                }
-                $L[] = "\nSTRENGTH BY AREA (average of subjects taken):";
-                foreach (self::CLUSTERS as $area => $list) {
-                    $vals = array_values(array_filter(array_map(fn ($n) => $subjects[$n]['avg'] ?? null, $list), fn ($v) => $v !== null));
-                    if ($vals) $L[] = sprintf('• %s: %.1f', $area, array_sum($vals) / count($vals));
-                }
-            } else {
-                $L[] = 'SUBJECT PERFORMANCE: no marks recorded yet.';
-            }
-        } else {
-            $L[] = 'SUBJECT PERFORMANCE: not available — this user\'s role cannot see marks.';
-        }
-
-        $aptitude = $this->access->canModel('AptitudeAttempt') ? $this->aptitude($s) : null;
-        if ($aptitude) {
-            $L[] = "\nAPTITUDE TEST ({$aptitude['date']}): total {$aptitude['total']} of {$aptitude['max']} (" . $aptitude['pct'] . '%)';
-            foreach ($aptitude['sections'] as $sec => $v) $L[] = "• {$sec}: {$v['got']} of {$v['max']} ({$v['pct']}%)";
-        } elseif (! $this->access->canModel('AptitudeAttempt')) {
-            $L[] = "\nAPTITUDE: not available to this user's role.";
-        } else {
-            $L[] = "\nAPTITUDE: no test taken yet.";
-        }
-
-        if ($this->access->canModel('InterestInventory')) {
+        $subjects = $can['marks'] ? $this->subjectPerformance($s) : [];
+        $aptitude = $can['aptitude'] ? $this->aptitude($s) : null;
+        $interests = null;
+        if ($can['interests']) {
             $inv = InterestInventory::where('student_id', $s->id)->latest('date')->first();
             if ($inv) {
-                $labels = [1 => 'Most interesting subject', 2 => 'Most challenging subject', 3 => 'Enjoys most at school', 6 => 'Activities outside school',
-                    7 => 'Describes self as', 8 => 'Careers of interest', 9 => 'Ideal job', 17 => 'Would like to learn more about'];
-                $L[] = "\nINTEREST INVENTORY (" . $inv->date?->format('d/m/Y') . '):';
-                foreach ($labels as $i => $label) if (filled($inv->{"q{$i}"})) $L[] = "• {$label}: " . trim($inv->{"q{$i}"});
+                $interests = ['date' => $inv->date?->format('d/m/Y'), 'answers' => []];
+                foreach (self::INTEREST_LABELS as $i => $label) {
+                    if (filled($inv->{"q{$i}"})) $interests['answers'][$label] = trim($inv->{"q{$i}"});
+                }
+            }
+        }
+
+        return [
+            'student'   => $s,
+            'class'     => $s->schoolClass->name ?? 'Unassigned',
+            'form'      => $form,
+            'can'       => $can,
+            'subjects'  => $subjects,
+            'areas'     => $this->areas($subjects),
+            'aptitude'  => $aptitude,
+            'interests' => $interests,
+            'fits'      => $this->fits(array_map(fn ($p) => $p['avg'], $subjects), $aptitude),
+            'a_level'   => $form && $form >= 5 ? $this->detectALevel($subjects) : null,
+            'credit'    => $this->creditMark(),
+        ];
+    }
+
+    /** Ranked combinations for subject averages ['Physics' => 61.2, ...]. */
+    public function fits(array $avgs, ?array $aptitude = null): array
+    {
+        $credit = $this->creditMark();
+        $fits = [];
+        foreach (self::combinations() as $code => $c) {
+            $needs = $c['o_level'];
+            $have = array_values(array_filter($needs, fn ($n) => isset($avgs[$n])));
+            $missing = array_values(array_diff($needs, $have));
+            $score = $have ? round(array_sum(array_map(fn ($n) => $avgs[$n], $have)) / count($have), 1) : 0.0;
+            $gaps = [];
+            foreach ($have as $n) if ($avgs[$n] < $credit) $gaps[$n] = round($credit - $avgs[$n], 1);
+            $fits[$code] = [
+                'code' => $code, 'needs' => $needs, 'missing' => $missing, 'score' => $score, 'gaps' => $gaps,
+                'ready' => ! $missing && ! $gaps,
+                'aptitude' => $c['aptitude'], 'aptitude_pct' => $aptitude['sections'][$c['aptitude']]['pct'] ?? null,
+                'careers' => $c['careers'], 'courses' => $c['courses'],
+            ];
+        }
+        uasort($fits, fn ($a, $b) => (count($a['missing']) <=> count($b['missing'])) ?: ($b['score'] <=> $a['score']));
+        return $fits;
+    }
+
+    /** Every active student of a class with their top combinations — two queries for the whole class. */
+    public function classOverview(SchoolClass $class): Collection
+    {
+        $students = Student::where('class_id', $class->id)->where('status', 'active')->orderBy('first_name')->get();
+        if ($students->isEmpty()) return collect();
+
+        $avgs = Mark::with('subject:id,name')->whereIn('student_id', $students->pluck('id'))->whereNotNull('mark')
+            ->selectRaw('student_id, subject_id, AVG(mark) a')->groupBy('student_id', 'subject_id')->get()
+            ->groupBy('student_id')
+            ->map(fn ($rows) => $rows->mapWithKeys(fn ($r) => [($r->subject->name ?? "Subject {$r->subject_id}") => round((float) $r->a, 1)])->all());
+
+        return $students->map(function ($s) use ($avgs) {
+            $subj = $avgs[$s->id] ?? [];
+            $fits = $this->fits($subj);
+            $complete = array_filter($fits, fn ($f) => ! $f['missing']);
+            $areas = $this->areas(array_map(fn ($v) => ['avg' => $v], $subj));
+            arsort($areas);
+            return [
+                'student'   => $s,
+                'average'   => $subj ? round(array_sum($subj) / count($subj), 1) : null,
+                'subjects'  => count($subj),
+                'top'       => array_slice($complete ?: $fits, 0, 3, true),
+                'strongest' => $areas ? array_key_first($areas) : null,
+                'areas'     => $areas,
+            ];
+        });
+    }
+
+    /** Text version of an analysis for the AI. */
+    public function evidenceText(array $a): string
+    {
+        $s = $a['student'];
+        $L = ["STUDENT: {$s->first_name} {$s->last_name} (ID {$s->id}), {$a['class']}" . ($a['form'] ? " — Form {$a['form']}" : '')];
+
+        if (! $a['can']['marks']) {
+            $L[] = "SUBJECT PERFORMANCE: not available — this user's role cannot see marks.";
+        } elseif (! $a['subjects']) {
+            $L[] = 'SUBJECT PERFORMANCE: no marks recorded yet.';
+        } else {
+            $L[] = "\nSUBJECT PERFORMANCE (average of all exams; class average; trend first→latest exam; grade):";
+            foreach ($a['subjects'] as $name => $p) {
+                $diff = $p['class_avg'] !== null ? sprintf('%+.1f vs class %.1f', $p['avg'] - $p['class_avg'], $p['class_avg']) : 'no class comparison';
+                $L[] = sprintf('• %s: %.1f (%s), grade %s, trend %s, %d exam(s)', $name, $p['avg'], $diff, $p['grade'], $p['trend'], $p['exams']);
+            }
+            $L[] = "\nSTRENGTH BY AREA:";
+            foreach ($a['areas'] as $area => $v) $L[] = sprintf('• %s: %.1f', $area, $v);
+        }
+
+        if ($ap = $a['aptitude']) {
+            $L[] = "\nAPTITUDE TEST ({$ap['date']}): total {$ap['total']} of {$ap['max']} ({$ap['pct']}%)";
+            foreach ($ap['sections'] as $sec => $v) $L[] = "• {$sec}: {$v['got']} of {$v['max']} ({$v['pct']}%)";
+        } else {
+            $L[] = "\nAPTITUDE: " . ($a['can']['aptitude'] ? 'no test taken yet.' : "not available to this user's role.");
+        }
+
+        if ($a['can']['interests']) {
+            if ($in = $a['interests']) {
+                $L[] = "\nINTEREST INVENTORY ({$in['date']}):";
+                foreach ($in['answers'] as $label => $ans) $L[] = "• {$label}: {$ans}";
             } else {
                 $L[] = "\nINTEREST INVENTORY: not completed yet.";
             }
         }
 
-        if ($subjects) {
-            $L[] = "\nA-LEVEL COMBINATION FIT (average of the O-level subjects each combination builds on; ✓ = credit C or better in all three):";
-            $fits = [];
-            foreach (self::COMBINATIONS as $code => [$needs, $careers, $leans]) {
-                $have = array_values(array_filter($needs, fn ($n) => isset($subjects[$n])));
-                $missing = array_diff($needs, $have);
-                $score = $have ? array_sum(array_map(fn ($n) => $subjects[$n]['avg'], $have)) / count($have) : 0;
-                $credit = ! $missing && collect($needs)->every(fn ($n) => $subjects[$n]['avg'] >= $this->creditMark());
-                $boost = $aptitude && isset($aptitude['sections'][$leans]) ? $aptitude['sections'][$leans]['pct'] : null;
-                $fits[$code] = compact('needs', 'careers', 'leans', 'missing', 'score', 'credit', 'boost');
-            }
-            uasort($fits, fn ($a, $b) => (count($a['missing']) <=> count($b['missing'])) ?: ($b['score'] <=> $a['score']));
-            foreach ($fits as $code => $f) {
-                $line = sprintf('• %s (%s): %.1f%s', $code, implode(', ', $f['needs']), $f['score'], $f['credit'] ? ' ✓' : '');
+        if ($a['subjects']) {
+            $L[] = "\nA-LEVEL COMBINATION FIT (average of the O-level subjects it builds on; ✓ = credit in all three):";
+            foreach ($a['fits'] as $f) {
+                $line = sprintf('• %s (%s): %.1f%s', $f['code'], implode(', ', $f['needs']), $f['score'], $f['ready'] ? ' ✓' : '');
                 if ($f['missing']) $line .= ' — no record for ' . implode(', ', $f['missing']);
-                if ($f['boost'] !== null) $line .= " — leans on {$f['leans']} aptitude ({$f['boost']}%)";
-                $L[] = $line . ". Careers: {$f['careers']}";
+                foreach ($f['gaps'] as $subj => $need) $line .= " — {$subj} needs +{$need} for a credit";
+                if ($f['aptitude_pct'] !== null) $line .= " — {$f['aptitude']} aptitude {$f['aptitude_pct']}%";
+                $L[] = $line . ". Careers: {$f['careers']}. Typical degrees: " . collect($f['courses'])->pluck(0)->implode('; ');
             }
         }
+        if ($a['a_level']) $L[] = "\nDETECTED A-LEVEL COMBINATION: {$a['a_level']}";
 
         $L[] = "\nCONTEXT: In Tanzania students sit CSEE (NECTA) after Form IV and choose an A-level combination for Form V–VI; "
             . 'selection normally needs at least a credit (C) in the subjects the combination builds on. '
-            . 'On this school\'s grading scale a credit (C) starts at ' . $this->creditMark() . ' marks — use this number for targets. '
-            . ($form && $form <= 2 ? 'This student is in Form ' . $form . ', so advice should be about which O-level direction (sciences, business or arts) to strengthen for Form III and which combinations to aim for, not a final choice.' : '')
-            . ($form && $form >= 5 ? 'This student is already in A-level; focus on university courses and careers that fit their combination and grades.' : '');
+            . "On this school's grading scale a credit (C) starts at {$a['credit']} marks — use this number for targets. "
+            . ($a['form'] && $a['form'] <= 2 ? "This student is in Form {$a['form']}, so advise which O-level direction (sciences, business or arts) to strengthen for Form III and which combinations to aim for, not a final choice. " : '')
+            . ($a['form'] && $a['form'] >= 5 ? 'This student is already in A-level; focus on university courses and careers that fit their combination and grades. ' : '')
+            . config('career.tcu_note');
 
-        return ['guidance_evidence' => implode("\n", $L),
-            'instructions' => 'Write career guidance from this evidence: (1) top 2–3 combinations with reasons citing the grades, aptitude and interests; '
-                . '(2) careers each opens; (3) the subjects to improve and by how much to reach a credit; (4) one line saying it is advice to discuss with the student, parents and career teacher. '
-                . 'Do not invent marks. If evidence is thin (few exams, no aptitude or interests), say what to collect next.'];
+        return implode("\n", $L);
     }
 
-    private function formLevel(string $className): ?int
+    /** AI assistant tool: same analysis, sections limited by the user's role. */
+    public function forStudent(string $query): array
     {
-        if (! preg_match('/form\s*(VI|IV|V|III|II|I|[1-6])\b/i', $className, $m)) return null;
-        return ['I' => 1, 'II' => 2, 'III' => 3, 'IV' => 4, 'V' => 5, 'VI' => 6][strtoupper($m[1])] ?? (int) $m[1];
+        if (trim($query) === '') return ['_exact_summary' => 'Which student? Give a name or admission number.'];
+        $s = $this->findStudent($query);
+        if (! $s) return ['_exact_summary' => "No student found for '{$query}'."];
+
+        $a = $this->analyse($s, [
+            'marks' => $this->access->canModel('Mark'),
+            'aptitude' => $this->access->canModel('AptitudeAttempt'),
+            'interests' => $this->access->canModel('InterestInventory'),
+        ]);
+
+        return ['guidance_evidence' => $this->evidenceText($a), 'instructions' => self::ADVICE_INSTRUCTIONS];
     }
 
-    private function creditMark(): float
+    // ── internals ─────────────────────────────────────────────
+
+    private function areas(array $subjects): array
     {
-        // Lowest mark that still earns a C (credit) on this school's scale; NECTA default 45
-        return (float) (Grade::where('name', 'C')->value('min_mark') ?? 45);
+        $out = [];
+        foreach (config('career.areas', []) as $area => $list) {
+            $vals = array_values(array_filter(array_map(fn ($n) => $subjects[$n]['avg'] ?? null, $list), fn ($v) => $v !== null));
+            if ($vals) $out[$area] = round(array_sum($vals) / count($vals), 1);
+        }
+        return $out;
+    }
+
+    private function detectALevel(array $subjects): ?string
+    {
+        $taken = array_map('strtolower', array_keys($subjects));
+        foreach (self::combinations() as $code => $c) {
+            if (collect($c['a_level'])->every(fn ($n) => in_array(strtolower($n), $taken, true))) return $code;
+        }
+        return null;
     }
 
     private function subjectPerformance(Student $s): array
@@ -148,10 +256,6 @@ class CareerGuidance
         $marks = Mark::with(['subject', 'exam'])->where('student_id', $s->id)->whereNotNull('mark')->get();
         if ($marks->isEmpty()) return [];
 
-        $grades = Grade::orderByDesc('min_mark')->get(['name', 'min_mark']);
-        $grade = fn ($v) => optional($grades->first(fn ($g) => $v >= $g->min_mark))->name ?? '-';
-
-        // class averages per subject over the same exams
         $classAvg = Mark::whereIn('exam_id', $marks->pluck('exam_id')->unique())
             ->whereIn('subject_id', $marks->pluck('subject_id')->unique())
             ->when($s->class_id, fn ($q) => $q->where('class_id', $s->class_id))
@@ -163,11 +267,13 @@ class CareerGuidance
             $sorted = $rows->sortBy(fn ($m) => $m->exam->id ?? 0)->values();
             $avg = round($rows->avg('mark'), 1);
             $first = (float) $sorted->first()->mark; $last = (float) $sorted->last()->mark;
+            $dir = $rows->count() > 1 ? ($last - $first >= 3 ? 'up' : ($first - $last >= 3 ? 'down' : 'flat')) : 'flat';
             $out[$name] = [
                 'avg' => $avg,
                 'class_avg' => isset($classAvg[$sid]) ? round((float) $classAvg[$sid], 1) : null,
-                'grade' => $grade($avg),
-                'trend' => $rows->count() > 1 ? sprintf('%.0f→%.0f (%s)', $first, $last, $last - $first >= 3 ? 'improving' : ($first - $last >= 3 ? 'falling' : 'steady')) : 'one exam only',
+                'grade' => $this->grade($avg),
+                'trend' => $rows->count() > 1 ? sprintf('%.0f→%.0f (%s)', $first, $last, ['up' => 'improving', 'down' => 'falling', 'flat' => 'steady'][$dir]) : 'one exam only',
+                'first' => $first, 'last' => $last, 'direction' => $dir,
                 'exams' => $rows->count(),
             ];
         }
@@ -180,17 +286,16 @@ class CareerGuidance
         $att = AptitudeAttempt::where('student_id', $s->id)->latest('id')->first();
         if (! $att) return null;
 
-        $answers = AptitudeAnswer::with('question')->where('attempt_id', $att->id)->get();
         $sections = [];
-        foreach ($answers as $a) {
+        foreach (AptitudeAnswer::with('question')->where('attempt_id', $att->id)->get() as $a) {
             $sec = $a->question->section ?? 'General';
             $sections[$sec]['got'] = ($sections[$sec]['got'] ?? 0) + (float) $a->obtained_marks;
             $sections[$sec]['max'] = ($sections[$sec]['max'] ?? 0) + (float) ($a->question->marks ?? 0);
         }
-        foreach ($sections as $k => $v) $sections[$k]['pct'] = $v['max'] ? round($v['got'] / $v['max'] * 100) : 0;
+        foreach ($sections as $k => $v) $sections[$k]['pct'] = $v['max'] ? (int) round($v['got'] / $v['max'] * 100) : 0;
         $max = array_sum(array_column($sections, 'max'));
 
         return ['date' => $att->created_at?->format('d/m/Y'), 'total' => $att->total_score, 'max' => $max ?: '?',
-            'pct' => $max ? round($att->total_score / $max * 100) : '?', 'sections' => $sections];
+            'pct' => $max ? (int) round($att->total_score / $max * 100) : '?', 'sections' => $sections];
     }
 }

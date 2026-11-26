@@ -451,6 +451,15 @@ Route::middleware(['auth', 'verified', 'staff.only'])->group(function () {
         Route::post('student-attendance', [StudentAttendanceController::class, 'store'])->name('student-attendance.store');
     });
 
+    // ==================== CAREER GUIDANCE ====================
+    // Counselors/academic/head see every class; class teachers their own (checked in the controller).
+    Route::prefix('career-guidance')->name('career-guidance.')->controller(\App\Http\Controllers\CareerGuidanceController::class)->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/student/{student}', 'show')->name('show');
+        Route::post('/student/{student}/advice', 'advice')->name('advice');
+        Route::get('/student/{student}/report', 'report')->name('report');
+    });
+
     // ==================== RESULTS GROUP ====================
     Route::prefix('results')->name('results.')->group(function () {
         Route::get('/', [StudentResultController::class, 'index'])->name('index');
