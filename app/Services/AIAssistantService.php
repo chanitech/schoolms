@@ -41,6 +41,7 @@ class AIAssistantService
         'get_staff_summary' => 'Staff', 'search_staff' => 'Staff', 'get_staff_on_leave' => 'Leave',
         'get_loan_summary' => 'Loan', 'get_library_summary' => 'Book', 'search_book' => 'Book',
         'get_dormitory_summary' => 'Dormitory', 'get_student_profile' => 'Student',
+        'get_career_guidance' => 'Student',
     ];
 
     protected function data(): AIDataAccess
@@ -180,6 +181,7 @@ You are **Chani Technologies AI**, the intelligent assistant for this School Man
 9b. You can read the WHOLE school database through `list_data_sources` and `query_data` — students, guardians, attendance, marks, timetable, lesson plans, dormitories, counseling office records (intake forms, session notes, aptitude and interest tests), staff, leave, finance, inventory, procurement, transport, library, notices and SMS. **Never say the system has no such data** without first calling `list_data_sources`.
 9c. For "everything about student X" use `get_student_profile`. To filter another area by a student, first get the student ID from `search_student`, then `query_data` with student_id.
 9d. If a tool says the user's role has no access, tell them politely that their role cannot see it — do not try other tools to get around it.
+9f. **Career guidance:** for questions about subject combinations, streams or careers, call `get_career_guidance` and then GIVE A CLEAR RECOMMENDATION — do not refuse or say it is only a judgement. Recommend the top 2–3 combinations ranked, each with reasons that cite the student's actual grades, aptitude and interests, the careers it opens, and which subjects to raise (with the target mark for a credit). For Form I–II students recommend the O-level direction to strengthen now and the combinations to aim for. End with one line that this is guidance to discuss with the student, parents and the career teacher. This rule overrides rule 2 for this tool (it returns evidence, not a finished answer).
 9e. Counseling and health information is confidential: share it only in direct answer to the question asked, never volunteer it.
 10. **NEVER** infer subject assignments from department names. Only use data from `get_teacher_subjects`. If no data exists, say exactly: “No subject‑teacher assignments found.”
 PROMPT;
@@ -428,6 +430,11 @@ PROMPT;
                 ],
             ],
             [
+                'name'        => 'get_career_guidance',
+                'description' => 'Career and subject-combination guidance evidence for one student: subject averages vs class with trends and grades, strength by area, aptitude test by section, interest inventory answers, and how well each Tanzanian A-level combination (PCM, PCB, PGM, CBG, EGM, ECA, HGE, HGK, HGL, HKL) fits. Use for any question about which combination, stream, subjects or career suits a student.',
+                'parameters'  => ['type' => 'object', 'properties' => ['query' => ['type' => 'string', 'description' => 'Student name, admission number or ID']], 'required' => ['query']],
+            ],
+            [
                 'name'        => 'get_student_profile',
                 'description' => 'Everything about one student: class, guardian, attendance rate, results, fees, pocket money, dormitory, transport and counseling records (each part only if the user\'s role allows).',
                 'parameters'  => ['type' => 'object', 'properties' => ['query' => ['type' => 'string', 'description' => 'Student name, admission number or ID']], 'required' => ['query']],
@@ -457,6 +464,7 @@ PROMPT;
                 'list_data_sources'      => $this->data()->sources(),
                 'query_data'             => $this->data()->query($args),
                 'get_student_profile'    => $this->data()->studentProfile($args['query'] ?? ''),
+                'get_career_guidance'    => app(CareerGuidance::class)->forStudent($args['query'] ?? ''),
                 'ask_clarification'      => $this->askClarification($args['question'] ?? 'Please provide more details.'),
                 'search_student'         => $this->searchStudent($args['query'] ?? ''),
                 'list_students_in_class' => $this->listStudentsInClass($args['class_name'] ?? ''),
@@ -1079,7 +1087,7 @@ PROMPT;
             'messages'    => $messages,
             'temperature' => 0.0,
             'top_p'       => 0.1,
-            'max_tokens'  => 1024,
+            'max_tokens'  => 1800,
         ];
 
         if ($functions) {

@@ -272,6 +272,7 @@ class AIDataAccess
     public function studentProfile(string $query): array
     {
         $query = trim($query);
+        if ($query === '') return ['_exact_summary' => 'Which student? Give a name or admission number.'];
         $s = Student::with(['schoolClass', 'dormitory', 'guardian'])
             ->where(fn ($q) => $q->where('admission_no', $query)->orWhere('id', is_numeric($query) ? (int) $query : 0)
                 ->orWhereRaw("CONCAT(first_name, ' ', COALESCE(middle_name, ''), ' ', last_name) LIKE ?", ["%{$query}%"])
