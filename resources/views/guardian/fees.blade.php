@@ -21,7 +21,7 @@
 /* Hero */
 .hero{background:#001f3f;border-radius:var(--r);padding:2rem 2rem 1.7rem;margin-bottom:1.4rem;position:relative;overflow:hidden;color:#fff;}
 .hero::before{display:none}
-.hero-eye{font-size:.67rem;text-transform:uppercase;color:var(--em-lt);font-weight:600;margin-bottom:.4rem;display:flex;align-items:center;gap:.4rem;}
+.hero-eye{font-size:.67rem;color:var(--em-lt);font-weight:600;margin-bottom:.4rem;display:flex;align-items:center;gap:.4rem;}
 .hero h1{font-size:1.85rem;margin:0 0 .3rem;line-height:1.15;}
 .hero-sub{opacity:.58;font-size:.8rem;}
 
@@ -37,7 +37,7 @@
 /* Big stat cards */
 .fin-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.9rem;margin-bottom:1.2rem;}
 .big-stat{border-radius:var(--r);padding:1.2rem 1.3rem;position:relative;overflow:hidden;box-shadow:0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);color:#fff;}
-.bs-lbl{font-size:.66rem;text-transform:uppercase;font-weight:600;margin-bottom:.3rem;opacity:.75;}
+.bs-lbl{font-size:.66rem;font-weight:600;margin-bottom:.3rem;opacity:.75;}
 .bs-val{font-size:1.7rem;line-height:1;}
 .bs-note{font-size:.7rem;opacity:.6;margin-top:.2rem;}
 .bs-ico{position:absolute;right:1rem;bottom:.7rem;font-size:2.6rem;opacity:.12;}
@@ -53,7 +53,7 @@
 
 /* Table */
 .rtbl{width:100%;border-collapse:separate;border-spacing:0;font-size:.83rem;}
-.rtbl thead th{background:var(--sl-50);color:var(--sl-500);font-size:.64rem;font-weight:700;text-transform:uppercase;padding:.7rem .95rem;border-bottom:2px solid var(--sl-200);text-align:left;}
+.rtbl thead th{background:var(--sl-50);color:var(--sl-500);font-size:.64rem;font-weight:700;padding:.7rem .95rem;border-bottom:2px solid var(--sl-200);text-align:left;}
 .rtbl tbody td{padding:.7rem .95rem;border-bottom:1px solid var(--sl-100);vertical-align:middle;color:var(--sl-700);}
 .rtbl tbody tr:last-child td{border-bottom:none;}
 .rtbl tbody tr:hover{background:#f8fafc;}
@@ -75,9 +75,7 @@
 <div class="container-fluid px-3 py-2">
 
     <div class="hero">
-        <div class="hero-eye"><i class="fas fa-wallet"></i> Financial Overview</div>
         <h1>Financial Details</h1>
-        <p class="hero-sub">Fees, pocket money and payment history for your children</p>
         <a href="{{ route('guardian.dashboard') }}" class="btn-back">
             <i class="fas fa-arrow-left"></i> Back to Dashboard
         </a>

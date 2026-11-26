@@ -32,7 +32,7 @@
 /* Hero */
 .hero{background:#001f3f;border-radius:var(--r);padding:2.2rem 2rem 1.9rem;margin-bottom:1.4rem;position:relative;overflow:hidden;color:#fff;}
 .hero::before{display:none}
-.hero-eye{font-size:.67rem;text-transform:uppercase;color:var(--em-lt);font-weight:600;margin-bottom:.4rem;display:flex;align-items:center;gap:.4rem;}
+.hero-eye{font-size:.67rem;color:var(--em-lt);font-weight:600;margin-bottom:.4rem;display:flex;align-items:center;gap:.4rem;}
 .hero h1{font-size:1.95rem;margin:0 0 .35rem;line-height:1.15;}
 .hero-sub{opacity:.58;font-size:.8rem;}
 
@@ -56,7 +56,7 @@
 
 /* Filter bar */
 .filter-bar{background:#fff;border-radius:var(--r);box-shadow:0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);padding:1.1rem 1.4rem;margin-bottom:1.4rem;}
-.fl{font-size:.66rem;font-weight:700;text-transform:uppercase;color:var(--sl-500);margin-bottom:.28rem;display:block;}
+.fl{font-size:.66rem;font-weight:700;color:var(--sl-500);margin-bottom:.28rem;display:block;}
 .fsel{border:1.5px solid var(--sl-200);border-radius:var(--r-sm);font-size:.83rem;height:40px;padding:0 2rem 0 .8rem;width:100%;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%2394a3b8' d='M5 7L0 2h10z'/%3E%3C/svg%3E") no-repeat right .7rem center;-webkit-appearance:none;appearance:none;color:var(--sl-900);}
 .fsel:focus{border-color:var(--em);box-shadow:0 0 0 3px rgba(5,150,105,.1);outline:none;}
 .btn-f{height:40px;padding:0 1.3rem;background:var(--em);border:none;border-radius:var(--r-sm);color:#fff;font-weight:600;font-size:.83rem;display:inline-flex;align-items:center;justify-content:center;gap:.4rem;width:100%;box-shadow:0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);cursor:pointer;}
@@ -67,7 +67,7 @@
 .qs{background:#fff;border-radius:var(--r);box-shadow:0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);padding:.95rem 1rem;position:relative;overflow:hidden;}
 .qs:nth-child(1){}.qs:nth-child(2){}.qs:nth-child(3){}.qs:nth-child(4){}.qs:nth-child(5){}.qs:nth-child(6){}.qs:nth-child(7){}
 .qs-dot{width:7px;height:7px;border-radius:50%;margin-bottom:.55rem;}
-.qs-lbl{font-size:.63rem;font-weight:700;text-transform:uppercase;color:var(--sl-400);margin-bottom:.15rem;}
+.qs-lbl{font-size:.63rem;font-weight:700;color:var(--sl-400);margin-bottom:.15rem;}
 .qs-val{font-size:1.6rem;color:var(--sl-900);line-height:1;}
 .qs-sub{font-size:.67rem;color:var(--sl-400);margin-top:.12rem;}
 .qs-ico{position:absolute;right:.7rem;top:50%;transform:translateY(-50%);font-size:2rem;opacity:.07;}
@@ -76,7 +76,7 @@
 /* Big stat cards */
 .big-stat{border-radius:var(--r);padding:1.5rem 1.4rem;position:relative;overflow:hidden;box-shadow:0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);color:#fff;}
 .big-stat:hover{box-shadow:0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);}
-.bs-lbl{font-size:.66rem;text-transform:uppercase;font-weight:600;margin-bottom:.4rem;opacity:.72;}
+.bs-lbl{font-size:.66rem;font-weight:600;margin-bottom:.4rem;opacity:.72;}
 .bs-val{font-size:2.5rem;line-height:1;margin-bottom:.28rem;}
 .bs-note{font-size:.72rem;opacity:.58;}
 .bs-ico{position:absolute;right:1.1rem;bottom:.9rem;font-size:3.3rem;opacity:.1;}
@@ -89,9 +89,9 @@
 .tcard{background:#fff;border-radius:var(--r);box-shadow:0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);overflow:hidden;margin-bottom:1.4rem;}
 .thead-bar{background:#343a40;padding:.9rem 1.3rem;display:flex;align-items:center;justify-content:space-between;}
 .thead-bar h5{color:#fff;margin:0;font-size:1.03rem;}
-.d-pill{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.17);border-radius:20px;padding:.2rem .75rem;font-size:.66rem;font-weight:700;text-transform:uppercase;color:var(--em-lt);}
+.d-pill{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.17);border-radius:20px;padding:.2rem .75rem;font-size:.66rem;font-weight:700;color:var(--em-lt);}
 .rtbl{width:100%;border-collapse:separate;border-spacing:0;}
-.rtbl thead th{background:var(--sl-50);color:var(--sl-500);font-size:.66rem;font-weight:700;text-transform:uppercase;padding:.78rem .95rem;border-bottom:2px solid var(--sl-200);text-align:center;}
+.rtbl thead th{background:var(--sl-50);color:var(--sl-500);font-size:.66rem;font-weight:700;padding:.78rem .95rem;border-bottom:2px solid var(--sl-200);text-align:center;}
 .rtbl tbody td{padding:.82rem .95rem;border-bottom:1px solid var(--sl-100);text-align:center;font-size:.845rem;color:var(--sl-700);vertical-align:middle;}
 .rtbl tbody tr{}
 .rtbl tbody tr:hover{background:#f0fdf9;}
@@ -103,16 +103,16 @@
 .mark-fill{height:5px;border-radius:3px;}
 
 /* Grade badges */
-.gb{display:inline-flex;align-items:center;justify-content:center;width:31px;height:31px;border-radius:var(--r-sm);font-weight:800;font-size:.78rem;}
+.gb{display:inline-flex;align-items:center;justify-content:center;width:31px;height:31px;border-radius:var(--r-sm);font-weight:700;font-size:.78rem;}
 .gA{background:#dcfce7;color:#15803d}.gB{background:#dbeafe;color:#1d4ed8}.gC{background:#fef9c3;color:#854d0e}.gD{background:#ffedd5;color:#c2410c}.gE,.gF{background:#fee2e2;color:#b91c1c}.gX{background:var(--sl-100);color:var(--sl-500)}
 
 /* Remark + position pills */
-.rp{display:inline-block;padding:.17rem .58rem;border-radius:20px;font-size:.66rem;font-weight:700;text-transform:uppercase;}
+.rp{display:inline-block;padding:.17rem .58rem;border-radius:20px;font-size:.66rem;font-weight:700;}
 .pb{display:inline-flex;align-items:center;justify-content:center;min-width:27px;height:21px;border-radius:6px;font-size:.7rem;font-weight:700;background:var(--sl-100);color:var(--sl-700);}
 .p1{background:#fef9c3;color:#854d0e}.p2{background:#f1f5f9;color:#1e293b}.p3{background:#ffedd5;color:#c2410c}
 
 /* Section label */
-.sec-lbl{font-size:.66rem;font-weight:700;text-transform:uppercase;color:var(--sl-400);margin-bottom:.7rem;display:flex;align-items:center;gap:.45rem;}
+.sec-lbl{font-size:.66rem;font-weight:700;color:var(--sl-400);margin-bottom:.7rem;display:flex;align-items:center;gap:.45rem;}
 .sec-lbl::before{content:'';display:block;width:14px;height:2px;background:var(--em);border-radius:2px;}
 
 /* Insight cards */
@@ -135,9 +135,9 @@
 
 /* Highlight boxes */
 .hi-box{background:var(--sl-50);border-radius:var(--r-sm);padding:.8rem .5rem;text-align:center;}
-.hi-cap{font-size:.62rem;text-transform:uppercase;color:var(--sl-400);font-weight:700;margin-bottom:.28rem;}
+.hi-cap{font-size:.62rem;color:var(--sl-400);font-weight:700;margin-bottom:.28rem;}
 .hi-sub{font-size:.8rem;font-weight:700;margin-bottom:.15rem;}
-.hi-val{font-size:1.2rem;font-weight:800;}
+.hi-val{font-size:1.2rem;font-weight:700;}
 
 /* Grade legend */
 .gl{display:flex;flex-direction:column;gap:.45rem;}
@@ -156,7 +156,7 @@
 
 /* Subject comparison table */
 .cmp-tbl{width:100%;border-collapse:collapse;font-size:.8rem;}
-.cmp-tbl th{background:var(--sl-50);color:var(--sl-500);font-size:.63rem;text-transform:uppercase;padding:.55rem .8rem;border-bottom:2px solid var(--sl-200);text-align:left;}
+.cmp-tbl th{background:var(--sl-50);color:var(--sl-500);font-size:.63rem;padding:.55rem .8rem;border-bottom:2px solid var(--sl-200);text-align:left;}
 .cmp-tbl td{padding:.55rem .8rem;border-bottom:1px solid var(--sl-100);vertical-align:middle;}
 .cmp-tbl tr:last-child td{border-bottom:none;}
 .cmp-tbl tr:hover td{background:#f0fdf9;}
@@ -196,7 +196,6 @@
 
     {{-- Hero --}}
     <div class="hero">
-        <div class="hero-eye"><i class="fas fa-graduation-cap"></i> Academic Results</div>
         <h1>Student Result Summary</h1>
         <p class="hero-sub">
             {{ $exam->name ?? 'Select an exam to view results' }}
@@ -209,7 +208,7 @@
     {{-- Student Profile --}}
     <div class="stu-card">
         <img class="stu-avatar"
-             src="{{ $student->photo ? asset('storage/'.$student->photo) : asset('vendor/adminlte/dist/img/user2-160x160.jpg') }}"
+             src="{{ $student->photo ? asset('storage/'.$student->photo) : asset('vendor/adminlte/dist/img/avatar.png') }}"
              alt="{{ $student->name }}">
         <div class="flex-grow-1">
             <h2 class="stu-name">{{ $student->name }}</h2>
@@ -461,7 +460,7 @@
                 </tbody>
                 <tfoot>
                     <tr>
-                        <td colspan="4" style="text-align:right;padding-right:1rem;font-size:.7rem;text-transform:uppercase;color:var(--sl-700);">Total Points</td>
+                        <td colspan="4" style="text-align:right;padding-right:1rem;font-size:.7rem;color:var(--sl-700);">Total Points</td>
                         <td colspan="3" style="font-size:1.02rem;">{{ $displayPoints }}</td>
                     </tr>
                 </tfoot>
@@ -555,7 +554,7 @@
                     <h6 class="ch-ttl">Performance Overview</h6>
                 </div>
                 <div class="ch-body">
-                    <p style="font-size:.68rem;color:var(--sl-400);text-transform:uppercase;font-weight:600;margin-bottom:.4rem;">Average Mark Position</p>
+                    <p style="font-size:.68rem;color:var(--sl-400);font-weight:600;margin-bottom:.4rem;">Average Mark Position</p>
                     <div class="band-track">
                         <div class="band-thumb" style="left:{{ $avgMark }}%;"></div>
                     </div>

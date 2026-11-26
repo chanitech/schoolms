@@ -8,14 +8,14 @@
     box-shadow:0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
 }
 .kpi-box .inner { padding: 1.1rem 1.3rem; }
-.kpi-box .num { font-size: 2rem; font-weight: 800; line-height: 1.1; }
-.kpi-box .lbl { font-size: .75rem; text-transform: uppercase; opacity: .8; margin-top: 2px; }
+.kpi-box .num { font-size: 2rem; font-weight:700; line-height: 1.1; }
+.kpi-box .lbl { font-size: .75rem; opacity: .8; margin-top: 2px; }
 .kpi-box .foot { background: rgba(0,0,0,.08); padding: .4rem 1.3rem; font-size: .75rem; }
 
 .report-table { border-collapse: collapse; width: 100%; }
 .report-table thead th {
     background: #f0f4ff; color: #1a3c6e; font-weight: 700;
-    font-size: .72rem; text-transform: uppercase;
+    font-size: .72rem;
     padding: .65rem 1rem; border-bottom: 2px solid #d0d9f0;
 }
 .report-table tbody td { padding: .6rem 1rem; border-bottom: 1px solid #f0f0f8; font-size: .84rem; vertical-align: middle; }
@@ -38,9 +38,6 @@
         <h1 class="m-0 font-weight-bold" style="font-size:1.4rem">
             <i class="fas fa-clipboard-check mr-2" style="color:#4e73df"></i>Staff Daily Reports
         </h1>
-        <p class="text-muted mb-0" style="font-size:.82rem">
-            Monitor your department's daily reporting compliance
-        </p>
     </div>
     <a href="{{ route('daily-reports.create') }}" class="btn btn-primary"
         style="border-radius:.25rem;font-weight:600;padding:.45rem 1.2rem">

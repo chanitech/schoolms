@@ -13,7 +13,7 @@
 
 .step-bar { display:flex; align-items:center; gap:0; margin-bottom:1.2rem; }
 .step-item { display:flex; align-items:center; gap:.4rem; font-size:.78rem; font-weight:600; }
-.step-dot { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:.7rem; font-weight:800; flex-shrink:0; }
+.step-dot { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:.7rem; font-weight:700; flex-shrink:0; }
 .step-dot.done    { background:#28a745; color:#fff; }
 .step-dot.active  { background:#ffc107; color:#333; }
 .step-dot.pending { background:#e9ecef; color:#aaa; }
@@ -34,7 +34,6 @@
         <h1 class="m-0 font-weight-bold" style="font-size:1.4rem">
             <i class="fas fa-file-alt mr-2" style="color:#4e73df"></i>Exams & Result Publishing
         </h1>
-        <p class="text-muted mb-0" style="font-size:.82rem">Manage exams and control result visibility for parents</p>
     </div>
     @can('create exams')
     <a href="{{ route('exams.create') }}" class="btn btn-primary btn-sm" style="border-radius:.25rem;font-weight:600">

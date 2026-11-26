@@ -14,7 +14,10 @@
 body,
 .tooltip,
 .popover {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    /* Standard business fonts: Segoe UI on Windows, Helvetica/Arial on Mac,
+       the device default on Android. Apple's system UI font is left out on
+       purpose: it reads as an app/AI interface rather than an office system. */
+    font-family: "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 .content-header h1 {
@@ -138,3 +141,42 @@ a:hover { color: var(--sp-navy-dark); }
 .dark-mode .main-sidebar.sidebar-dark-primary .brand-link {
     background-color: var(--sp-navy-dark);
 }
+
+/* ── Formal look for the portal and results pages ──────────────
+   Those pages carry an older custom design (dark hero banner, small
+   uppercase eyebrow labels, pill buttons). Map it onto plain AdminLTE. */
+.content-wrapper .hero {
+    background: transparent !important;
+    color: inherit;
+    padding: 0 0 .6rem;
+    margin-bottom: 1rem;
+    border-radius: 0;
+    border-bottom: 1px solid #dee2e6;
+}
+.content-wrapper .hero h1 { font-size: 1.5rem; font-weight: 600; color: #212529; margin: 0 0 .2rem; }
+.content-wrapper .hero-sub { opacity: 1; color: #6c757d; font-size: .9rem; margin: 0; }
+.content-wrapper .hero-eye { display: none; }
+.content-wrapper .btn-hero,
+.content-wrapper .btn-back {
+    display: inline-block; background: #fff; color: var(--sp-navy); border: 1px solid var(--sp-navy);
+    border-radius: .25rem; padding: .3rem .75rem; font-size: .875rem; font-weight: 400; margin-top: .5rem;
+}
+.content-wrapper .btn-hero:hover,
+.content-wrapper .btn-back:hover { background: var(--sp-navy); color: #fff; text-decoration: none; }
+.content-wrapper .sec-lbl {
+    font-size: 1.05rem; font-weight: 600; text-transform: none; color: #212529;
+}
+.content-wrapper .sec-lbl::before { display: none; }
+.content-wrapper .qs-lbl, .content-wrapper .fin-lbl, .content-wrapper .fl {
+    text-transform: none; font-size: .8rem; font-weight: 600; color: #6c757d; opacity: 1;
+}
+/* labels sitting on coloured tiles keep their own (white) colour */
+.content-wrapper .bs-lbl, .content-wrapper .lbl {
+    text-transform: none; font-size: .8rem; font-weight: 600; opacity: .9;
+}
+.content-wrapper .stu-badge { border-radius: .25rem; text-transform: none; }
+.content-wrapper .btn-em, .content-wrapper .btn-ghost { border-radius: .25rem; box-shadow: none; }
+
+.dark-mode .content-wrapper .hero { border-bottom-color: #4b5157; }
+.dark-mode .content-wrapper .hero h1, .dark-mode .content-wrapper .sec-lbl { color: #e9ecef; }
+.dark-mode .content-wrapper .btn-hero, .dark-mode .content-wrapper .btn-back { background: transparent; color: #8fb1ee; border-color: #8fb1ee; }

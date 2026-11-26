@@ -8,7 +8,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family:"Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
     min-height: 100vh;
     background: #1b2956;
     display: flex; align-items: center; justify-content: center;
@@ -33,7 +33,7 @@ body {
     margin: 0 auto .9rem;
     display: block;
 }
-.card-top h2 { font-size: 1.25rem; font-weight: 800; }
+.card-top h2 { font-size: 1.25rem; font-weight:700; }
 .card-top h2 .accent { color: #FBB516; }
 .card-top p  { font-size: .82rem; opacity: .8; margin-top: .3rem; }
 
@@ -44,7 +44,7 @@ body {
 .form-group { margin-bottom: 1.2rem; }
 label {
     display: block; font-size: .8rem; font-weight: 700;
-    color: #334155; margin-bottom: .4rem; text-transform: uppercase;
+    color: #334155; margin-bottom: .4rem;
 }
 
 .input-wrap { position: relative; }

@@ -50,14 +50,14 @@
 @section('css')
 <style>
 .nb-sec-lbl{
-    font-size:.68rem; font-weight:700; text-transform:uppercase;
+    font-size:.68rem; font-weight:700;
     color:#94a3b8; margin:0 0 .7rem; display:flex; align-items:center;
 }
 .nb-sec-lbl:not(:first-child){ margin-top:1.6rem; }
 
 .nb-new{
     display:inline-block; background:#dcfce7; color:#15803d; font-size:.6rem; font-weight:700;
-    text-transform:uppercase; border-radius:20px; padding:.1rem .5rem;
+ border-radius:20px; padding:.1rem .5rem;
     vertical-align:middle; margin-left:.4rem;
 }
 
@@ -75,7 +75,7 @@
 
 .nb-ribbon{
     position:absolute; top:-9px; right:16px; background:#d97706; color:#fff;
-    font-size:.62rem; font-weight:700; text-transform:uppercase;
+    font-size:.62rem; font-weight:700;
     padding:.22rem .6rem; border-radius:20px; box-shadow:0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
 }
 
@@ -91,7 +91,7 @@
 .nb-head{ display:flex; align-items:center; justify-content:space-between; gap:.6rem; flex-wrap:wrap; }
 .nb-title{ font-weight:700; color:#1e293b; margin:0; font-size:.98rem; }
 .nb-audience{
-    font-size:.62rem; font-weight:700; text-transform:uppercase;
+    font-size:.62rem; font-weight:700;
     color:#64748b; background:#f1f5f9; border-radius:20px; padding:.16rem .58rem; white-space:nowrap;
 }
 .nb-body{ color:#475569; font-size:.86rem; margin:.45rem 0 .55rem; white-space:pre-line; }

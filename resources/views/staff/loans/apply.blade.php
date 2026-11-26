@@ -193,7 +193,7 @@
                     </div>
                     <div class="text-center mt-3">
                         <i class="fas fa-shield-alt fa-3x text-muted"></i>
-                        <p class="small text-muted mt-2">All applications are processed securely and confidentially.</p>
+                        
                     </div>
                 </div>
             </div>

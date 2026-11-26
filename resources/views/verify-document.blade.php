@@ -7,7 +7,7 @@
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body {
-    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family:"Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
     min-height: 100vh; background: #1b2956; color: #2d3748;
     display: flex; align-items: center; justify-content: center; padding: 1rem;
 }

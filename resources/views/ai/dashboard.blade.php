@@ -1,6 +1,6 @@
 @extends('adminlte::page')
 
-@section('title', 'AI Insights Dashboard')
+@section('title', 'AI Insights')
 
 @section('content_header')
     <div class="d-flex align-items-center justify-content-between flex-wrap">
@@ -9,26 +9,14 @@
                 <i class="fas fa-arrow-left mr-1"></i>Back
             </a>
             <h1 class="mb-0">
-                <i class="fas fa-robot text-primary"></i> AI Insights Dashboard
+                AI Insights
             </h1>
-        </div>
-        <div class="d-flex align-items-center mt-1 mt-md-0">
-            <span class="badge badge-primary mr-2"><i class="fas fa-microchip mr-1"></i>Groq — {{ config('services.groq.model') }}</span>
-            <span class="badge badge-success"><i class="fas fa-bolt mr-1"></i>Free Tier · 30 req/min</span>
         </div>
     </div>
 @stop
 
 @section('content')
 <div class="container-fluid">
-
-    {{-- Info Banner --}}
-    <div class="alert alert-info alert-dismissible fade show mb-3 py-2">
-        <i class="fas fa-info-circle"></i>
-        Results are <strong>cached for 24 hours</strong> per student/class to save API calls.
-        Use the <strong>Clear Cache</strong> button if you need a fresh analysis after entering new marks.
-        <button type="button" class="close py-1" data-dismiss="alert">&times;</button>
-    </div>
 
     <div class="row">
 
@@ -120,7 +108,6 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <p class="text-muted small mb-3">Analyzes all student pocket money deposits and withdrawals to surface trends and recommendations.</p>
                     <div class="d-flex flex-wrap gap-2">
                         <button id="finance-btn" class="btn btn-info btn-sm mr-2">
                             <i class="fas fa-chart-pie mr-1"></i>Get Finance Insights

@@ -7,7 +7,7 @@
 <style>
 *, *::before, *::after { box-sizing: border-box; }
 body {
-    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family:"Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
     margin: 0;
     background: #f4f6f9;
     color: #2d3748;

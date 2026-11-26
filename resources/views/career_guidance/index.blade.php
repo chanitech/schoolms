@@ -4,7 +4,6 @@
 
 @section('content_header')
     <h1 class="m-0"><i class="fas fa-compass mr-2"></i>Career Guidance</h1>
-    <small class="text-muted">Predicted A-level combinations, careers and typical university courses from each student's results</small>
 @stop
 
 @section('content')

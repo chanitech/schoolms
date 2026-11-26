@@ -15,7 +15,6 @@
                 <div class="card-body text-center py-4">
                     <i class="fas fa-chart-pie fa-2x text-primary mb-2"></i>
                     <h5 class="text-dark mb-0">Summary Dashboard</h5>
-                    <small class="text-muted">Staff, leaves, job cards &amp; events at a glance</small>
                 </div>
             </div>
         </a>
@@ -28,7 +27,6 @@
                 <div class="card-body text-center py-4">
                     <i class="fas fa-users fa-2x text-info mb-2"></i>
                     <h5 class="text-dark mb-0">Staff Report</h5>
-                    <small class="text-muted">Headcount by department and role</small>
                 </div>
             </div>
         </a>
@@ -41,7 +39,6 @@
                 <div class="card-body text-center py-4">
                     <i class="fas fa-calendar-check fa-2x text-success mb-2"></i>
                     <h5 class="text-dark mb-0">Attendance Report</h5>
-                    <small class="text-muted">Presence and absence rate by department</small>
                 </div>
             </div>
         </a>
@@ -54,7 +51,6 @@
                 <div class="card-body text-center py-4">
                     <i class="fas fa-plane-departure fa-2x text-warning mb-2"></i>
                     <h5 class="text-dark mb-0">Leave Report</h5>
-                    <small class="text-muted">Leave requests received and their status</small>
                 </div>
             </div>
         </a>
@@ -67,7 +63,6 @@
                 <div class="card-body text-center py-4">
                     <i class="fas fa-briefcase fa-2x text-secondary mb-2"></i>
                     <h5 class="text-dark mb-0">Job Cards Report</h5>
-                    <small class="text-muted">Task assignment and completion</small>
                 </div>
             </div>
         </a>
@@ -80,7 +75,6 @@
                 <div class="card-body text-center py-4">
                     <i class="fas fa-star fa-2x text-danger mb-2"></i>
                     <h5 class="text-dark mb-0">Evaluation Report</h5>
-                    <small class="text-muted">Staff performance scoring</small>
                 </div>
             </div>
         </a>

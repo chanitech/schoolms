@@ -10,8 +10,8 @@
 }
 .perf-card:hover { box-shadow:0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2); }
 .perf-card .inner { padding: 1.2rem 1.4rem; }
-.perf-card .num  { font-size: 2.2rem; font-weight: 800; line-height: 1; }
-.perf-card .lbl  { font-size: .73rem; text-transform: uppercase; margin-top: 4px; opacity: .85; }
+.perf-card .num  { font-size: 2.2rem; font-weight:700; line-height: 1; }
+.perf-card .lbl  { font-size: .73rem; margin-top: 4px; opacity: .85; }
 .perf-card .foot { background: rgba(0,0,0,.10); padding: .4rem 1.4rem; font-size: .74rem; }
 .perf-card .icon-wrap { font-size: 2.6rem; opacity: .18; position: absolute; right: 1rem; top: .8rem; }
 
@@ -65,7 +65,7 @@
 }
 .greeting-banner::after {display:none}
 .greeting-banner .time  { font-size: .8rem; opacity: .75; }
-.greeting-banner .name  { font-size: 1.5rem; font-weight: 800; margin: 2px 0; }
+.greeting-banner .name  { font-size: 1.5rem; font-weight:700; margin: 2px 0; }
 .greeting-banner .dept  { font-size: .82rem; opacity: .8; }
 .greeting-banner .meta-chips { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .8rem; }
 .banner-chip {
@@ -319,13 +319,13 @@
         <div class="card-body">
             <div class="d-flex justify-content-around text-center">
                 <div>
-                    <div style="font-size:1.6rem;font-weight:800;color:#4e73df">{{ $leavesApproved }}</div>
-                    <div style="font-size:.72rem;color:#888;text-transform:uppercase">Days Taken</div>
+                    <div style="font-size:1.6rem;font-weight:700;color:#4e73df">{{ $leavesApproved }}</div>
+                    <div style="font-size:.72rem;color:#888;">Days Taken</div>
                 </div>
                 <div style="width:1px;background:#eee"></div>
                 <div>
-                    <div style="font-size:1.6rem;font-weight:800;color:{{ $leavesPending ? '#f6c23e' : '#aaa' }}">{{ $leavesPending }}</div>
-                    <div style="font-size:.72rem;color:#888;text-transform:uppercase">Pending</div>
+                    <div style="font-size:1.6rem;font-weight:700;color:{{ $leavesPending ? '#f6c23e' : '#aaa' }}">{{ $leavesPending }}</div>
+                    <div style="font-size:.72rem;color:#888;">Pending</div>
                 </div>
             </div>
             <div class="mt-3">

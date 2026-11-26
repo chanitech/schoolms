@@ -11,7 +11,7 @@
 }
 .report-card:hover { box-shadow:0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2); }
 .status-bar { height: 4px; width: 100%; }
-.day-badge { font-size: .7rem; text-transform: uppercase; font-weight: 600; }
+.day-badge { font-size: .7rem; font-weight: 600; }
 .kpi-mini { background: #f8f9fc; border-radius:.25rem; padding: .6rem 1rem; text-align: center; }
 .kpi-mini .num { font-size: 1.5rem; font-weight: 700; line-height: 1.1; }
 .empty-state { padding: 4rem 0; text-align: center; color: #9ca3af; }
@@ -25,7 +25,6 @@
         <h1 class="m-0 font-weight-bold" style="font-size:1.4rem">
             <i class="fas fa-clipboard-list mr-2" style="color:#4e73df"></i>My Daily Reports
         </h1>
-        <p class="text-muted mb-0" style="font-size:.82rem">Track and submit your teaching activity each day</p>
     </div>
     <a href="{{ route('daily-reports.create') }}" class="btn btn-primary"
         style="border-radius:.25rem;font-weight:600;padding:.45rem 1.2rem">

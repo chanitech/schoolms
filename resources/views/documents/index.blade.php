@@ -6,7 +6,6 @@
 <div class="d-flex justify-content-between align-items-center flex-wrap" style="gap:.5rem">
     <div>
         <h1 class="mb-0"><i class="fas fa-book-open text-warning mr-2"></i> Document Library</h1>
-        <small class="text-muted">Browse, search and download school documents</small>
     </div>
     @can('upload documents')
     <a href="{{ route('documents.create') }}" class="btn btn-primary">

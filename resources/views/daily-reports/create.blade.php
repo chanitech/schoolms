@@ -6,7 +6,7 @@
 .form-card { border: none; border-radius:.25rem; box-shadow:0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2); overflow: hidden; }
 .section-header {
     display: flex; align-items: center; gap: .6rem;
-    font-weight: 700; font-size: .82rem; text-transform: uppercase; color: #4e73df; margin-bottom: .75rem;
+    font-weight: 700; font-size: .82rem; color: #4e73df; margin-bottom: .75rem;
 }
 .section-header::after { content: ''; flex: 1; height: 1px; background: #e3e6f0; }
 .session-pill {

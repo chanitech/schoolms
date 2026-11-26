@@ -369,7 +369,7 @@
 #lp-plan-output table { width:100%; border-collapse:collapse; margin-bottom:1rem; font-size:12px; }
 #lp-plan-output table td, #lp-plan-output table th { border:1px solid #dee2e6; padding:6px 8px; vertical-align:top; }
 #lp-plan-output table th { background:#f8f9fa; font-weight:600; }
-#lp-plan-output h5 { font-weight:700; margin-top:1.2rem; margin-bottom:.5rem; font-size:13px; text-transform:uppercase; border-bottom:1px solid #dee2e6; padding-bottom:3px; }
+#lp-plan-output h5 { font-weight:700; margin-top:1.2rem; margin-bottom:.5rem; font-size:13px; border-bottom:1px solid #dee2e6; padding-bottom:3px; }
 #lp-plan-output ul { padding-left:1.2rem; }
 
 @media print {

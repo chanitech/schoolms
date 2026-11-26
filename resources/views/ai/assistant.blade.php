@@ -1,6 +1,6 @@
 @extends('adminlte::page')
 
-@section('title', 'Chani Technologies AI Assistant')
+@section('title', 'AI Assistant')
 
 @section('content_header')
     <div class="d-flex align-items-center justify-content-between flex-wrap">
@@ -9,12 +9,8 @@
                 <i class="fas fa-arrow-left mr-1"></i>Back
             </a>
             <h1 class="mb-0">
-                <i class="fas fa-robot text-primary"></i> Chani Technologies AI
+                AI Assistant
             </h1>
-        </div>
-        <div class="d-flex align-items-center mt-1 mt-md-0">
-            <span class="badge badge-info mr-2"><i class="fas fa-microchip mr-1"></i>Chani Technologies AI</span>
-            <span class="badge badge-success"><i class="fas fa-plug mr-1"></i>Live School Data</span>
         </div>
     </div>
 @stop
@@ -108,7 +104,7 @@
                     <div>
                         <div class="bubble-content">
                             <strong>Hello, I'm the Chani Technologies AI assistant.</strong>
-                            <span class="badge badge-info ml-1" style="font-size:10px;">Powered by Chani Technologies</span>
+
                             <br><br>
                             I have <strong>live access</strong> to the school database — students, attendance, marks, timetable, counseling office, staff, finance, inventory, transport, library and more. I only show what your role is allowed to see.
                             <br><br>
@@ -514,7 +510,7 @@ function welcomeHtml() {
         <div>
             <div class="bubble-content">
                 <strong>Hello, I'm the Chani Technologies AI assistant.</strong>
-                <span class="badge badge-info ml-1" style="font-size:10px;">Powered by Chani Technologies</span>
+
                 <br><br>
                 I have <strong>live access</strong> to all school data.<br>Ask me anything about students, marks, fees, staff, library, or dormitories.
             </div>

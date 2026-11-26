@@ -6,7 +6,7 @@
     <title>Subscription Expired</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: #f3f4f6; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+        body { font-family:"Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif; background: #f3f4f6; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
         .box { background: #fff; border-radius:.25rem; padding: 3rem; max-width: 480px; text-align: center; box-shadow:0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2); }
         .icon { font-size: 4rem; color: #ef4444; margin-bottom: 1rem; }
         h1 { font-size: 1.6rem; color: #111827; margin-bottom: .5rem; }

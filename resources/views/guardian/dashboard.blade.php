@@ -21,7 +21,7 @@
 /* Hero */
 .hero{background:#001f3f;border-radius:var(--r);padding:2.2rem 2rem 1.9rem;margin-bottom:1.4rem;position:relative;overflow:hidden;color:#fff;}
 .hero::before{display:none}
-.hero-eye{font-size:.67rem;text-transform:uppercase;color:var(--em-lt);font-weight:600;margin-bottom:.4rem;display:flex;align-items:center;gap:.4rem;}
+.hero-eye{font-size:.67rem;color:var(--em-lt);font-weight:600;margin-bottom:.4rem;display:flex;align-items:center;gap:.4rem;}
 .hero h1{font-size:1.95rem;margin:0 0 .35rem;line-height:1.15;}
 .hero-sub{opacity:.58;font-size:.8rem;}
 .hero-actions{position:relative;margin-top:1.1rem;}
@@ -33,14 +33,14 @@
 .qs{background:#fff;border-radius:var(--r);box-shadow:0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);padding:1rem 1.1rem;position:relative;overflow:hidden;}
 .qs:nth-child(1){}.qs:nth-child(2){}.qs:nth-child(3){}
 .qs-dot{width:7px;height:7px;border-radius:50%;margin-bottom:.55rem;}
-.qs-lbl{font-size:.63rem;font-weight:700;text-transform:uppercase;color:var(--sl-400);margin-bottom:.15rem;}
+.qs-lbl{font-size:.63rem;font-weight:700;color:var(--sl-400);margin-bottom:.15rem;}
 .qs-val{font-size:1.55rem;color:var(--sl-900);line-height:1;}
 .qs-sub{font-size:.67rem;color:var(--sl-400);margin-top:.12rem;}
 .qs-ico{position:absolute;right:.8rem;top:50%;transform:translateY(-50%);font-size:2.1rem;opacity:.07;}
 .c-em .qs-dot{background:var(--em)}.c-sky .qs-dot{background:var(--sky)}.c-go .qs-dot{background:var(--gold)}
 
 /* Section label */
-.sec-lbl{font-size:.66rem;font-weight:700;text-transform:uppercase;color:var(--sl-400);margin-bottom:.9rem;display:flex;align-items:center;gap:.45rem;}
+.sec-lbl{font-size:.66rem;font-weight:700;color:var(--sl-400);margin-bottom:.9rem;display:flex;align-items:center;gap:.45rem;}
 .sec-lbl::before{content:'';display:block;width:14px;height:2px;background:var(--em);border-radius:2px;}
 
 /* Student cards */
@@ -52,7 +52,7 @@
 .stu-avatar{width:64px;height:64px;flex-shrink:0;border-radius:50%;object-fit:cover;border:3px solid rgba(255,255,255,.35);}
 .stu-name{font-size:1.2rem;color:#fff;margin:0 0 .2rem;}
 .stu-meta{font-size:.74rem;color:rgba(255,255,255,.75);}
-.stu-badge{display:inline-block;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:.1rem .6rem;font-size:.66rem;font-weight:700;text-transform:uppercase;color:#fff;margin-top:.35rem;}
+.stu-badge{display:inline-block;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:.1rem .6rem;font-size:.66rem;font-weight:700;color:#fff;margin-top:.35rem;}
 
 .stu-body{padding:1.3rem 1.5rem;}
 .fin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem;margin-bottom:1.1rem;}
@@ -61,7 +61,7 @@
 .fin-box.good{background:#f0fff4;}
 .fin-box.info{background:#e3f2fd;}
 .fin-ico{font-size:1.3rem;margin-bottom:.25rem;}
-.fin-lbl{font-size:.62rem;font-weight:700;text-transform:uppercase;color:var(--sl-500);}
+.fin-lbl{font-size:.62rem;font-weight:700;color:var(--sl-500);}
 .fin-val{font-weight:700;color:var(--sl-900);font-size:.86rem;margin-top:.1rem;}
 .fin-track{height:3px;background:#ffe0e0;border-radius:2px;margin-top:.4rem;overflow:hidden;}
 .fin-fill{height:3px;border-radius:2px;background:var(--rose);}
@@ -106,9 +106,7 @@
 
     {{-- Hero --}}
     <div class="hero">
-        <div class="hero-eye"><i class="fas fa-hand-holding-heart"></i> Parent &amp; Guardian Portal</div>
         <h1>Welcome, {{ $guardian->first_name }}</h1>
-        <p class="hero-sub">Academic &amp; financial overview for your {{ $students->count() > 1 ? 'children' : 'child' }}</p>
         <div class="hero-actions">
             <a href="{{ route('guardian.fees') }}" class="btn-hero">
                 <i class="fas fa-file-invoice-dollar"></i> Detailed Financials
@@ -127,7 +125,7 @@
                         <div class="notice-title">
                             {{ $notice->title }}
                             @if($notice->created_at->gt(now()->subDays(3)))
-                                <span style="display:inline-block;background:var(--em-lt);color:var(--em-dk);font-size:.58rem;font-weight:700;text-transform:uppercase;border-radius:20px;padding:.06rem .45rem;vertical-align:middle;margin-left:.3rem;">New</span>
+                                <span style="display:inline-block;background:var(--em-lt);color:var(--em-dk);font-size:.58rem;font-weight:700;border-radius:20px;padding:.06rem .45rem;vertical-align:middle;margin-left:.3rem;">New</span>
                             @endif
                         </div>
                         <div class="notice-body">{{ \Illuminate\Support\Str::limit($notice->body, 140) }}</div>

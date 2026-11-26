@@ -23,25 +23,25 @@
     background: #f0f4ff; border-bottom: 2px solid #d0d9f0;
     text-align: center; padding: .6rem 2rem;
     font-weight: 700; font-size: .9rem;
-    text-transform: uppercase; color: #1a3c6e;
+ color: #1a3c6e;
 }
 .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
 .meta-cell { padding: .7rem 1.5rem; border-right: 1px solid #e8ecf5; border-bottom: 1px solid #e8ecf5; }
 .meta-cell:nth-child(2n) { border-right: none; }
-.meta-label { font-size: .68rem; text-transform: uppercase; color: #7c8db5; font-weight: 600; }
+.meta-label { font-size: .68rem; color: #7c8db5; font-weight: 600; }
 .meta-value { font-size: .88rem; font-weight: 600; color: #1a2d5a; margin-top: 1px; }
 .section-block { padding: 1.25rem 2rem; border-bottom: 1px solid #eef0f8; }
 .section-block:last-child { border-bottom: none; }
 .sec-title {
     display: flex; align-items: center; gap: .5rem;
-    font-size: .72rem; font-weight: 700; text-transform: uppercase; color: #4e73df; margin-bottom: .75rem;
+    font-size: .72rem; font-weight: 700; color: #4e73df; margin-bottom: .75rem;
 }
 .sec-title::after { content: ''; flex: 1; height: 1.5px; background: #e3e6f0; }
 .sessions-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
-.sessions-table th { background: #f0f4ff; color: #1a3c6e; font-weight: 700; padding: .45rem .75rem; text-align: left; font-size: .72rem; text-transform: uppercase; }
+.sessions-table th { background: #f0f4ff; color: #1a3c6e; font-weight: 700; padding: .45rem .75rem; text-align: left; font-size: .72rem; }
 .sessions-table td { padding: .5rem .75rem; border-bottom: 1px solid #f0f0f8; vertical-align: middle; }
 .sessions-table tr:last-child td { border-bottom: none; }
-.status-chip { display: inline-block; padding: .2rem .55rem; border-radius: 20px; font-size: .68rem; font-weight: 700; text-transform: uppercase; }
+.status-chip { display: inline-block; padding: .2rem .55rem; border-radius: 20px; font-size: .68rem; font-weight: 700; }
 .narrative-text { font-size: .88rem; line-height: 1.75; color: #2d3748; white-space: pre-line; }
 .empty-field { font-size: .82rem; color: #a0aec0; font-style: italic; }
 .sig-block { display: flex; justify-content: space-between; padding: 1.5rem 2rem 1rem; gap: 2rem; }
@@ -150,7 +150,7 @@
         <div class="school-logo-placeholder"><i class="fas fa-school fa-lg" style="opacity:.7"></i></div>
         @endif
         <div class="flex-grow-1">
-            <div style="font-size:.7rem;opacity:.75;text-transform:uppercase">Official Report</div>
+            <div style="font-size:.7rem;opacity:.75;">Official Report</div>
             <h4 class="mb-0 font-weight-bold" style="font-size:1.15rem;line-height:1.2">
                 {{ $school->name ?? 'School Name' }}
             </h4>
@@ -166,7 +166,7 @@
             @endif
         </div>
         <div style="text-align:right;flex-shrink:0;opacity:.85">
-            <div style="font-size:.65rem;text-transform:uppercase">Report No.</div>
+            <div style="font-size:.65rem;">Report No.</div>
             <div style="font-size:.9rem;font-weight:700">DR-{{ str_pad($dailyReport->id, 5, '0', STR_PAD_LEFT) }}</div>
             <div style="font-size:.65rem;margin-top:.3rem;opacity:.8">{{ $dailyReport->created_at->format('d/m/Y') }}</div>
         </div>
