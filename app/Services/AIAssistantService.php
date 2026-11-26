@@ -30,7 +30,23 @@ class AIAssistantService
     protected string $apiKey;
     protected string $model;
     protected string $baseUrl = 'https://api.deepseek.com/v1/chat/completions';
-    protected int $maxRounds = 5;
+    protected int $maxRounds = 6;
+
+    /** Each fixed tool needs read access to this data area (see AIDataAccess::SOURCES). */
+    protected const TOOL_GATES = [
+        'search_student' => 'Student', 'list_students_in_class' => 'Student',
+        'get_top_students' => 'StudentResult', 'get_class_performance' => 'Mark', 'get_student_results' => 'Mark',
+        'get_student_bills' => 'StudentBill', 'get_fee_defaulters' => 'StudentBill', 'get_finance_summary' => 'Payment',
+        'get_student_pocket_money' => 'PocketTransaction',
+        'get_staff_summary' => 'Staff', 'search_staff' => 'Staff', 'get_staff_on_leave' => 'Leave',
+        'get_loan_summary' => 'Loan', 'get_library_summary' => 'Book', 'search_book' => 'Book',
+        'get_dormitory_summary' => 'Dormitory', 'get_student_profile' => 'Student',
+    ];
+
+    protected function data(): AIDataAccess
+    {
+        return app(AIDataAccess::class);
+    }
 
     public function __construct()
     {
@@ -53,7 +69,8 @@ class AIAssistantService
 
         $systemPrompt = $this->buildSystemPrompt();
         $messages     = $this->buildMessages($systemPrompt, $conversationHistory, $userMessage);
-        $functions    = $this->getFunctions();
+        $functions    = array_values(array_filter($this->getFunctions(),
+            fn ($f) => ! isset(self::TOOL_GATES[$f['name']]) || $this->data()->canModel(self::TOOL_GATES[$f['name']])));
         $toolCalls    = [];
 
         try {
@@ -84,8 +101,11 @@ class AIAssistantService
                     ];
                 }
 
-                $response = $this->callApi($messages);
+                // Keep offering the tools so the model can chain steps (find a
+                // student, then read their records); drop them on the last
+                // round to force a final written answer.
                 $rounds++;
+                $response = $this->callApi($messages, $rounds < $this->maxRounds ? $functions : null);
             }
 
             $reply = $response['choices'][0]['message']['content']
@@ -156,7 +176,11 @@ You are **Chani Technologies AI**, the intelligent assistant for this School Man
 6. Respond in the same language the user uses (English or Swahili).
 7. **Never** invent numbers, averages, or comparisons that are not explicitly present in the tool output.
 8. For queries about "which subjects each teacher teaches", use the `get_teacher_subjects` tool.
-9. For queries about attendance, enrollments, or other models, use the `fetch_data` tool with appropriate filters.
+9. For anything the fixed tools don't cover, use `query_data`.
+9b. You can read the WHOLE school database through `list_data_sources` and `query_data` — students, guardians, attendance, marks, timetable, lesson plans, dormitories, counseling office records (intake forms, session notes, aptitude and interest tests), staff, leave, finance, inventory, procurement, transport, library, notices and SMS. **Never say the system has no such data** without first calling `list_data_sources`.
+9c. For "everything about student X" use `get_student_profile`. To filter another area by a student, first get the student ID from `search_student`, then `query_data` with student_id.
+9d. If a tool says the user's role has no access, tell them politely that their role cannot see it — do not try other tools to get around it.
+9e. Counseling and health information is confidential: share it only in direct answer to the question asked, never volunteer it.
 10. **NEVER** infer subject assignments from department names. Only use data from `get_teacher_subjects`. If no data exists, say exactly: “No subject‑teacher assignments found.”
 PROMPT;
     }
@@ -374,20 +398,39 @@ PROMPT;
                 'parameters'  => ['type' => 'object', 'properties' => new \stdClass()],
             ],
 
-            // Generic data fetch (whitelisted models)
+            // Whole-database access (permission-aware)
             [
-                'name'        => 'fetch_data',
-                'description' => 'Fetch data from any allowed model. Use for queries not covered by other tools.',
+                'name'        => 'list_data_sources',
+                'description' => 'List every data area in the school database that this user may query (with columns), plus areas that exist but this user\'s role cannot see. Call this whenever unsure whether some kind of data exists (e.g. counseling, transport, inventory, salaries).',
+                'parameters'  => ['type' => 'object', 'properties' => new \stdClass()],
+            ],
+            [
+                'name'        => 'query_data',
+                'description' => 'Read any data area from list_data_sources. Supports filters, sorting, counting and grouping. Use student/staff IDs from search tools to filter by student_id/staff_id.',
                 'parameters'  => [
                     'type'       => 'object',
                     'properties' => [
-                        'model'   => ['type' => 'string', 'description' => 'Model name (Student, Staff, etc.)'],
-                        'columns' => ['type' => 'array', 'items' => ['type' => 'string'], 'description' => 'Columns to select (optional)'],
-                        'filters' => ['type' => 'object', 'description' => 'Key‑value WHERE conditions'],
-                        'limit'   => ['type' => 'integer', 'description' => 'Max records (default 20)'],
+                        'model'      => ['type' => 'string', 'description' => 'Data area name exactly as in list_data_sources, e.g. Student, IndividualSessionReport, InventoryItem'],
+                        'filters'    => ['type' => 'array', 'description' => 'Conditions, all must match', 'items' => ['type' => 'object', 'properties' => [
+                            'column' => ['type' => 'string'],
+                            'op'     => ['type' => 'string', 'enum' => ['=', '!=', '>', '>=', '<', '<=', 'like', 'in', 'null', 'not_null', 'between']],
+                            'value'  => ['description' => 'Value; an array for in/between'],
+                            'value_column' => ['type' => 'string', 'description' => 'Compare with another column instead of a value, e.g. quantity_in_stock < minimum_stock'],
+                        ], 'required' => ['column']]],
+                        'columns'    => ['type' => 'array', 'items' => ['type' => 'string'], 'description' => 'Columns to return (default all)'],
+                        'order_by'   => ['type' => 'string'],
+                        'order_dir'  => ['type' => 'string', 'enum' => ['asc', 'desc']],
+                        'limit'      => ['type' => 'integer', 'description' => 'Max rows, default 20, max 100'],
+                        'count_only' => ['type' => 'boolean', 'description' => 'Return only the number of matching rows'],
+                        'group_by'   => ['type' => 'string', 'description' => 'Count rows per value of this column'],
                     ],
                     'required' => ['model'],
                 ],
+            ],
+            [
+                'name'        => 'get_student_profile',
+                'description' => 'Everything about one student: class, guardian, attendance rate, results, fees, pocket money, dormitory, transport and counseling records (each part only if the user\'s role allows).',
+                'parameters'  => ['type' => 'object', 'properties' => ['query' => ['type' => 'string', 'description' => 'Student name, admission number or ID']], 'required' => ['query']],
             ],
 
             // Overview
@@ -405,8 +448,15 @@ PROMPT;
 
     protected function executeFunction(string $name, array $args): array
     {
+        if (isset(self::TOOL_GATES[$name]) && ! $this->data()->canModel(self::TOOL_GATES[$name])) {
+            return ['_exact_summary' => 'Your role does not have access to that information. Ask the head of school or an admin if you need it.'];
+        }
+
         try {
             return match ($name) {
+                'list_data_sources'      => $this->data()->sources(),
+                'query_data'             => $this->data()->query($args),
+                'get_student_profile'    => $this->data()->studentProfile($args['query'] ?? ''),
                 'ask_clarification'      => $this->askClarification($args['question'] ?? 'Please provide more details.'),
                 'search_student'         => $this->searchStudent($args['query'] ?? ''),
                 'list_students_in_class' => $this->listStudentsInClass($args['class_name'] ?? ''),
@@ -428,7 +478,7 @@ PROMPT;
                 'get_library_summary'    => $this->getLibrarySummary(),
                 'search_book'            => $this->searchBook($args['query'] ?? ''),
                 'get_dormitory_summary'  => $this->getDormitorySummary(),
-                'fetch_data'             => $this->fetchData($args['model'] ?? '', $args['columns'] ?? null, $args['filters'] ?? null, (int)($args['limit'] ?? 20)),
+                'fetch_data'             => $this->data()->query($args),
                 'get_school_overview'    => $this->getSchoolOverview(),
                 default                  => ['error' => "Unknown function: {$name}"],
             };
@@ -488,7 +538,7 @@ PROMPT;
             $dorm    = isset($s->dormitory) ? $s->dormitory->name : 'Day scholar';
             $avgMark = is_null($avg) ? 'N/A' : $avg;
 
-            $summary .= "• {$s->full_name} (Adm: {$s->admission_no}) – Class: {$class}, Gender: {$s->gender}, Status: {$s->status}, Age: {$s->age}, Dorm: {$dorm}, Pocket: {$pocket}, Avg Mark: {$avgMark}";
+            $summary .= "• {$s->full_name} (ID: {$s->id}, Adm: {$s->admission_no}) – Class: {$class}, Gender: {$s->gender}, Status: {$s->status}, Age: {$s->age}, Dorm: {$dorm}, Pocket: {$pocket}, Avg Mark: {$avgMark}";
             if ($marks->isNotEmpty()) {
                 $recent = $marks->take(5)->map(fn($m) => $m->subject->name . ':' . $m->mark)->implode(', ');
                 $summary .= ", Recent marks: {$recent}";
@@ -997,71 +1047,23 @@ PROMPT;
         return ['_exact_summary' => $summary];
     }
 
-    // ─── Generic data fetch ─────────────────────────────────────
-
-    protected function fetchData(string $model, ?array $columns = null, ?array $filters = null, int $limit = 20): array
-    {
-        $allowedModels = [
-            'Student', 'Staff', 'SchoolClass', 'Exam', 'Subject', 'Mark',
-            'StudentBill', 'Payment', 'Loan', 'Leave', 'Book', 'Lending',
-            'Dormitory', 'Attendance', 'Enrollment', 'AcademicSession',
-        ];
-
-        $modelClass = 'App\\Models\\' . $model;
-        if (!class_exists($modelClass) || !in_array($model, $allowedModels)) {
-            return ['_exact_summary' => "Model '{$model}' is not allowed or does not exist."];
-        }
-
-        $query = $modelClass::query();
-        if ($filters && is_array($filters)) {
-            foreach ($filters as $key => $value) {
-                $query->where($key, $value);
-            }
-        }
-        if ($columns && is_array($columns)) {
-            $query->select($columns);
-        }
-        $records = $query->limit($limit)->get();
-
-        if ($records->isEmpty()) {
-            return ['_exact_summary' => "No records found for model '{$model}' with the given filters."];
-        }
-
-        $summary = "Found " . $records->count() . " record(s) from {$model}:\n";
-        foreach ($records as $record) {
-            $fields = $record->toArray();
-            unset($fields['created_at'], $fields['updated_at'], $fields['deleted_at']);
-            $line = [];
-            foreach ($fields as $key => $value) {
-                if (is_scalar($value) || is_null($value)) {
-                    $line[] = "{$key}: " . ($value ?? 'null');
-                }
-            }
-            $summary .= "• " . implode(', ', $line) . "\n";
-        }
-        $summary = rtrim($summary);
-        return ['_exact_summary' => $summary];
-    }
-
     // ─── Overview ─────────────────────────────────────────────────
 
     protected function getSchoolOverview(): array
     {
         $currentSession = AcademicSession::where('is_current', true)->first();
-        $finance = $this->getFinanceSummary();
-        $library = $this->getLibrarySummary();
-        $dorms = $this->getDormitorySummary();
-        $loans = $this->getLoanSummary();
+        // Sections the user's role can't open are left out, not just hidden in the menu.
+        $section = fn (string $model, callable $fn) => $this->data()->canModel($model) ? $fn()['_exact_summary'] . "\n" : '';
 
         $summary = "🏫 School Overview:\n";
         $summary .= "Students: Active: " . Student::where('status','active')->count() . " (M: " . Student::where('gender','male')->where('status','active')->count() . ", F: " . Student::where('gender','female')->where('status','active')->count() . "), Total: " . Student::count() . "\n";
         $summary .= "Classes: " . SchoolClass::count() . "\n";
         $summary .= "Staff: " . Staff::count() . "\n";
         $summary .= "Current Session: " . ($currentSession ? $currentSession->name : 'Not set') . "\n";
-        $summary .= $finance['_exact_summary'] . "\n";
-        $summary .= $library['_exact_summary'] . "\n";
-        $summary .= $dorms['_exact_summary'] . "\n";
-        $summary .= $loans['_exact_summary'];
+        $summary .= $section('Payment', fn () => $this->getFinanceSummary());
+        $summary .= $section('Book', fn () => $this->getLibrarySummary());
+        $summary .= $section('Dormitory', fn () => $this->getDormitorySummary());
+        $summary .= $section('Loan', fn () => $this->getLoanSummary());
         $summary = rtrim($summary);
         return ['_exact_summary' => $summary];
     }

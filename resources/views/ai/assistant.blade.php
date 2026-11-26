@@ -110,7 +110,7 @@
                             <strong>Hello, I'm the Chani Technologies AI assistant.</strong>
                             <span class="badge badge-info ml-1" style="font-size:10px;">Powered by Chani Technologies</span>
                             <br><br>
-                            I have <strong>live access</strong> to all school data — students, marks, classes, finance, staff, library, dormitories, loans, and more.
+                            I have <strong>live access</strong> to the school database — students, attendance, marks, timetable, counseling office, staff, finance, inventory, transport, library and more. I only show what your role is allowed to see.
                             <br><br>
                             <strong>Try asking:</strong><br>
                             • <em>"Show school overview"</em><br>
