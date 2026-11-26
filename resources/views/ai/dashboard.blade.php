@@ -201,6 +201,26 @@
         .result-meta .badge { font-size: 10px; }
 
         .gap-2 { gap: 0.5rem; }
+
+        /* ── Dark mode: light surfaces above would leave white text on white ── */
+        .dark-mode .result-box { background: #3a3f44; border-color: #4b5157; color: #e9ecef; }
+        .dark-mode .ai-content h1, .dark-mode .ai-content h2 { border-bottom-color: #4b5157; }
+        .dark-mode .ai-content h3 { color: #e9ecef; }
+        .dark-mode .ai-content hr { border-top-color: #4b5157; }
+        .dark-mode .ai-content code, .dark-mode .ai-content pre { background: #2b3035; color: #f08cba; }
+        .dark-mode .ai-content th { background: #454d55; color: #e9ecef; border-color: #4b5157; }
+        .dark-mode .ai-content td { border-color: #4b5157; }
+        .dark-mode .ai-content tr:nth-child(even) td { background: #343a40; }
+        .dark-mode .ai-content blockquote { color: #ced4da; border-left-color: #8fb1ee; }
+        .dark-mode .ai-loading { color: #ced4da; }
+        .dark-mode .ai-loading .spinner { color: #8fb1ee; }
+        .dark-mode .copy-btn { background: #454d55; border-color: #4b5157; color: #e9ecef; }
+        .dark-mode .result-meta { border-top-color: #4b5157; color: #8a939c; }
+        .dark-mode .select2-container--bootstrap4 .select2-selection { background: #343a40; border-color: #6c757d; }
+        .dark-mode .select2-container--bootstrap4 .select2-selection__rendered { color: #e9ecef; }
+        .dark-mode .select2-dropdown { background: #343a40; border-color: #6c757d; color: #e9ecef; }
+        .dark-mode .select2-search__field { background: #2b3035; color: #e9ecef; border-color: #6c757d; }
+        .dark-mode .select2-results__option[aria-selected=true] { background: #454d55; }
     </style>
 @endpush
 

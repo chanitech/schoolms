@@ -100,7 +100,7 @@
             </div>
 
             {{-- Messages --}}
-            <div id="chat-messages" class="flex-fill" style="overflow-y:auto; padding:20px 24px; background:#f5f7fa;">
+            <div id="chat-messages" class="flex-fill chat-area" style="overflow-y:auto; padding:20px 24px;">
 
                 {{-- Welcome bubble --}}
                 <div class="ai-bubble" id="welcome-msg">
@@ -250,6 +250,28 @@
 .conv-item:hover { background: #f8f9fa; }
 .delete-conv-btn { opacity: 0; }
 .conv-item:hover .delete-conv-btn { opacity: 1; }
+
+/* ── Chat area ── */
+.chat-area { background: #f5f7fa; }
+
+/* ── Dark mode: light surfaces above would leave white text on white ── */
+.dark-mode .chat-area { background: #2b3035; }
+.dark-mode .bubble-content { background: #3a3f44; color: #e9ecef; box-shadow: 0 0 0 1px #4b5157; }
+.dark-mode .user-bubble .bubble-content { background: #1b2956; color: #fff; }
+.dark-mode .bubble-content h1, .dark-mode .bubble-content h2 { border-bottom-color: #4b5157; }
+.dark-mode .bubble-content hr { border-top-color: #4b5157; }
+.dark-mode .bubble-content code, .dark-mode .bubble-content pre { background: #2b3035; color: #f08cba; }
+.dark-mode .bubble-content th { background: #454d55; color: #e9ecef; border-color: #4b5157; }
+.dark-mode .bubble-content td { border-color: #4b5157; }
+.dark-mode .bubble-content tr:nth-child(even) td { background: #343a40; }
+.dark-mode .bubble-content blockquote { color: #ced4da; border-left-color: #8fb1ee; }
+.dark-mode .bubble-copy-btn:hover { background: #454d55; color: #8fb1ee; }
+.dark-mode .bubble-time { color: #8a939c; }
+.dark-mode .tool-call-details { background: #2b3035; border-color: #4b5157; }
+.dark-mode .tool-call-details summary { color: #adb5bd; }
+.dark-mode .tool-call-details li { color: #ced4da; }
+.dark-mode .conv-item.active { background: #2c3e75; border-left-color: #fbb516; }
+.dark-mode .conv-item:hover { background: #3a3f44; }
 
 /* ── Quick prompts ── */
 .quick-prompt { font-size: 11.5px; white-space: normal; text-align: left; }
