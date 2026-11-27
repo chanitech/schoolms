@@ -19,6 +19,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->appendToGroup('web', \App\Http\Middleware\ResolveTenant::class);
         $middleware->appendToGroup('web', \App\Http\Middleware\RestrictGuardianMenu::class);
         $middleware->appendToGroup('web', \App\Http\Middleware\InjectMenuBadges::class);
+        // Anonymous daily visit signal for the CHANITECH admin analytics (inactive until configured in .env).
+        $middleware->appendToGroup('web', \App\Http\Middleware\ReportVisitToChanitech::class);
         $middleware->appendToPriorityList(
             \Illuminate\Session\Middleware\StartSession::class,
             \App\Http\Middleware\ResolveTenant::class,

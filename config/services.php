@@ -60,4 +60,12 @@ return [
         'sender_id'  => env('BEEM_SENDER_ID', 'INFO'),
     ],
 
+    // Reports one anonymous visit per person per day to the CHANITECH admin panel (Visitor Analytics).
+    // Set the URL (https://chanitech.co.tz/analytics/visit) and the same secret as ANALYTICS_INGEST_TOKEN there.
+    'chanitech_analytics' => [
+        'url'   => env('CHANITECH_ANALYTICS_URL'),
+        'token' => env('CHANITECH_ANALYTICS_TOKEN'),
+        'salt'  => env('CHANITECH_ANALYTICS_SALT'),
+    ],
+
 ];
